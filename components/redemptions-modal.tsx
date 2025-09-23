@@ -123,41 +123,41 @@ export function RedemptionsModal({ benefit, isOpen, onClose }: RedemptionsModalP
     switch (status) {
       case "pending":
         return (
-          <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+          <Badge variant="outline" className="text-yellow-600 border-yellow-600 text-xs">
             <Clock className="h-3 w-3 mr-1" />
             Pendente
           </Badge>
         )
       case "approved":
         return (
-          <Badge variant="outline" className="text-blue-600 border-blue-600">
+          <Badge variant="outline" className="text-blue-600 border-blue-600 text-xs">
             <CheckCircle className="h-3 w-3 mr-1" />
             Aprovado
           </Badge>
         )
       case "used":
         return (
-          <Badge variant="outline" className="text-green-600 border-green-600">
+          <Badge variant="outline" className="text-green-600 border-green-600 text-xs">
             <CheckCircle className="h-3 w-3 mr-1" />
             Utilizado
           </Badge>
         )
       case "expired":
         return (
-          <Badge variant="outline" className="text-red-600 border-red-600">
+          <Badge variant="outline" className="text-red-600 border-red-600 text-xs">
             <XCircle className="h-3 w-3 mr-1" />
             Expirado
           </Badge>
         )
       case "cancelled":
         return (
-          <Badge variant="outline" className="text-gray-600 border-gray-600">
+          <Badge variant="outline" className="text-gray-600 border-gray-600 text-xs">
             <XCircle className="h-3 w-3 mr-1" />
             Cancelado
           </Badge>
         )
       default:
-        return <Badge variant="outline">Desconhecido</Badge>
+        return <Badge variant="outline" className="text-xs">Desconhecido</Badge>
     }
   }
 
@@ -168,45 +168,45 @@ export function RedemptionsModal({ benefit, isOpen, onClose }: RedemptionsModalP
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-7xl w-[95vw] h-[85vh] flex flex-col p-0">
+        <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle className="flex items-center gap-3">
             <Gift className="h-5 w-5" />
-            <span>Resgates - {benefit.title}</span>
+            <span className="text-lg">{benefit.title} - Resgates</span>
             <Badge variant="outline" className="text-primary">
               {redemptions.length} resgates
             </Badge>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="flex-1 flex flex-col px-6 py-4 space-y-4 overflow-hidden">
+          {/* Stats - Compactas em uma linha */}
+          <div className="grid grid-cols-5 gap-3">
             <div className="bg-muted/50 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-card-foreground">{redemptions.length}</div>
-              <div className="text-sm text-muted-foreground">Total</div>
+              <div className="text-xl font-bold text-card-foreground">{redemptions.length}</div>
+              <div className="text-xs text-muted-foreground">Total</div>
             </div>
             <div className="bg-yellow-50 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-yellow-600">{pendingCount}</div>
-              <div className="text-sm text-muted-foreground">Pendentes</div>
+              <div className="text-xl font-bold text-yellow-600">{pendingCount}</div>
+              <div className="text-xs text-muted-foreground">Pendentes</div>
             </div>
             <div className="bg-blue-50 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-blue-600">{approvedCount}</div>
-              <div className="text-sm text-muted-foreground">Aprovados</div>
+              <div className="text-xl font-bold text-blue-600">{approvedCount}</div>
+              <div className="text-xs text-muted-foreground">Aprovados</div>
             </div>
             <div className="bg-green-50 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-green-600">{usedCount}</div>
-              <div className="text-sm text-muted-foreground">Utilizados</div>
+              <div className="text-xl font-bold text-green-600">{usedCount}</div>
+              <div className="text-xs text-muted-foreground">Utilizados</div>
             </div>
             <div className="bg-red-50 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-red-600">{expiredCount}</div>
-              <div className="text-sm text-muted-foreground">Expirados</div>
+              <div className="text-xl font-bold text-red-600">{expiredCount}</div>
+              <div className="text-xs text-muted-foreground">Expirados</div>
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
+          {/* Search e Export - Em linha */}
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar por usuário, email ou código..."
@@ -215,91 +215,95 @@ export function RedemptionsModal({ benefit, isOpen, onClose }: RedemptionsModalP
                 className="pl-10"
               />
             </div>
-            <Button variant="outline" size="sm" className="gap-2 bg-transparent">
-              <Download className="h-4 w-4" />
-              Exportar Resgates
-            </Button>
           </div>
 
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="all">Todos</TabsTrigger>
-              <TabsTrigger value="pending">Pendentes</TabsTrigger>
-              <TabsTrigger value="approved">Aprovados</TabsTrigger>
-              <TabsTrigger value="used">Utilizados</TabsTrigger>
-              <TabsTrigger value="expired">Expirados</TabsTrigger>
+          {/* Tabs compactas */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+            <TabsList className="grid w-full grid-cols-5 mb-3">
+              <TabsTrigger value="all" className="text-xs">Todos</TabsTrigger>
+              <TabsTrigger value="pending" className="text-xs">Pendentes</TabsTrigger>
+              <TabsTrigger value="approved" className="text-xs">Aprovados</TabsTrigger>
+              <TabsTrigger value="used" className="text-xs">Utilizados</TabsTrigger>
+              <TabsTrigger value="expired" className="text-xs">Expirados</TabsTrigger>
             </TabsList>
 
-            <TabsContent value={activeTab} className="mt-4">
-              <div className="space-y-3">
-                {filteredRedemptions.map((redemption) => (
-                  <div
-                    key={redemption.id}
-                    className="flex items-center gap-4 p-4 bg-card border border-border rounded-lg"
-                  >
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        {redemption.userName
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
+            <TabsContent value={activeTab} className="flex-1 overflow-hidden">
+              <div className="h-full overflow-y-auto pr-2">
+                <div className="space-y-2">
+                  {filteredRedemptions.map((redemption) => (
+                    <div
+                      key={redemption.id}
+                      className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg hover:bg-muted/25 transition-colors"
+                    >
+                      <Avatar className="h-8 w-8 shrink-0">
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                          {redemption.userName
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      </Avatar>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-card-foreground">{redemption.userName}</h4>
-                        {getStatusBadge(redemption.status)}
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          <span>{redemption.userEmail}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-medium text-card-foreground text-sm truncate">
+                            {redemption.userName}
+                          </h4>
+                          {getStatusBadge(redemption.status)}
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Gift className="h-3 w-3" />
-                          <span>Código: {redemption.redemptionCode}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          <span>Resgatado em {redemption.redemptionDate}</span>
-                        </div>
-                        {redemption.usedDate && (
-                          <div className="flex items-center gap-1">
-                            <CheckCircle className="h-3 w-3" />
-                            <span>Usado em {redemption.usedDate}</span>
+                        
+                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-1 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1 truncate">
+                            <User className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{redemption.userEmail}</span>
                           </div>
+                          <div className="flex items-center gap-1 truncate">
+                            <Gift className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{redemption.redemptionCode}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3 shrink-0" />
+                            <span>{redemption.redemptionDate}</span>
+                          </div>
+                          {redemption.usedDate && (
+                            <div className="flex items-center gap-1">
+                              <CheckCircle className="h-3 w-3 shrink-0" />
+                              <span>Usado {redemption.usedDate}</span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {redemption.notes && (
+                          <p className="text-xs text-muted-foreground mt-1 italic truncate">
+                            {redemption.notes}
+                          </p>
                         )}
                       </div>
-                      {redemption.notes && (
-                        <p className="text-sm text-muted-foreground mt-1 italic">{redemption.notes}</p>
-                      )}
-                    </div>
 
-                    <div className="flex gap-2">
-                      {redemption.status === "pending" && (
-                        <Button size="sm" className="gap-2">
-                          <CheckCircle className="h-4 w-4" />
-                          Aprovar
-                        </Button>
-                      )}
-                      {redemption.status === "approved" && (
-                        <Button size="sm" variant="outline" className="gap-2 bg-transparent">
-                          <CheckCircle className="h-4 w-4" />
-                          Marcar como Usado
-                        </Button>
-                      )}
+                      <div className="flex gap-2 shrink-0">
+                        {redemption.status === "pending" && (
+                          <Button size="sm" className="gap-1 text-xs px-3">
+                            <CheckCircle className="h-3 w-3" />
+                            Aprovar
+                          </Button>
+                        )}
+                        {redemption.status === "approved" && (
+                          <Button size="sm" variant="outline" className="gap-1 bg-transparent text-xs px-3">
+                            <CheckCircle className="h-3 w-3" />
+                            Marcar Usado
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
 
-                {filteredRedemptions.length === 0 && (
-                  <div className="text-center py-8">
-                    <Gift className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">Nenhum resgate encontrado.</p>
-                  </div>
-                )}
+                  {filteredRedemptions.length === 0 && (
+                    <div className="text-center py-8">
+                      <Gift className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">Nenhum resgate encontrado.</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </TabsContent>
           </Tabs>

@@ -16,10 +16,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
+    setIsLoading(true)
+
     // Check if user is already authenticated
     const token = AuthService.getToken()
     const savedUser = AuthService.getUser()
@@ -33,9 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      console.log('oi');
       const response = await AuthService.login(credentials)
-      console.log('oi 2');
       setUser(response.user)
       router.push("/admin")
     } catch (error) {

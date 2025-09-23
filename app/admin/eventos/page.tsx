@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useEvents } from "@/hooks/use-events"
 import { AdminLayout } from "@/components/admin-layout"
 import { EventCard } from "@/components/event-card"
 import { EventFormModal } from "@/components/event-form-modal"
@@ -9,111 +10,28 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Search, Plus, Download, Calendar } from "lucide-react"
-
-interface Event {
-  id: string
-  title: string
-  description: string
-  date: string
-  time: string
-  location: string
-  category: string
-  maxParticipants: number
-  registeredCount: number
-  status: "upcoming" | "ongoing" | "completed" | "cancelled"
-  organizer: string
-  price: number
-  imageUrl?: string
-}
-
-// Mock data for events
-const mockEvents: Event[] = [
-  {
-    id: "1",
-    title: "Workshop de Decoração Sustentável",
-    description:
-      "Aprenda técnicas de decoração usando materiais sustentáveis e eco-friendly. Workshop prático com profissionais renomados.",
-    date: "2024-09-25",
-    time: "14:00",
-    location: "Centro de Convenções - São Paulo, SP",
-    category: "Workshop",
-    maxParticipants: 50,
-    registeredCount: 35,
-    status: "upcoming",
-    organizer: "EcoDesign Brasil",
-    price: 150.0,
-  },
-  {
-    id: "2",
-    title: "Palestra: Tendências em Arquitetura 2024",
-    description:
-      "Descubra as principais tendências em arquitetura para 2024. Palestrantes internacionais compartilham insights exclusivos.",
-    date: "2024-09-20",
-    time: "19:00",
-    location: "Auditório Central - Rio de Janeiro, RJ",
-    category: "Palestra",
-    maxParticipants: 200,
-    registeredCount: 180,
-    status: "upcoming",
-    organizer: "Instituto de Arquitetura",
-    price: 0,
-  },
-  {
-    id: "3",
-    title: "Networking UPConnection",
-    description:
-      "Evento de networking para profissionais da área de decoração e arquitetura. Oportunidade única de fazer conexões.",
-    date: "2024-09-15",
-    time: "18:30",
-    location: "Hotel Copacabana Palace - Rio de Janeiro, RJ",
-    category: "Networking",
-    maxParticipants: 100,
-    registeredCount: 95,
-    status: "ongoing",
-    organizer: "UPConnection",
-    price: 80.0,
-  },
-  {
-    id: "4",
-    title: "Curso de Iluminação Residencial",
-    description:
-      "Curso completo sobre iluminação residencial, desde conceitos básicos até projetos avançados com LED e automação.",
-    date: "2024-08-30",
-    time: "09:00",
-    location: "Escola de Design - Belo Horizonte, MG",
-    category: "Curso",
-    maxParticipants: 30,
-    registeredCount: 28,
-    status: "completed",
-    organizer: "Escola de Design MG",
-    price: 300.0,
-  },
-  {
-    id: "5",
-    title: "Feira de Móveis e Decoração",
-    description:
-      "A maior feira de móveis e decoração do país. Mais de 500 expositores apresentando as últimas novidades do setor.",
-    date: "2024-10-10",
-    time: "10:00",
-    location: "Expo Center Norte - São Paulo, SP",
-    category: "Feira",
-    maxParticipants: 5000,
-    registeredCount: 1200,
-    status: "upcoming",
-    organizer: "Feira & Eventos",
-    price: 25.0,
-  },
-]
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Search, Plus, Calendar, RefreshCw } from "lucide-react"
+import { Event, CreateEventData } from "@/lib/services/events"
 
 export default function EventsPage() {
-  const [events, setEvents] = useState<Event[]>(mockEvents)
+  const { 
+    events, 
+    loading, 
+    error, 
+    refetch, 
+    create, 
+    toggleEvent,
+    checkInAttendee,
+    getEventParticipants 
+  } = useEvents()
+  
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
   const [isAttendeesModalOpen, setIsAttendeesModalOpen] = useState(false)
   const [formMode, setFormMode] = useState<"create" | "edit">("create")
   const [searchTerm, setSearchTerm] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [typeFilter, setTypeFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
 
   const handleCreate = () => {
@@ -128,9 +46,11 @@ export default function EventsPage() {
     setIsFormModalOpen(true)
   }
 
-  const handleDelete = (id: string) => {
-    if (confirm("Tem certeza que deseja excluir este evento?")) {
-      setEvents((prev) => prev.filter((e) => e.id !== id))
+  const handleToggleEvent = async (event: Event) => {
+    try {
+      await toggleEvent(event.id)
+    } catch (error) {
+      console.error("Erro ao alternar status do evento:", error)
     }
   }
 
@@ -144,52 +64,72 @@ export default function EventsPage() {
     setIsAttendeesModalOpen(true)
   }
 
-  const handleSave = (eventData: Omit<Event, "id" | "registeredCount">) => {
-    if (formMode === "create") {
-      const newEvent: Event = {
-        ...eventData,
-        id: Date.now().toString(),
-        registeredCount: 0,
+  const handleSave = async (eventData: CreateEventData) => {
+    try {
+      if (formMode === "create") {
+        await create(eventData)
+      } else if (selectedEvent) {
+        // Para edição, você precisaria implementar um método update no service
+        // await update(selectedEvent.id, eventData)
+        console.log("Update functionality needs to be implemented")
       }
-      setEvents((prev) => [...prev, newEvent])
-    } else if (selectedEvent) {
-      setEvents((prev) =>
-        prev.map((e) =>
-          e.id === selectedEvent.id
-            ? {
-                ...eventData,
-                id: selectedEvent.id,
-                registeredCount: selectedEvent.registeredCount,
-              }
-            : e,
-        ),
-      )
+      setIsFormModalOpen(false)
+    } catch (error) {
+      console.error("Erro ao salvar evento:", error)
+    }
+  }
+
+  const handleCheckIn = async (eventId: string, professionalId: string) => {
+    try {
+      await checkInAttendee(eventId, professionalId)
+    } catch (error) {
+      console.error("Erro ao fazer check-in:", error)
     }
   }
 
   const filteredEvents = events.filter((event) => {
     const matchesSearch =
-      event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.organizer.toLowerCase().includes(searchTerm.toLowerCase())
+      event.store?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (event.address && `${event.address.street} ${event.address.city}`.toLowerCase().includes(searchTerm.toLowerCase()))
 
-    const matchesCategory = categoryFilter === "all" || event.category === categoryFilter
-    const matchesStatus = statusFilter === "all" || event.status === statusFilter
+    const matchesType = typeFilter === "all" || event.type === typeFilter
+    const matchesStatus = statusFilter === "all" || 
+      (statusFilter === "active" && event.isActive) ||
+      (statusFilter === "inactive" && !event.isActive)
 
-    return matchesSearch && matchesCategory && matchesStatus
+    return matchesSearch && matchesType && matchesStatus
   })
 
-  const upcomingCount = events.filter((e) => e.status === "upcoming").length
-  const ongoingCount = events.filter((e) => e.status === "ongoing").length
-  const completedCount = events.filter((e) => e.status === "completed").length
-  const totalParticipants = events.reduce((acc, e) => acc + e.registeredCount, 0)
+  const activeCount = events.filter((e) => e.isActive).length
+  const inactiveCount = events.filter((e) => !e.isActive).length
+  const totalParticipants = events.reduce((acc, e) => acc + e.filledSpots, 0)
+  const totalSpots = events.reduce((acc, e) => acc + e.totalSpots, 0)
 
-  const categories = [...new Set(events.map((e) => e.category))]
+  const eventTypes = [...new Set(events.map((e) => e.type))]
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="p-6 flex items-center justify-center min-h-96">
+          <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2 text-muted-foreground">Carregando eventos...</span>
+        </div>
+      </AdminLayout>
+    )
+  }
 
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -197,7 +137,20 @@ export default function EventsPage() {
             <p className="text-muted-foreground">Gerencie eventos e validação de presença</p>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" onClick={handleCreate} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={refetch}
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+            <Button 
+              size="sm" 
+              onClick={handleCreate} 
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Criar Evento
             </Button>
@@ -220,24 +173,24 @@ export default function EventsPage() {
 
           <div className="bg-card border border-border rounded-lg p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Próximos</p>
-                <p className="text-2xl font-bold text-card-foreground">{upcomingCount}</p>
+                <p className="text-sm text-muted-foreground">Ativos</p>
+                <p className="text-2xl font-bold text-card-foreground">{activeCount}</p>
               </div>
             </div>
           </div>
 
           <div className="bg-card border border-border rounded-lg p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Em Andamento</p>
-                <p className="text-2xl font-bold text-card-foreground">{ongoingCount}</p>
+                <p className="text-sm text-muted-foreground">Inativos</p>
+                <p className="text-2xl font-bold text-card-foreground">{inactiveCount}</p>
               </div>
             </div>
           </div>
@@ -249,7 +202,7 @@ export default function EventsPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Participantes</p>
-                <p className="text-2xl font-bold text-card-foreground">{totalParticipants}</p>
+                <p className="text-2xl font-bold text-card-foreground">{totalParticipants}/{totalSpots}</p>
               </div>
             </div>
           </div>
@@ -260,21 +213,21 @@ export default function EventsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar por título, descrição, local ou organizador..."
+              placeholder="Buscar por nome, descrição, loja ou endereço..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
             <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="Categoria" />
+              <SelectValue placeholder="Tipo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas as Categorias</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
+              <SelectItem value="all">Todos os Tipos</SelectItem>
+              {eventTypes.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -284,11 +237,9 @@ export default function EventsPage() {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos os Status</SelectItem>
-              <SelectItem value="upcoming">Próximos</SelectItem>
-              <SelectItem value="ongoing">Em Andamento</SelectItem>
-              <SelectItem value="completed">Concluídos</SelectItem>
-              <SelectItem value="cancelled">Cancelados</SelectItem>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="active">Ativos</SelectItem>
+              <SelectItem value="inactive">Inativos</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -299,21 +250,14 @@ export default function EventsPage() {
             {filteredEvents.length} evento{filteredEvents.length !== 1 ? "s" : ""} encontrado
             {filteredEvents.length !== 1 ? "s" : ""}
           </Badge>
-          {categoryFilter !== "all" && (
+          {typeFilter !== "all" && (
             <Badge variant="outline" className="text-primary">
-              Categoria: {categoryFilter}
+              Tipo: {typeFilter}
             </Badge>
           )}
           {statusFilter !== "all" && (
             <Badge variant="outline" className="text-secondary">
-              Status:{" "}
-              {statusFilter === "upcoming"
-                ? "Próximos"
-                : statusFilter === "ongoing"
-                  ? "Em Andamento"
-                  : statusFilter === "completed"
-                    ? "Concluídos"
-                    : "Cancelados"}
+              Status: {statusFilter === "active" ? "Ativos" : "Inativos"}
             </Badge>
           )}
         </div>
@@ -325,18 +269,23 @@ export default function EventsPage() {
               key={event.id}
               event={event}
               onEdit={handleEdit}
-              onDelete={handleDelete}
+              onToggle={handleToggleEvent}
               onViewDetails={handleViewDetails}
               onManageAttendees={handleManageAttendees}
             />
           ))}
         </div>
 
-        {filteredEvents.length === 0 && (
+        {filteredEvents.length === 0 && !loading && (
           <div className="text-center py-12">
             <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-card-foreground mb-2">Nenhum evento encontrado</h3>
-            <p className="text-muted-foreground">Tente ajustar os filtros ou termos de busca.</p>
+            <p className="text-muted-foreground">
+              {events.length === 0 
+                ? "Ainda não há eventos cadastrados. Clique em 'Criar Evento' para começar."
+                : "Tente ajustar os filtros ou termos de busca."
+              }
+            </p>
           </div>
         )}
 
@@ -353,6 +302,8 @@ export default function EventsPage() {
           event={selectedEvent}
           isOpen={isAttendeesModalOpen}
           onClose={() => setIsAttendeesModalOpen(false)}
+          onCheckIn={handleCheckIn}
+          getParticipants={getEventParticipants}
         />
       </div>
     </AdminLayout>

@@ -1,9 +1,10 @@
-import { AdminLayout } from "@/components/admin-layout"
-import { DashboardStats } from "@/components/dashboard-stats"
-import { RecentActivity } from "@/components/recent-activity"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Plus, FileText, Users, Calendar } from "lucide-react"
+import { AdminLayout } from "@/components/admin-layout";
+import { DashboardStats } from "@/components/dashboard-stats";
+import { RecentActivity } from "@/components/recent-activity";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus, FileText, Users, Calendar } from "lucide-react";
+import Link from "next/link";
 
 export default function AdminDashboard() {
   return (
@@ -13,9 +14,13 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground">Visão geral do sistema UPConnection</p>
+            <p className="text-muted-foreground">
+              Visão geral do sistema UPConnection
+            </p>
           </div>
-          <span className="text-sidebar-accent-foreground font-bold text-sm bg-red-500 p-2 rounded-2xl">UP</span>
+          <span className="text-sidebar-accent-foreground font-bold text-sm bg-red-500 p-2 rounded-2xl">
+            UP
+          </span>
         </div>
 
         {/* Stats Grid */}
@@ -31,31 +36,58 @@ export default function AdminDashboard() {
           {/* Quick Actions */}
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-card-foreground">Ações Rápidas</CardTitle>
+              <CardTitle className="text-card-foreground">
+                Ações Rápidas
+              </CardTitle>
             </CardHeader>
+
             <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start gap-3 h-12 bg-transparent">
-                <Users className="h-5 w-5 text-primary" />
-                <div className="text-left">
-                  <div className="font-medium">Aprovar Fornecedores</div>
-                  <div className="text-xs text-muted-foreground">18 pendentes</div>
-                </div>
+              <Button
+                asChild
+                variant="outline"
+                className="w-full justify-start gap-3 h-12 bg-transparent"
+              >
+                <Link href="/admin/fornecedores">
+                  <Users className="h-5 w-5 text-primary" />
+                  <div className="text-left">
+                    <div className="font-medium">Aprovar Fornecedores</div>
+                    <div className="text-xs text-muted-foreground">
+                      18 pendentes
+                    </div>
+                  </div>
+                </Link>
               </Button>
 
-              <Button variant="outline" className="w-full justify-start gap-3 h-12 bg-transparent">
-                <Calendar className="h-5 w-5 text-primary" />
-                <div className="text-left">
-                  <div className="font-medium">Criar Evento</div>
-                  <div className="text-xs text-muted-foreground">Novo evento</div>
-                </div>
+              <Button
+                asChild
+                variant="outline"
+                className="w-full justify-start gap-3 h-12 bg-transparent"
+              >
+                <Link href="/admin/eventos">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  <div className="text-left">
+                    <div className="font-medium">Criar Evento</div>
+                    <div className="text-xs text-muted-foreground">
+                      Novo evento
+                    </div>
+                  </div>
+                </Link>
               </Button>
 
-              <Button variant="outline" className="w-full justify-start gap-3 h-12 bg-transparent">
-                <Plus className="h-5 w-5 text-primary" />
-                <div className="text-left">
-                  <div className="font-medium">Adicionar Profissional</div>
-                  <div className="text-xs text-muted-foreground">Recomendado</div>
-                </div>
+              <Button
+                asChild
+                variant="outline"
+                className="w-full justify-start gap-3 h-12 bg-transparent"
+              >
+                <Link href="/admin/profissionais">
+                  <Plus className="h-5 w-5 text-primary" />
+                  <div className="text-left">
+                    <div className="font-medium">Adicionar Profissional</div>
+                    <div className="text-xs text-muted-foreground">
+                      Recomendado
+                    </div>
+                  </div>
+                </Link>
               </Button>
             </CardContent>
           </Card>
@@ -70,7 +102,9 @@ export default function AdminDashboard() {
                   <Users className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Novos Usuários</p>
+                  <p className="text-sm text-muted-foreground">
+                    Novos Usuários
+                  </p>
                   <p className="text-xl font-bold text-card-foreground">+127</p>
                 </div>
               </div>
@@ -84,7 +118,9 @@ export default function AdminDashboard() {
                   <Calendar className="h-5 w-5 text-secondary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Eventos Ativos</p>
+                  <p className="text-sm text-muted-foreground">
+                    Eventos Ativos
+                  </p>
                   <p className="text-xl font-bold text-card-foreground">12</p>
                 </div>
               </div>
@@ -121,5 +157,5 @@ export default function AdminDashboard() {
         </div>
       </div>
     </AdminLayout>
-  )
+  );
 }

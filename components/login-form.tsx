@@ -58,7 +58,6 @@ export function LoginForm() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@upconnection.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -109,12 +108,6 @@ export function LoginForm() {
               )}
             </Button>
           </form>
-
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>Credenciais de teste:</p>
-            <p>Email: admin@upconnection.com</p>
-            <p>Senha: admin123</p>
-          </div>
         </CardContent>
       </Card>
     </div>

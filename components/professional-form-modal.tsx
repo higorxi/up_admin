@@ -1,40 +1,53 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
-import { User, Mail, Phone, MapPin, Briefcase, Star } from "lucide-react"
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { User, Mail, Phone, MapPin, Briefcase, Star } from "lucide-react";
 
 interface Professional {
-  id: string
-  name: string
-  email: string
-  phone: string
-  specialty: string
-  location: string
-  rating: number
-  status: "active" | "inactive"
-  bio: string
-  avatar: string
-  createdAt: string
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  specialty: string;
+  location: string;
+  rating: number;
+  status: "active" | "inactive";
+  bio: string;
+  avatar: string;
+  createdAt: string;
 }
 
 interface ProfessionalFormModalProps {
-  professional: Professional | null
-  isOpen: boolean
-  onClose: () => void
-  onSave: (professional: Omit<Professional, "id" | "rating" | "createdAt" | "avatar">) => Promise<void>
-  mode: "create" | "edit"
+  professional: Professional | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (
+    professional: Omit<Professional, "id" | "rating" | "createdAt" | "avatar">
+  ) => Promise<void>;
+  mode: "create" | "edit";
 }
 
 const specialties = [
@@ -48,7 +61,7 @@ const specialties = [
   "Feng Shui",
   "Home Staging",
   "Design Sustentável",
-]
+];
 
 const locations = [
   "São Paulo, SP",
@@ -61,9 +74,15 @@ const locations = [
   "Porto Alegre, RS",
   "Curitiba, PR",
   "Goiânia, GO",
-]
+];
 
-export function ProfessionalFormModal({ professional, isOpen, onClose, onSave, mode }: ProfessionalFormModalProps) {
+export function ProfessionalFormModal({
+  professional,
+  isOpen,
+  onClose,
+  onSave,
+  mode,
+}: ProfessionalFormModalProps) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -72,9 +91,9 @@ export function ProfessionalFormModal({ professional, isOpen, onClose, onSave, m
     location: "",
     bio: "",
     status: "active" as const,
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (professional && mode === "edit") {
@@ -86,7 +105,7 @@ export function ProfessionalFormModal({ professional, isOpen, onClose, onSave, m
         location: professional.location,
         bio: professional.bio,
         status: professional.status,
-      })
+      });
     } else {
       setFormData({
         name: "",
@@ -96,46 +115,47 @@ export function ProfessionalFormModal({ professional, isOpen, onClose, onSave, m
         location: "",
         bio: "",
         status: "active",
-      })
+      });
     }
-    setErrors({})
-  }, [professional, mode, isOpen])
+    setErrors({});
+  }, [professional, mode, isOpen]);
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) newErrors.name = "Nome é obrigatório"
-    if (!formData.email.trim()) newErrors.email = "E-mail é obrigatório"
-    if (!formData.phone.trim()) newErrors.phone = "Telefone é obrigatório"
-    if (!formData.specialty) newErrors.specialty = "Especialidade é obrigatória"
-    if (!formData.location) newErrors.location = "Localização é obrigatória"
-    if (!formData.bio.trim()) newErrors.bio = "Biografia é obrigatória"
+    if (!formData.name.trim()) newErrors.name = "Nome é obrigatório";
+    if (!formData.email.trim()) newErrors.email = "E-mail é obrigatório";
+    if (!formData.phone.trim()) newErrors.phone = "Telefone é obrigatório";
+    if (!formData.specialty)
+      newErrors.specialty = "Especialidade é obrigatória";
+    if (!formData.location) newErrors.location = "Localização é obrigatória";
+    if (!formData.bio.trim()) newErrors.bio = "Biografia é obrigatória";
 
     // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
-      newErrors.email = "E-mail inválido"
+      newErrors.email = "E-mail inválido";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await onSave(formData)
-      onClose()
+      await onSave(formData);
+      onClose();
     } catch (error) {
-      console.error("Erro ao salvar profissional:", error)
+      console.error("Erro ao salvar profissional:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -143,7 +163,9 @@ export function ProfessionalFormModal({ professional, isOpen, onClose, onSave, m
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <User className="h-5 w-5" />
-            {mode === "create" ? "Adicionar Profissional" : "Editar Profissional"}
+            {mode === "create"
+              ? "Adicionar Profissional"
+              : "Editar Profissional"}
           </DialogTitle>
         </DialogHeader>
 
@@ -162,11 +184,15 @@ export function ProfessionalFormModal({ professional, isOpen, onClose, onSave, m
                   <Input
                     id="name"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className={errors.name ? "border-red-500" : ""}
                     disabled={isLoading}
                   />
-                  {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+                  {errors.name && (
+                    <p className="text-sm text-red-500">{errors.name}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -177,12 +203,18 @@ export function ProfessionalFormModal({ professional, isOpen, onClose, onSave, m
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className={`pl-10 ${errors.email ? "border-red-500" : ""}`}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                      className={`pl-10 ${
+                        errors.email ? "border-red-500" : ""
+                      }`}
                       disabled={isLoading}
                     />
                   </div>
-                  {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
+                  {errors.email && (
+                    <p className="text-sm text-red-500">{errors.email}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -192,37 +224,42 @@ export function ProfessionalFormModal({ professional, isOpen, onClose, onSave, m
                     <Input
                       id="phone"
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
                       placeholder="(11) 99999-9999"
-                      className={`pl-10 ${errors.phone ? "border-red-500" : ""}`}
+                      className={`pl-10 ${
+                        errors.phone ? "border-red-500" : ""
+                      }`}
                       disabled={isLoading}
                     />
                   </div>
-                  {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
+                  {errors.phone && (
+                    <p className="text-sm text-red-500">{errors.phone}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="location">Localização *</Label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Select
+                    <input
+                      type="text"
+                      id="location"
                       value={formData.location}
-                      onValueChange={(value) => setFormData({ ...formData, location: value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, location: e.target.value })
+                      }
                       disabled={isLoading}
-                    >
-                      <SelectTrigger className={`pl-10 ${errors.location ? "border-red-500" : ""}`}>
-                        <SelectValue placeholder="Selecione a localização" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {locations.map((location) => (
-                          <SelectItem key={location} value={location}>
-                            {location}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Digite a localização"
+                      className={`pl-10 w-full rounded-md border p-2 ${
+                        errors.location ? "border-red-500" : "border-input"
+                      }`}
+                    />
                   </div>
-                  {errors.location && <p className="text-sm text-red-500">{errors.location}</p>}
+                  {errors.location && (
+                    <p className="text-sm text-red-500">{errors.location}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -241,24 +278,23 @@ export function ProfessionalFormModal({ professional, isOpen, onClose, onSave, m
                   <Label htmlFor="specialty">Especialidade *</Label>
                   <div className="relative">
                     <Star className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Select
+                    <input
+                      type="text"
+                      id="specialty"
                       value={formData.specialty}
-                      onValueChange={(value) => setFormData({ ...formData, specialty: value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, specialty: e.target.value })
+                      }
                       disabled={isLoading}
-                    >
-                      <SelectTrigger className={`pl-10 ${errors.specialty ? "border-red-500" : ""}`}>
-                        <SelectValue placeholder="Selecione a especialidade" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {specialties.map((specialty) => (
-                          <SelectItem key={specialty} value={specialty}>
-                            {specialty}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Digite a especialidade"
+                      className={`pl-10 w-full rounded-md border p-2 ${
+                        errors.specialty ? "border-red-500" : "border-input"
+                      }`}
+                    />
                   </div>
-                  {errors.specialty && <p className="text-sm text-red-500">{errors.specialty}</p>}
+                  {errors.specialty && (
+                    <p className="text-sm text-red-500">{errors.specialty}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -268,12 +304,19 @@ export function ProfessionalFormModal({ professional, isOpen, onClose, onSave, m
                       id="status"
                       checked={formData.status === "active"}
                       onCheckedChange={(checked) =>
-                        setFormData({ ...formData, status: checked ? "active" : "inactive" })
+                        setFormData({
+                          ...formData,
+                          status: checked ? "active" : "inactive",
+                        })
                       }
                       disabled={isLoading}
                     />
                     <Label htmlFor="status" className="flex items-center gap-2">
-                      <Badge variant={formData.status === "active" ? "default" : "secondary"}>
+                      <Badge
+                        variant={
+                          formData.status === "active" ? "default" : "secondary"
+                        }
+                      >
                         {formData.status === "active" ? "Ativo" : "Inativo"}
                       </Badge>
                     </Label>
@@ -286,13 +329,17 @@ export function ProfessionalFormModal({ professional, isOpen, onClose, onSave, m
                 <Textarea
                   id="bio"
                   value={formData.bio}
-                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, bio: e.target.value })
+                  }
                   placeholder="Descreva a experiência, especialidades e diferenciais do profissional..."
                   rows={4}
                   className={errors.bio ? "border-red-500" : ""}
                   disabled={isLoading}
                 />
-                {errors.bio && <p className="text-sm text-red-500">{errors.bio}</p>}
+                {errors.bio && (
+                  <p className="text-sm text-red-500">{errors.bio}</p>
+                )}
               </div>
             </div>
           </form>
@@ -308,11 +355,19 @@ export function ProfessionalFormModal({ professional, isOpen, onClose, onSave, m
           >
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} className="flex-1" disabled={isLoading}>
-            {isLoading ? "Salvando..." : mode === "create" ? "Adicionar Profissional" : "Salvar Alterações"}
+          <Button
+            onClick={handleSubmit}
+            className="flex-1"
+            disabled={isLoading}
+          >
+            {isLoading
+              ? "Salvando..."
+              : mode === "create"
+              ? "Adicionar Profissional"
+              : "Salvar Alterações"}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -16,31 +16,22 @@ export interface Professional {
 
 export class ProfessionalsService {
   static async getAll(): Promise<Professional[]> {
-    return ApiService.get<Professional[]>("/professionals")
+    return ApiService.get<Professional[]>("/recommended-professionals")
   }
 
   static async getById(id: string): Promise<Professional> {
-    return ApiService.get<Professional>(`/professionals/${id}`)
+    return ApiService.get<Professional>(`/recommended-professionals/${id}`)
   }
 
   static async create(data: Omit<Professional, "id" | "createdAt">): Promise<Professional> {
-    return ApiService.post<Professional>("/professionals", data)
+    return ApiService.post<Professional>("/recommended-professionals", data)
   }
 
   static async update(id: string, data: Partial<Professional>): Promise<Professional> {
-    return ApiService.put<Professional>(`/professionals/${id}`, data)
+    return ApiService.put<Professional>(`/recommended-professionals/${id}`, data)
   }
 
   static async delete(id: string): Promise<void> {
-    return ApiService.delete(`/professionals/${id}`)
-  }
-
-  static async getStats(): Promise<{
-    total: number
-    active: number
-    inactive: number
-    averageRating: number
-  }> {
-    return ApiService.get("/professionals/stats")
+    return ApiService.delete(`/recommended-professionals/${id}`)
   }
 }

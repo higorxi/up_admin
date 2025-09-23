@@ -18,7 +18,6 @@ export class ApiService {
   }
 
   static async login(email: string, password: string): Promise<{ token: string; user: any }> {
-    console.log('oi 1.5');
     const response = await fetch(`${API_BASE_URL}${API_ADMIN_PATH}/login`, {
       method: "POST",
       headers: this.getHeaders(false),
@@ -114,6 +113,29 @@ export class ApiService {
 
     return response.json()
   }
+
+  static async patch<T>(endpoint: string, data: any): Promise<T> {
+    const response = await fetch(`${API_BASE_URL}${API_ADMIN_PATH}${endpoint}`, {
+      method: "PATCH",
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("upconnection_admin_token")
+          localStorage.removeItem("upconnection_admin_user")
+          window.location.href = "/login"
+        }
+      }
+      const error = await response.json().catch(() => ({ message: "Erro na requisição" }))
+      throw new Error(error.message || `API Error: ${response.statusText}`)
+    }
+
+    return response.json()
+  }
+
 
   static async delete<T>(endpoint: string): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${API_ADMIN_PATH}${endpoint}`, {

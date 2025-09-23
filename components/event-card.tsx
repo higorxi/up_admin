@@ -117,17 +117,6 @@ export function EventCard({ event, onEdit, onDelete, onViewDetails, onManageAtte
             Participantes
           </Button>
         </div>
-
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => onEdit(event)} className="flex-1">
-            <Edit className="h-4 w-4 mr-2" />
-            Editar
-          </Button>
-          <Button variant="destructive" size="sm" onClick={() => onDelete(event.id)} className="flex-1">
-            <Trash2 className="h-4 w-4 mr-2" />
-            Excluir
-          </Button>
-        </div>
       </CardContent>
     </Card>
   )
