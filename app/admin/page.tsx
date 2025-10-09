@@ -92,69 +92,6 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Additional Stats Row */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Users className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Novos Usuários
-                  </p>
-                  <p className="text-xl font-bold text-card-foreground">+127</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-secondary" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Eventos Ativos
-                  </p>
-                  <p className="text-xl font-bold text-card-foreground">12</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-accent" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Posts Hoje</p>
-                  <p className="text-xl font-bold text-card-foreground">89</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Sistema</p>
-                  <p className="text-xl font-bold text-green-600">Online</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </AdminLayout>
   );
