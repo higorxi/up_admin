@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Edit, Trash2, Eye, Mail, Phone, MapPin, Star, MessageCircle } from "lucide-react"
+import { Edit, Trash2, Eye, Mail, Phone, MapPin, MessageCircle, Instagram, Linkedin, Calendar } from "lucide-react"
 
 interface Professional {
   id: string
@@ -45,7 +45,6 @@ interface ProfessionalCardProps {
 
 export function ProfessionalCard({ professional, onEdit, onDelete, onViewDetails }: ProfessionalCardProps) {
   const formatPhone = (phone: string) => {
-    // Remove qualquer formatação existente e espaços extras
     const cleanPhone = phone.replace(/\D/g, '')
     if (cleanPhone.length === 11) {
       return `(${cleanPhone.slice(0, 2)}) ${cleanPhone.slice(2, 7)}-${cleanPhone.slice(7)}`
@@ -70,9 +69,11 @@ export function ProfessionalCard({ professional, onEdit, onDelete, onViewDetails
   }
 
   const hasWhatsApp = professional.socialMedia?.whatsapp
+  const hasInstagram = professional.socialMedia?.instagram
+  const hasLinkedin = professional.socialMedia?.linkedin
 
   return (
-    <Card className="bg-card border-border hover:shadow-lg transition-all duration-200 hover:border-primary/20">
+    <Card className="bg-card border-border hover:shadow-lg transition-all duration-200 hover:border-primary/20 flex flex-col h-full">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -97,19 +98,23 @@ export function ProfessionalCard({ professional, onEdit, onDelete, onViewDetails
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4 pt-0">
+      <CardContent className="space-y-4 pt-0 flex-1 flex flex-col">
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm">
             <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <span className="font-mono">{formatPhone(professional.phone)}</span>
           </div>
           
-          {professional.email && (
-            <div className="flex items-center gap-2 text-sm">
-              <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              <span className="truncate">{professional.email}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2 text-sm min-h-[20px]">
+            {professional.email ? (
+              <>
+                <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <span className="truncate">{professional.email}</span>
+              </>
+            ) : (
+              <div className="h-[20px]" />
+            )}
+          </div>
           
           <div className="flex items-start gap-2 text-sm">
             <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
@@ -117,42 +122,76 @@ export function ProfessionalCard({ professional, onEdit, onDelete, onViewDetails
           </div>
         </div>
 
-        {professional.description && (
-          <div className="bg-muted/50 rounded-lg p-3">
-            <p className="text-sm text-card-foreground line-clamp-3 leading-relaxed">
-              {professional.description}
-            </p>
-          </div>
-        )}
+        <div className="bg-muted/50 rounded-lg p-3 min-h-[88px] flex items-start">
+          <p className="text-sm text-card-foreground line-clamp-3 leading-relaxed">
+            {professional.description || 'Sem descrição disponível'}
+          </p>
+        </div>
 
-        <div className="flex gap-2 pt-2">
-          <Button 
-            variant="default" 
-            size="sm" 
-            onClick={() => onViewDetails(professional)} 
-            className="flex-1"
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            Ver Detalhes
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => onEdit(professional)}
-            disabled
-            className="opacity-50 cursor-not-allowed"
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => onDelete(professional.id)}
-            disabled
-            className="opacity-50 cursor-not-allowed"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+        <div className="mt-auto pt-2 space-y-3">
+          {(hasInstagram || hasLinkedin || hasWhatsApp) && (
+            <div className="flex items-center gap-2">
+              {hasInstagram && (
+                <a
+                  href={`https://instagram.com/${professional.socialMedia?.instagram?.replace('@', '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 hover:scale-110 transition-transform"
+                  title="Instagram"
+                >
+                  <Instagram className="h-3.5 w-3.5 text-white" />
+                </a>
+              )}
+              {hasLinkedin && (
+                <a
+                  href={professional.socialMedia?.linkedin || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg bg-blue-600 hover:scale-110 transition-transform"
+                  title="LinkedIn"
+                >
+                  <Linkedin className="h-3.5 w-3.5 text-white" />
+                </a>
+              )}
+              {hasWhatsApp && (
+                <a
+                  href={`https://wa.me/${professional.socialMedia?.whatsapp}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg bg-green-500 hover:scale-110 transition-transform"
+                  title="WhatsApp"
+                >
+                  <MessageCircle className="h-3.5 w-3.5 text-white" />
+                </a>
+              )}
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <Button 
+              variant="default" 
+              size="sm" 
+              onClick={() => onViewDetails(professional)} 
+              className="flex-1"
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              Ver Detalhes
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onEdit(professional)}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onDelete(professional.id)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

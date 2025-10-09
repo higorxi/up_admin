@@ -5,42 +5,24 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
-import { Mail, Phone, MapPin, MessageCircle, Calendar, User, Building2, Hash } from "lucide-react"
+import { Mail, Phone, MapPin, MessageCircle, Calendar, User, Building2, Hash, Instagram, Linkedin } from "lucide-react"
+import { RecommendedProfessional, WeekDay } from "@/lib/services/recommended-professional"
 
-interface Professional {
-  id: string
-  name: string
-  profession: string
-  description: string
-  phone: string
-  email: string | null
-  profileImage: string | null
-  isActive: boolean
-  address: {
-    id: string
-    state: string
-    city: string
-    district: string
-    street: string
-    complement: string | null
-    number: string | null
-    zipCode: string
-  } | null
-  socialMedia: {
-    id: string
-    linkedin: string | null
-    instagram: string | null
-    whatsapp: string | null
-  } | null
-  availableDays: any[]
-  createdAt: string
-  updatedAt: string
-}
 
 interface ProfessionalDetailsModalProps {
-  professional: Professional | null
+  professional: RecommendedProfessional | null
   isOpen: boolean
   onClose: () => void
+}
+
+const weekDayLabels: Record<WeekDay, string> = {
+  SUNDAY: "Domingo",
+  MONDAY: "Segunda-feira",
+  TUESDAY: "Terça-feira",
+  WEDNESDAY: "Quarta-feira",
+  THURSDAY: "Quinta-feira",
+  FRIDAY: "Sexta-feira",
+  SATURDAY: "Sábado",
 }
 
 export function ProfessionalDetailsModal({ professional, isOpen, onClose }: ProfessionalDetailsModalProps) {
@@ -79,7 +61,7 @@ export function ProfessionalDetailsModal({ professional, isOpen, onClose }: Prof
     const { street, number, district, city, state, zipCode, complement } = professional.address
     
     return {
-      full: `${street}${number ? `, ${number}` : ''}${complement ? `, ${complement}` : ''} - ${district}, ${city} - ${state}`,
+      full: `${street || ''}${number ? `, ${number}` : ''}${complement ? `, ${complement}` : ''} - ${district}, ${city} - ${state}`.trim(),
       zipCode: zipCode
     }
   }
@@ -90,6 +72,19 @@ export function ProfessionalDetailsModal({ professional, isOpen, onClose }: Prof
     if (professional.socialMedia?.whatsapp) {
       const cleanNumber = professional.socialMedia.whatsapp.replace(/\D/g, '')
       window.open(`https://wa.me/${cleanNumber}`, '_blank')
+    }
+  }
+
+  const openInstagram = () => {
+    if (professional.socialMedia?.instagram) {
+      const username = professional.socialMedia.instagram.replace('@', '')
+      window.open(`https://instagram.com/${username}`, '_blank')
+    }
+  }
+
+  const openLinkedIn = () => {
+    if (professional.socialMedia?.linkedin) {
+      window.open(professional.socialMedia.linkedin, '_blank')
     }
   }
 
@@ -148,7 +143,7 @@ export function ProfessionalDetailsModal({ professional, isOpen, onClose }: Prof
                     <p className="font-medium">WhatsApp</p>
                     <p className="text-sm font-mono">{professional.socialMedia.whatsapp}</p>
                   </div>
-                  <Button size="sm" variant="outline" onClick={openWhatsApp} className="text-green-600 border-green-600">
+                  <Button size="sm" variant="outline" onClick={openWhatsApp} className="text-green-600 border-green-600 hover:bg-green-50">
                     Abrir WhatsApp
                   </Button>
                 </div>
@@ -158,24 +153,71 @@ export function ProfessionalDetailsModal({ professional, isOpen, onClose }: Prof
 
           <Separator />
 
-          {/* Localização */}
-          {address && (
-            <div>
-              <h3 className="font-semibold mb-4 text-card-foreground flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                Localização
-              </h3>
-              <div className="bg-muted/30 rounded-lg p-4">
-                <p className="text-sm mb-2">{address.full}</p>
-                <div className="flex items-center gap-2">
-                  <Hash className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-mono">{address.zipCode}</span>
+          {/* Redes Sociais */}
+          {(professional.socialMedia?.instagram || professional.socialMedia?.linkedin) && (
+            <>
+              <div>
+                <h3 className="font-semibold mb-4 text-card-foreground flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Redes Sociais
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {professional.socialMedia?.instagram && (
+                    <div className="bg-muted/30 rounded-lg p-4">
+                      <div className="flex items-center gap-3">
+                        <Instagram className="h-5 w-5 text-pink-600" />
+                        <div className="flex-1">
+                          <p className="font-medium">Instagram</p>
+                          <p className="text-sm">{professional.socialMedia.instagram}</p>
+                        </div>
+                        <Button size="sm" variant="outline" onClick={openInstagram} className="hover:bg-pink-50">
+                          Abrir
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {professional.socialMedia?.linkedin && (
+                    <div className="bg-muted/30 rounded-lg p-4">
+                      <div className="flex items-center gap-3">
+                        <Linkedin className="h-5 w-5 text-blue-600" />
+                        <div className="flex-1">
+                          <p className="font-medium">LinkedIn</p>
+                          <p className="text-sm truncate">{professional.socialMedia.linkedin}</p>
+                        </div>
+                        <Button size="sm" variant="outline" onClick={openLinkedIn} className="hover:bg-blue-50">
+                          Abrir
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+              <Separator />
+            </>
           )}
 
-          <Separator />
+          {/* Localização */}
+          {address && (
+            <>
+              <div>
+                <h3 className="font-semibold mb-4 text-card-foreground flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  Localização
+                </h3>
+                <div className="bg-muted/30 rounded-lg p-4 space-y-2">
+                  <p className="text-sm leading-relaxed">{address.full}</p>
+                  {address.zipCode && (
+                    <div className="flex items-center gap-2 pt-2 border-t">
+                      <Hash className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-mono">{address.zipCode}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
 
           {/* Informações Profissionais */}
           <div>
@@ -183,8 +225,8 @@ export function ProfessionalDetailsModal({ professional, isOpen, onClose }: Prof
               <Building2 className="h-5 w-5" />
               Informações Profissionais
             </h3>
-            <div className="bg-muted/30 rounded-lg p-4">
-              <div className="flex items-center gap-3 mb-3">
+            <div className="bg-muted/30 rounded-lg p-4 space-y-4">
+              <div className="flex items-center gap-3">
                 <User className="h-5 w-5 text-primary" />
                 <div>
                   <p className="font-medium">Profissão</p>
@@ -203,6 +245,28 @@ export function ProfessionalDetailsModal({ professional, isOpen, onClose }: Prof
             </div>
           </div>
 
+          {/* Dias Disponíveis */}
+          {professional.availableDays && professional.availableDays.length > 0 && (
+            <>
+              <Separator />
+              <div>
+                <h3 className="font-semibold mb-4 text-card-foreground flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Dias Disponíveis
+                </h3>
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <div className="flex flex-wrap gap-2">
+                    {professional.availableDays.map((day) => (
+                      <Badge key={day.id} variant="outline" className="text-sm py-1.5 px-3">
+                        {weekDayLabels[day.dayOfWeek]}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
           <Separator />
 
           {/* Informações do Sistema */}
@@ -213,20 +277,24 @@ export function ProfessionalDetailsModal({ professional, isOpen, onClose }: Prof
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-muted/30 rounded-lg p-4">
-                <p className="font-medium mb-1">Cadastrado em</p>
-                <p className="text-sm text-muted-foreground">{formatDate(professional.createdAt)}</p>
+                <p className="font-medium mb-1 text-sm text-muted-foreground">Cadastrado em</p>
+                <p className="text-sm">{formatDate(professional.createdAt)}</p>
               </div>
               <div className="bg-muted/30 rounded-lg p-4">
-                <p className="font-medium mb-1">Última atualização</p>
-                <p className="text-sm text-muted-foreground">{formatDate(professional.updatedAt)}</p>
+                <p className="font-medium mb-1 text-sm text-muted-foreground">Última atualização</p>
+                <p className="text-sm">{formatDate(professional.updatedAt)}</p>
               </div>
             </div>
             
             <div className="mt-4 bg-muted/30 rounded-lg p-4">
-              <p className="font-medium mb-1">ID do Profissional</p>
+              <p className="font-medium mb-1 text-sm text-muted-foreground">ID do Profissional</p>
               <p className="text-xs font-mono text-muted-foreground break-all">{professional.id}</p>
             </div>
           </div>
+        </div>
+
+        <div className="flex justify-end pt-4 border-t">
+          <Button onClick={onClose}>Fechar</Button>
         </div>
       </DialogContent>
     </Dialog>

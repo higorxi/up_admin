@@ -11,15 +11,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Search, Plus, Download, Users, AlertCircle, RefreshCw } from "lucide-react"
-import { useProfessionals } from "@/hooks/use-professionals"
+import { Search, Plus, Users, AlertCircle, RefreshCw } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
-import type { Professional } from "@/lib/services/professionals"
+import { RecommendedProfessional, CreateRecommendedProfessionalDto, UpdateRecommendedProfessionalDto } from "@/lib/services/recommended-professional"
+import { useRecommendedProfessionals } from "@/hooks/use-recommended-professional"
 
 export default function ProfessionalsPage() {
-  const { professionals, loading, error, refetch, create, update, delete: deleteProfessional } = useProfessionals()
+  const { 
+    professionals, 
+    loading, 
+    error, 
+    refetch, 
+    create, 
+    update, 
+    toggleStatus,
+    delete: deleteProfessional 
+  } = useRecommendedProfessionals()
 
-  const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null)
+  const [selectedProfessional, setSelectedProfessional] = useState<RecommendedProfessional | null>(null)
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [formMode, setFormMode] = useState<"create" | "edit">("create")
@@ -34,7 +43,7 @@ export default function ProfessionalsPage() {
     setIsFormModalOpen(true)
   }
 
-  const handleEdit = (professional: Professional) => {
+  const handleEdit = (professional: RecommendedProfessional) => {
     setSelectedProfessional(professional)
     setFormMode("edit")
     setIsFormModalOpen(true)
@@ -58,26 +67,39 @@ export default function ProfessionalsPage() {
     }
   }
 
-  const handleViewDetails = (professional: Professional) => {
+  const handleToggleStatus = async (id: string) => {
+    try {
+      await toggleStatus(id)
+      toast({
+        title: "Status atualizado",
+        description: "O status do profissional foi alterado com sucesso.",
+      })
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar status",
+        description: "Não foi possível atualizar o status. Tente novamente.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleViewDetails = (professional: RecommendedProfessional) => {
     setSelectedProfessional(professional)
     setIsDetailsModalOpen(true)
   }
 
   const handleSave = async (
-    professionalData: Omit<
-      Professional,
-      "id" | "createdAt" | "updatedAt" | "address" | "socialMedia" | "availableDays"
-    >,
+    professionalData: CreateRecommendedProfessionalDto | UpdateRecommendedProfessionalDto,
   ) => {
     try {
       if (formMode === "create") {
-        await create(professionalData)
+        await create(professionalData as CreateRecommendedProfessionalDto)
         toast({
           title: "Profissional criado",
           description: "O profissional foi criado com sucesso.",
         })
       } else if (selectedProfessional) {
-        await update(selectedProfessional.id, professionalData)
+        await update(selectedProfessional.id, professionalData as UpdateRecommendedProfessionalDto)
         toast({
           title: "Profissional atualizado",
           description: "O profissional foi atualizado com sucesso.",
@@ -98,7 +120,7 @@ export default function ProfessionalsPage() {
       professional.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       professional.profession.toLowerCase().includes(searchTerm.toLowerCase()) ||
       professional.address?.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      professional.description.toLowerCase().includes(searchTerm.toLowerCase())
+      professional.description?.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesProfession = professionFilter === "all" || professional.profession === professionFilter
     const matchesStatus =
@@ -188,7 +210,7 @@ export default function ProfessionalsPage() {
             <SelectContent>
               <SelectItem value="all">Todas as Cidades</SelectItem>
               {cities.map((city) => (
-                <SelectItem key={city} value={city}>
+                <SelectItem key={city} value={city!}>
                   {city}
                 </SelectItem>
               ))}
@@ -242,6 +264,7 @@ export default function ProfessionalsPage() {
                 professional={professional}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onToggleStatus={handleToggleStatus}
                 onViewDetails={handleViewDetails}
               />
             ))}
