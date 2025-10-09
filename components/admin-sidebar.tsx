@@ -104,7 +104,6 @@ export function AdminSidebar() {
         </nav>
       </ScrollArea>
 
-      {/* User Profile */}
       <div className="p-4 border-t border-sidebar-border">
         <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
           <DropdownMenu>
@@ -112,12 +111,8 @@ export function AdminSidebar() {
               <Button variant="ghost" className="p-0 h-auto hover:bg-sidebar-accent/20 rounded-full">
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.name} />
-                  <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground text-xs">
-                    {user?.name
-                      ?.split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase() || "AD"}
+                  <AvatarFallback className="bg-gray-800 text-white text-xs">
+                    UP
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -126,12 +121,8 @@ export function AdminSidebar() {
               <div className="flex items-center gap-2 p-2">
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.name} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                    {user?.name
-                      ?.split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase() || "AD"}
+                  <AvatarFallback className="bg-gray-800 text-white text-xs">
+                    UP
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col space-y-1">
