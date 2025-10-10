@@ -21,6 +21,7 @@ export default function EventsPage() {
     error, 
     refetch, 
     create, 
+    update,
     toggleEvent,
     checkInAttendee,
     getEventParticipants 
@@ -69,9 +70,7 @@ export default function EventsPage() {
       if (formMode === "create") {
         await create(eventData)
       } else if (selectedEvent) {
-        // Para edição, você precisaria implementar um método update no service
-        // await update(selectedEvent.id, eventData)
-        console.log("Update functionality needs to be implemented")
+        await update(selectedEvent.id, eventData)
       }
       setIsFormModalOpen(false)
     } catch (error) {

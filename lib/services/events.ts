@@ -81,6 +81,10 @@ export class EventsService {
     return ApiService.post<Event>("/events", data)
   }
 
+  static async update(id: string, data: Partial<CreateEventData>): Promise<Event> {
+    return ApiService.patch<Event>(`/events/${id}`, data)
+  }
+
   static async toggleEvent(eventId: string): Promise<Event> {
     return ApiService.patch<Event>(`/events/${eventId}/toggle`, {})
   }

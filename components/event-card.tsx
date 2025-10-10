@@ -3,69 +3,47 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, Eye, Calendar, MapPin, Users } from "lucide-react"
-
-interface Event {
-  id: string
-  title: string
-  description: string
-  date: string
-  time: string
-  location: string
-  category: string
-  maxParticipants: number
-  registeredCount: number
-  status: "upcoming" | "ongoing" | "completed" | "cancelled"
-  organizer: string
-  price: number
-  imageUrl?: string
-}
+import { Edit, Power, Eye, Calendar, MapPin, Users, Star } from "lucide-react"
+import { Event } from "@/lib/services/events"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
 interface EventCardProps {
   event: Event
   onEdit: (event: Event) => void
-  onDelete: (id: string) => void
+  onToggle: (event: Event) => void
   onViewDetails: (event: Event) => void
   onManageAttendees: (event: Event) => void
 }
 
-export function EventCard({ event, onEdit, onDelete, onViewDetails, onManageAttendees }: EventCardProps) {
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "upcoming":
-        return (
-          <Badge variant="outline" className="text-blue-600 border-blue-600">
-            Próximo
-          </Badge>
-        )
-      case "ongoing":
-        return (
-          <Badge variant="outline" className="text-green-600 border-green-600">
-            Em Andamento
-          </Badge>
-        )
-      case "completed":
-        return (
-          <Badge variant="outline" className="text-gray-600 border-gray-600">
-            Concluído
-          </Badge>
-        )
-      case "cancelled":
-        return (
-          <Badge variant="outline" className="text-red-600 border-red-600">
-            Cancelado
-          </Badge>
-        )
-      default:
-        return <Badge variant="outline">Desconhecido</Badge>
+export function EventCard({ 
+  event, 
+  onEdit, 
+  onToggle, 
+  onViewDetails, 
+  onManageAttendees 
+}: EventCardProps) {
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString)
+      return format(date, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
+    } catch {
+      return "Data inválida"
     }
   }
 
   const getOccupancyColor = () => {
-    const percentage = (event.registeredCount / event.maxParticipants) * 100
+    const percentage = (event.filledSpots / event.totalSpots) * 100
     if (percentage >= 90) return "text-red-600"
     if (percentage >= 70) return "text-yellow-600"
     return "text-green-600"
+  }
+
+  const getAddressString = () => {
+    if (!event.address) return event.store?.name || "Local não definido"
+    
+    const { street, number, district, city, state } = event.address
+    return `${street}, ${number} - ${district}, ${city}/${state}`
   }
 
   return (
@@ -74,11 +52,23 @@ export function EventCard({ event, onEdit, onDelete, onViewDetails, onManageAtte
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-semibold text-card-foreground line-clamp-1">{event.title}</h3>
-              {getStatusBadge(event.status)}
+              <h3 className="font-semibold text-card-foreground line-clamp-1">
+                {event.name}
+              </h3>
+              <Badge 
+                variant="outline" 
+                className={event.isActive 
+                  ? "text-green-600 border-green-600" 
+                  : "text-gray-600 border-gray-600"
+                }
+              >
+                {event.isActive ? "Ativo" : "Inativo"}
+              </Badge>
             </div>
-            <p className="text-sm text-muted-foreground mb-2">{event.category}</p>
-            <p className="text-sm text-muted-foreground line-clamp-2">{event.description}</p>
+            <p className="text-sm text-muted-foreground mb-2">{event.type}</p>
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {event.description}
+            </p>
           </div>
         </div>
       </CardHeader>
@@ -86,35 +76,57 @@ export function EventCard({ event, onEdit, onDelete, onViewDetails, onManageAtte
         <div className="grid grid-cols-1 gap-3 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="h-4 w-4" />
-            <span>
-              {event.date} às {event.time}
-            </span>
+            <span>{formatDate(event.date)}</span>
           </div>
+          
           <div className="flex items-center gap-2 text-muted-foreground">
             <MapPin className="h-4 w-4" />
-            <span className="line-clamp-1">{event.location}</span>
+            <span className="line-clamp-1">{getAddressString()}</span>
           </div>
+          
           <div className="flex items-center gap-2 text-muted-foreground">
             <Users className="h-4 w-4" />
             <span className={getOccupancyColor()}>
-              {event.registeredCount}/{event.maxParticipants} participantes
+              {event.filledSpots}/{event.totalSpots} participantes
             </span>
           </div>
-          {event.price > 0 && (
+          
+          {event.points > 0 && (
             <div className="flex items-center gap-2 text-muted-foreground">
-              <span className="text-primary font-medium">R$ {event.price.toFixed(2)}</span>
+              <Star className="h-4 w-4" />
+              <span className="text-primary font-medium">
+                {event.points} pontos
+              </span>
             </div>
           )}
         </div>
 
         <div className="flex gap-2 pt-2">
-          <Button variant="outline" size="sm" onClick={() => onViewDetails(event)} className="flex-1">
-            <Eye className="h-4 w-4 mr-2" />
-            Detalhes
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => onEdit(event)}
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            Editar
           </Button>
-          <Button variant="outline" size="sm" onClick={() => onManageAttendees(event)}>
-            <Users className="h-4 w-4 mr-2" />
-            Participantes
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => onToggle(event)}
+            className={event.isActive ? "text-red-600" : "text-green-600"}
+          >
+            <Power className="h-4 w-4 mr-2" />
+            {event.isActive ? "Desativar" : "Ativar"}
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => onManageAttendees(event)}
+          >
+            <Users className="h-4 w-4" />
           </Button>
         </div>
       </CardContent>

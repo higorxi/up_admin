@@ -10,6 +10,7 @@ interface UseEventsReturn {
   error: string | null
   refetch: () => Promise<void>
   create: (data: CreateEventData) => Promise<void>
+  update: (id: string, data: CreateEventData) => Promise<void>
   toggleEvent: (id: string) => Promise<void>
   checkInAttendee: (eventId: string, professionalId: string) => Promise<void>
   getEventParticipants: (eventId: string) => Promise<EventRegistration[]>
@@ -44,6 +45,18 @@ export function useEvents(): UseEventsReturn {
       setEvents((prev) => [...prev, newEvent])
     } catch (err) {
       console.error("[useEvents] Error creating event:", err)
+      throw err
+    }
+  }
+
+  const update = async (id: string, data: CreateEventData) => {
+    try {
+      const updatedEvent = await EventsService.update(id, data)
+      setEvents((prev) => 
+        prev.map((event) => (event.id === id ? updatedEvent : event))
+      )
+    } catch (err) {
+      console.error("[useEvents] Error updating event:", err)
       throw err
     }
   }
@@ -90,6 +103,7 @@ export function useEvents(): UseEventsReturn {
     error,
     refetch: fetchEvents,
     create,
+    update,
     toggleEvent,
     checkInAttendee,
     getEventParticipants,
