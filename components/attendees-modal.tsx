@@ -108,7 +108,7 @@ export function AttendeesModal({
 
     const matchesSearch =
       professional.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      professional.email.toLowerCase().includes(searchTerm.toLowerCase())
+      professional.phone.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesTab =
       activeTab === "all" ||
@@ -162,7 +162,7 @@ export function AttendeesModal({
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por nome ou email..."
+                placeholder="Buscar por nome ou telefone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -242,7 +242,7 @@ export function AttendeesModal({
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-1 text-xs text-muted-foreground">
                               <div className="flex items-center gap-1 truncate">
                                 <Mail className="h-3 w-3 shrink-0" />
-                                <span className="truncate">{professional.email}</span>
+                                <span className="truncate">{professional.phone}</span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3 shrink-0" />
