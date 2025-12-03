@@ -1,39 +1,60 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { ptBR } from "date-fns/locale"
-import { Calendar as CalendarIcon, Loader2, AlertCircle } from "lucide-react"
-import type { Benefit, CreateBenefitData, UpdateBenefitData } from "@/lib/services/benefits"
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Calendar as CalendarIcon, Loader2, AlertCircle } from "lucide-react";
+import type {
+  Benefit,
+  CreateBenefitData,
+  UpdateBenefitData,
+} from "@/lib/services/benefits";
 
 interface BenefitFormModalProps {
-  benefit: Benefit | null
-  isOpen: boolean
-  onClose: () => void
-  onSave: (data: CreateBenefitData | UpdateBenefitData) => Promise<void>
-  mode: "create" | "edit"
+  benefit: Benefit | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (data: CreateBenefitData | UpdateBenefitData) => Promise<void>;
+  mode: "create" | "edit";
 }
 
 interface FormData {
-  name: string
-  description: string
-  pointsCost: number | string
-  quantity: number | string | undefined
-  imageUrl: string
-  isActive: boolean
+  name: string;
+  description: string;
+  pointsCost: number | string;
+  quantity: number | string | undefined;
+  imageUrl: string;
+  isActive: boolean;
 }
 
-export function BenefitFormModal({ benefit, isOpen, onClose, onSave, mode }: BenefitFormModalProps) {
+export function BenefitFormModal({
+  benefit,
+  isOpen,
+  onClose,
+  onSave,
+  mode,
+}: BenefitFormModalProps) {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     description: "",
@@ -41,10 +62,12 @@ export function BenefitFormModal({ benefit, isOpen, onClose, onSave, mode }: Ben
     quantity: "",
     imageUrl: "",
     isActive: true,
-  })
-  const [expiresAtDate, setExpiresAtDate] = useState<Date | undefined>(undefined)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  });
+  const [expiresAtDate, setExpiresAtDate] = useState<Date | undefined>(
+    undefined
+  );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Reset form when modal opens/closes or benefit changes
   useEffect(() => {
@@ -56,8 +79,10 @@ export function BenefitFormModal({ benefit, isOpen, onClose, onSave, mode }: Ben
         quantity: benefit.quantity ?? "",
         imageUrl: benefit.imageUrl || "",
         isActive: benefit.isActive,
-      })
-      setExpiresAtDate(benefit.expiresAt ? new Date(benefit.expiresAt) : undefined)
+      });
+      setExpiresAtDate(
+        benefit.expiresAt ? new Date(benefit.expiresAt) : undefined
+      );
     } else if (mode === "create") {
       setFormData({
         name: "",
@@ -66,51 +91,56 @@ export function BenefitFormModal({ benefit, isOpen, onClose, onSave, mode }: Ben
         quantity: "",
         imageUrl: "",
         isActive: true,
-      })
-      setExpiresAtDate(undefined)
+      });
+      setExpiresAtDate(undefined);
     }
-    setError(null)
-  }, [benefit, mode, isOpen])
+    setError(null);
+  }, [benefit, mode, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
 
     // Validations
     if (!formData.name.trim()) {
-      setError("O nome do benefício é obrigatório")
-      return
+      setError("O nome do benefício é obrigatório");
+      return;
     }
 
-    const pointsCost = typeof formData.pointsCost === 'string' 
-      ? parseInt(formData.pointsCost) 
-      : formData.pointsCost
+    const pointsCost =
+      typeof formData.pointsCost === "string"
+        ? parseInt(formData.pointsCost)
+        : formData.pointsCost;
 
     if (!pointsCost || pointsCost <= 0) {
-      setError("O custo em pontos deve ser maior que zero")
-      return
+      setError("O custo em pontos deve ser maior que zero");
+      return;
     }
 
-    const quantity = formData.quantity 
-      ? (typeof formData.quantity === 'string' ? parseInt(formData.quantity) : formData.quantity)
-      : undefined
+    const quantity = formData.quantity
+      ? typeof formData.quantity === "string"
+        ? parseInt(formData.quantity)
+        : formData.quantity
+      : undefined;
 
     if (quantity !== undefined && quantity <= 0) {
-      setError("A quantidade deve ser maior que zero ou deixada vazia para ilimitado")
-      return
+      setError(
+        "A quantidade deve ser maior que zero ou deixada vazia para ilimitado"
+      );
+      return;
     }
 
     if (expiresAtDate) {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
       if (expiresAtDate < today) {
-        setError("A data de expiração não pode ser no passado")
-        return
+        setError("A data de expiração não pode ser no passado");
+        return;
       }
     }
 
     try {
-      setLoading(true)
+      setLoading(true);
 
       const dataToSave: CreateBenefitData | UpdateBenefitData = {
         name: formData.name.trim(),
@@ -120,20 +150,20 @@ export function BenefitFormModal({ benefit, isOpen, onClose, onSave, mode }: Ben
         imageUrl: formData.imageUrl.trim() || undefined,
         isActive: formData.isActive,
         expiresAt: expiresAtDate ? expiresAtDate.toISOString() : undefined,
-      }
+      };
 
-      await onSave(dataToSave)
-      onClose()
+      await onSave(dataToSave);
+      onClose();
     } catch (err: any) {
-      setError(err.message || "Erro ao salvar benefício")
+      setError(err.message || "Erro ao salvar benefício");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleChange = (field: keyof FormData, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -143,10 +173,9 @@ export function BenefitFormModal({ benefit, isOpen, onClose, onSave, mode }: Ben
             {mode === "create" ? "Criar Novo Benefício" : "Editar Benefício"}
           </DialogTitle>
           <DialogDescription>
-            {mode === "create" 
+            {mode === "create"
               ? "Preencha os dados do novo benefício que será disponibilizado aos profissionais."
-              : "Atualize as informações do benefício."
-            }
+              : "Atualize as informações do benefício."}
           </DialogDescription>
         </DialogHeader>
 
@@ -236,12 +265,13 @@ export function BenefitFormModal({ benefit, isOpen, onClose, onSave, mode }: Ben
             />
             {formData.imageUrl && (
               <div className="mt-2 border rounded-lg p-2">
-                <img 
-                  src={formData.imageUrl} 
-                  alt="Preview" 
+                <img
+                  src={formData.imageUrl}
+                  alt="Preview"
                   className="w-full h-32 object-cover rounded"
                   onError={(e) => {
-                    e.currentTarget.src = "https://via.placeholder.com/300x200?text=Imagem+Invalida"
+                    e.currentTarget.src =
+                      "https://via.placeholder.com/300x200?text=Imagem+Invalida";
                   }}
                 />
               </div>
@@ -250,52 +280,21 @@ export function BenefitFormModal({ benefit, isOpen, onClose, onSave, mode }: Ben
 
           {/* Data de Expiração */}
           <div className="space-y-2">
-            <Label>Data de Expiração (Opcional)</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !expiresAtDate && "text-muted-foreground"
-                  )}
-                  disabled={loading}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {expiresAtDate ? (
-                    format(expiresAtDate, "PPP", { locale: ptBR })
-                  ) : (
-                    <span>Selecione uma data</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={expiresAtDate}
-                  onSelect={setExpiresAtDate}
-                  disabled={(date) => {
-                    const today = new Date()
-                    today.setHours(0, 0, 0, 0)
-                    return date < today
-                  }}
-                  initialFocus
-                />
-                {expiresAtDate && (
-                  <div className="p-3 border-t">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => setExpiresAtDate(undefined)}
-                      type="button"
-                    >
-                      Limpar data
-                    </Button>
-                  </div>
-                )}
-              </PopoverContent>
-            </Popover>
+            <Label htmlFor="expiresAt">Data de Expiração (Opcional)</Label>
+            <Input
+              id="expiresAt"
+              type="date"
+              value={expiresAtDate ? format(expiresAtDate, "yyyy-MM-dd") : ""}
+              onChange={(e) => {
+                if (e.target.value) {
+                  setExpiresAtDate(new Date(e.target.value + "T00:00:00"));
+                } else {
+                  setExpiresAtDate(undefined);
+                }
+              }}
+              min={format(new Date(), "yyyy-MM-dd")}
+              disabled={loading}
+            />
             <p className="text-xs text-muted-foreground">
               Data limite para resgatar este benefício
             </p>
@@ -328,7 +327,13 @@ export function BenefitFormModal({ benefit, isOpen, onClose, onSave, mode }: Ben
             >
               Cancelar
             </Button>
-            <Button onClick={(e) => { e.preventDefault(); handleSubmit(e as any); }} disabled={loading}>
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                handleSubmit(e as any);
+              }}
+              disabled={loading}
+            >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {mode === "create" ? "Criar Benefício" : "Salvar Alterações"}
             </Button>
@@ -336,5 +341,5 @@ export function BenefitFormModal({ benefit, isOpen, onClose, onSave, mode }: Ben
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

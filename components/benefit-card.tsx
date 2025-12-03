@@ -114,8 +114,8 @@ export function BenefitCard({
           )}
         </div>
 
-        {benefit.imageUrl && (
-          <div className="w-full h-32 rounded-lg overflow-hidden">
+        <div className="w-full h-32 rounded-lg overflow-hidden bg-muted/30">
+          {benefit.imageUrl ? (
             <img 
               src={benefit.imageUrl} 
               alt={benefit.name}
@@ -124,8 +124,11 @@ export function BenefitCard({
                 e.currentTarget.style.display = 'none'
               }}
             />
-          </div>
-        )}
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Gift className="h-12 w-12 text-muted-foreground/30" />
+            </div>
+          )}</div>
 
         <div className="flex gap-2">
           <Button 
