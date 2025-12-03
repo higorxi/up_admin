@@ -16,15 +16,21 @@ interface UseBenefitsReturn {
   loading: boolean
   error: string | null
   refetch: () => Promise<void>
-  create: (data: CreateBenefitData) => Promise<void>
-  update: (id: string, data: UpdateBenefitData) => Promise<void>
+  create: (data: CreateBenefitData) => Promise<Benefit>
+  update: (id: string, data: UpdateBenefitData) => Promise<Benefit>
   deleteBenefit: (id: string) => Promise<{ message: string; softDeleted: boolean }>
-  toggleStatus: (id: string) => Promise<void>
-  getRedemptions: (params?: { status?: "PENDING" | "USED" | "CANCELED" | "EXPIRED"; benefitId?: string }) => Promise<BenefitRedemption[]>
+  toggleStatus: (id: string) => Promise<Benefit>
+  getRedemptions: (params?: { 
+    status?: "PENDING" | "USED" | "CANCELED" | "EXPIRED"
+    benefitId?: string
+    professionalId?: string
+  }) => Promise<BenefitRedemption[]>
   getRedemptionById: (id: string) => Promise<BenefitRedemption>
-  updateRedemptionStatus: (redemptionId: string, status: "PENDING" | "USED" | "CANCELED" | "EXPIRED") => Promise<void>
+  updateRedemptionStatus: (
+    redemptionId: string, 
+    status: "PENDING" | "USED" | "CANCELED" | "EXPIRED"
+  ) => Promise<BenefitRedemption>
   getStatistics: () => Promise<BenefitsStatistics>
-  expireRedemptions: () => Promise<{ expiredCount: number; message: string }>
 }
 
 export function useBenefits(): UseBenefitsReturn {
@@ -53,22 +59,24 @@ export function useBenefits(): UseBenefitsReturn {
     }
   }
 
-  const create = async (data: CreateBenefitData) => {
+  const create = async (data: CreateBenefitData): Promise<Benefit> => {
     try {
       const newBenefit = await BenefitsService.create(data)
       setBenefits((prev) => [newBenefit, ...prev])
+      return newBenefit
     } catch (err) {
       console.error("[useBenefits] Error creating benefit:", err)
       throw err
     }
   }
 
-  const update = async (id: string, data: UpdateBenefitData) => {
+  const update = async (id: string, data: UpdateBenefitData): Promise<Benefit> => {
     try {
       const updatedBenefit = await BenefitsService.update(id, data)
       setBenefits((prev) => 
         prev.map((benefit) => (benefit.id === id ? updatedBenefit : benefit))
       )
+      return updatedBenefit
     } catch (err) {
       console.error("[useBenefits] Error updating benefit:", err)
       throw err
@@ -98,12 +106,13 @@ export function useBenefits(): UseBenefitsReturn {
     }
   }
 
-  const toggleStatus = async (id: string) => {
+  const toggleStatus = async (id: string): Promise<Benefit> => {
     try {
       const updatedBenefit = await BenefitsService.toggleStatus(id)
       setBenefits((prev) =>
         prev.map((benefit) => (benefit.id === id ? updatedBenefit : benefit))
       )
+      return updatedBenefit
     } catch (err) {
       console.error("[useBenefits] Error toggling benefit status:", err)
       throw err
@@ -113,6 +122,7 @@ export function useBenefits(): UseBenefitsReturn {
   const getRedemptions = async (params?: {
     status?: "PENDING" | "USED" | "CANCELED" | "EXPIRED"
     benefitId?: string
+    professionalId?: string
   }): Promise<BenefitRedemption[]> => {
     try {
       return await BenefitsService.getAllRedemptions(params)
@@ -134,11 +144,12 @@ export function useBenefits(): UseBenefitsReturn {
   const updateRedemptionStatus = async (
     redemptionId: string, 
     status: "PENDING" | "USED" | "CANCELED" | "EXPIRED"
-  ) => {
+  ): Promise<BenefitRedemption> => {
     try {
-      await BenefitsService.updateRedemptionStatus(redemptionId, status)
+      const updatedRedemption = await BenefitsService.updateRedemptionStatus(redemptionId, status)
       // Refetch benefits para atualizar estatísticas
       await fetchBenefits()
+      return updatedRedemption
     } catch (err) {
       console.error("[useBenefits] Error updating redemption status:", err)
       throw err
@@ -150,18 +161,6 @@ export function useBenefits(): UseBenefitsReturn {
       return await BenefitsService.getStatistics()
     } catch (err) {
       console.error("[useBenefits] Error fetching statistics:", err)
-      throw err
-    }
-  }
-
-  const expireRedemptions = async (): Promise<{ expiredCount: number; message: string }> => {
-    try {
-      const result = await BenefitsService.expireRedemptions()
-      // Refetch para atualizar dados após expiração
-      await fetchBenefits()
-      return result
-    } catch (err) {
-      console.error("[useBenefits] Error expiring redemptions:", err)
       throw err
     }
   }
@@ -183,6 +182,5 @@ export function useBenefits(): UseBenefitsReturn {
     getRedemptionById,
     updateRedemptionStatus,
     getStatistics,
-    expireRedemptions,
   }
 }

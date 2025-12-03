@@ -114,7 +114,7 @@ export class ApiService {
     return response.json()
   }
 
-  static async patch<T>(endpoint: string, data: any): Promise<T> {
+  static async patch<T>(endpoint: string, data?: any): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${API_ADMIN_PATH}${endpoint}`, {
       method: "PATCH",
       headers: this.getHeaders(),

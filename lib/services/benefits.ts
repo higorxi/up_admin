@@ -10,6 +10,7 @@ export interface Benefit {
   isActive: boolean
   expiresAt?: string
   createdAt: string
+  updatedAt: string
   // Campos computados retornados pelo backend
   activeRedemptions?: number
   _count?: {
@@ -26,6 +27,7 @@ export interface BenefitRedemption {
   redeemedAt: string
   usedAt?: string
   expiresAt?: string
+  code?: string
   professional?: {
     id: string
     name: string
@@ -36,13 +38,7 @@ export interface BenefitRedemption {
       email: string
     }
   }
-  benefit?: {
-    id: string
-    name: string
-    description?: string
-    pointsCost: number
-    imageUrl?: string
-  }
+  benefit?: Benefit
 }
 
 export interface CreateBenefitData {
@@ -82,7 +78,7 @@ export interface BenefitsStatistics {
 }
 
 export class BenefitsService {
-  // Rotas de benefícios
+  // Rotas de benefícios (admin)
   static async getAll(): Promise<Benefit[]> {
     return ApiService.get<Benefit[]>("/benefits")
   }
@@ -142,10 +138,5 @@ export class BenefitsService {
   // Estatísticas
   static async getStatistics(): Promise<BenefitsStatistics> {
     return ApiService.get<BenefitsStatistics>("/benefits/statistics")
-  }
-
-  // Expirar resgates (cron job manual)
-  static async expireRedemptions(): Promise<{ expiredCount: number; message: string }> {
-    return ApiService.post("/benefits/redemptions/expire", {})
   }
 }
