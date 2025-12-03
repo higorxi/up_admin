@@ -45,7 +45,7 @@ export function DashboardStats() {
       description: "Eventos planejados"
     },
     {
-      title: "Profissionais Recomendados",
+      title: "Prestadores de Serviços",
       value: stats ? stats.totalRecommendedProfessionals.toString() : "...",
       icon: Gift,
       gradient: "from-pink-500 to-pink-600",

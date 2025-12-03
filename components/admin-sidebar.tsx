@@ -29,7 +29,7 @@ const navigation = [
     icon: UserCheck,
   },
   {
-    name: "Profissionais Recomendados",
+    name: "Prestadores de Serviços",
     href: "/admin/profissionais",
     icon: Users,
   },

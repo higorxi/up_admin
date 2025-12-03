@@ -52,7 +52,7 @@ export default function AdminDashboard() {
                   <div className="text-left">
                     <div className="font-medium">Aprovar Fornecedores</div>
                     <div className="text-xs text-muted-foreground">
-                      18 pendentes
+                    Ver solicitações
                     </div>
                   </div>
                 </Link>
