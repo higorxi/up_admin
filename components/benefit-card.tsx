@@ -3,43 +3,41 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, Eye, Gift, Calendar, Package, TrendingUp } from "lucide-react"
-
-interface Benefit {
-  id: string
-  title: string
-  description: string
-  category: string
-  pointsCost: number
-  totalQuantity: number
-  availableQuantity: number
-  redeemedCount: number
-  isActive: boolean
-  expiryDate?: string
-  imageUrl?: string
-  provider: string
-  terms: string
-}
+import { Edit, Trash2, Gift, Calendar, Package, TrendingUp, Power } from "lucide-react"
+import type { Benefit } from "@/lib/services/benefits"
 
 interface BenefitCardProps {
   benefit: Benefit
   onEdit: (benefit: Benefit) => void
   onDelete: (id: string) => void
-  onViewDetails: (benefit: Benefit) => void
+  onToggleStatus: (id: string) => void
   onViewRedemptions: (benefit: Benefit) => void
+  disabled?: boolean
 }
 
-export function BenefitCard({ benefit, onEdit, onDelete, onViewDetails, onViewRedemptions }: BenefitCardProps) {
+export function BenefitCard({ 
+  benefit, 
+  onEdit, 
+  onDelete, 
+  onToggleStatus,
+  onViewRedemptions,
+  disabled = false 
+}: BenefitCardProps) {
+  const availableQuantity = benefit.quantity 
+    ? benefit.quantity - (benefit.activeRedemptions || 0)
+    : null
+
   const getAvailabilityColor = () => {
-    const percentage = (benefit.availableQuantity / benefit.totalQuantity) * 100
+    if (!benefit.quantity || availableQuantity === null) return "text-muted-foreground"
+    const percentage = (availableQuantity / benefit.quantity) * 100
     if (percentage <= 10) return "text-red-600"
     if (percentage <= 30) return "text-yellow-600"
     return "text-green-600"
   }
 
   const isExpiringSoon = () => {
-    if (!benefit.expiryDate) return false
-    const expiryDate = new Date(benefit.expiryDate)
+    if (!benefit.expiresAt) return false
+    const expiryDate = new Date(benefit.expiresAt)
     const today = new Date()
     const diffTime = expiryDate.getTime() - today.getTime()
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
@@ -47,10 +45,15 @@ export function BenefitCard({ benefit, onEdit, onDelete, onViewDetails, onViewRe
   }
 
   const isExpired = () => {
-    if (!benefit.expiryDate) return false
-    const expiryDate = new Date(benefit.expiryDate)
+    if (!benefit.expiresAt) return false
+    const expiryDate = new Date(benefit.expiresAt)
     const today = new Date()
     return expiryDate < today
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('pt-BR')
   }
 
   return (
@@ -58,8 +61,8 @@ export function BenefitCard({ benefit, onEdit, onDelete, onViewDetails, onViewRe
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-semibold text-card-foreground line-clamp-1">{benefit.title}</h3>
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <h3 className="font-semibold text-card-foreground line-clamp-1">{benefit.name}</h3>
               <Badge variant={benefit.isActive ? "default" : "secondary"}>
                 {benefit.isActive ? "Ativo" : "Inativo"}
               </Badge>
@@ -74,8 +77,9 @@ export function BenefitCard({ benefit, onEdit, onDelete, onViewDetails, onViewRe
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-muted-foreground mb-2">{benefit.category}</p>
-            <p className="text-sm text-muted-foreground line-clamp-2">{benefit.description}</p>
+            {benefit.description && (
+              <p className="text-sm text-muted-foreground line-clamp-2">{benefit.description}</p>
+            )}
           </div>
         </div>
       </CardHeader>
@@ -85,47 +89,85 @@ export function BenefitCard({ benefit, onEdit, onDelete, onViewDetails, onViewRe
             <Gift className="h-4 w-4" />
             <span>{benefit.pointsCost} pontos</span>
           </div>
+          
           <div className="flex items-center gap-2 text-muted-foreground">
             <Package className="h-4 w-4" />
-            <span className={getAvailabilityColor()}>
-              {benefit.availableQuantity}/{benefit.totalQuantity} disponíveis
-            </span>
+            {benefit.quantity ? (
+              <span className={getAvailabilityColor()}>
+                {availableQuantity}/{benefit.quantity} disponíveis
+              </span>
+            ) : (
+              <span className="text-green-600">Ilimitado</span>
+            )}
           </div>
+          
           <div className="flex items-center gap-2 text-muted-foreground">
             <TrendingUp className="h-4 w-4" />
-            <span>{benefit.redeemedCount} resgates</span>
+            <span>{benefit._count?.redemptions || 0} resgates</span>
           </div>
-          {benefit.expiryDate && (
+          
+          {benefit.expiresAt && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Calendar className="h-4 w-4" />
-              <span>Expira em {benefit.expiryDate}</span>
+              <span className="text-xs">Expira em {formatDate(benefit.expiresAt)}</span>
             </div>
           )}
         </div>
 
-        <div className="text-sm">
-          <p className="text-muted-foreground">
-            <strong>Fornecedor:</strong> {benefit.provider}
-          </p>
-        </div>
+        {benefit.imageUrl && (
+          <div className="w-full h-32 rounded-lg overflow-hidden">
+            <img 
+              src={benefit.imageUrl} 
+              alt={benefit.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+              }}
+            />
+          </div>
+        )}
 
-        <div className="flex gap-2 pt-2">
-          <Button variant="outline" size="sm" onClick={() => onViewDetails(benefit)} className="flex-1">
-            <Eye className="h-4 w-4 mr-2" />
-            Detalhes
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => onViewRedemptions(benefit)}>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => onViewRedemptions(benefit)} 
+            className="flex-1"
+            disabled={disabled}
+          >
             <TrendingUp className="h-4 w-4 mr-2" />
             Resgates
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => onToggleStatus(benefit.id)}
+            disabled={disabled}
+            className="flex-1"
+          >
+            <Power className="h-4 w-4 mr-2" />
+            {benefit.isActive ? "Desativar" : "Ativar"}
           </Button>
         </div>
 
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => onEdit(benefit)} className="flex-1">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => onEdit(benefit)} 
+            className="flex-1"
+            disabled={disabled}
+          >
             <Edit className="h-4 w-4 mr-2" />
             Editar
           </Button>
-          <Button variant="destructive" size="sm" onClick={() => onDelete(benefit.id)} className="flex-1">
+          <Button 
+            variant="destructive" 
+            size="sm" 
+            onClick={() => onDelete(benefit.id)} 
+            className="flex-1"
+            disabled={disabled}
+          >
             <Trash2 className="h-4 w-4 mr-2" />
             Excluir
           </Button>

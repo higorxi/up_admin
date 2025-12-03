@@ -1,41 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, Download, Calendar, Gift, User, CheckCircle, Clock, XCircle } from "lucide-react"
-
-interface Benefit {
-  id: string
-  title: string
-  description: string
-  category: string
-  pointsCost: number
-  totalQuantity: number
-  availableQuantity: number
-  redeemedCount: number
-  isActive: boolean
-  expiryDate?: string
-  imageUrl?: string
-  provider: string
-  terms: string
-}
-
-interface Redemption {
-  id: string
-  userId: string
-  userName: string
-  userEmail: string
-  redemptionDate: string
-  status: "pending" | "approved" | "used" | "expired" | "cancelled"
-  redemptionCode: string
-  usedDate?: string
-  notes?: string
-}
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Search, Gift, User, CheckCircle, Clock, XCircle, Calendar, Loader2, AlertCircle } from "lucide-react"
+import { useBenefits } from "@/hooks/use-benefits"
+import type { Benefit, BenefitRedemption } from "@/lib/services/benefits"
 
 interface RedemptionsModalProps {
   benefit: Benefit | null
@@ -43,113 +18,101 @@ interface RedemptionsModalProps {
   onClose: () => void
 }
 
-// Mock data for redemptions
-const mockRedemptions: Redemption[] = [
-  {
-    id: "1",
-    userId: "u1",
-    userName: "Ana Silva",
-    userEmail: "ana@email.com",
-    redemptionDate: "2024-09-10",
-    status: "used",
-    redemptionCode: "DESC2024-001",
-    usedDate: "2024-09-12",
-    notes: "Desconto aplicado com sucesso",
-  },
-  {
-    id: "2",
-    userId: "u2",
-    userName: "Carlos Santos",
-    userEmail: "carlos@email.com",
-    redemptionDate: "2024-09-11",
-    status: "approved",
-    redemptionCode: "DESC2024-002",
-  },
-  {
-    id: "3",
-    userId: "u3",
-    userName: "Maria Oliveira",
-    userEmail: "maria@email.com",
-    redemptionDate: "2024-09-12",
-    status: "pending",
-    redemptionCode: "DESC2024-003",
-  },
-  {
-    id: "4",
-    userId: "u4",
-    userName: "João Costa",
-    userEmail: "joao@email.com",
-    redemptionDate: "2024-09-08",
-    status: "expired",
-    redemptionCode: "DESC2024-004",
-    notes: "Código expirou sem uso",
-  },
-  {
-    id: "5",
-    userId: "u5",
-    userName: "Fernanda Lima",
-    userEmail: "fernanda@email.com",
-    redemptionDate: "2024-09-13",
-    status: "used",
-    redemptionCode: "DESC2024-005",
-    usedDate: "2024-09-13",
-  },
-]
-
 export function RedemptionsModal({ benefit, isOpen, onClose }: RedemptionsModalProps) {
-  const [redemptions, setRedemptions] = useState<Redemption[]>(mockRedemptions)
+  const { getRedemptions, updateRedemptionStatus } = useBenefits()
+  const [redemptions, setRedemptions] = useState<BenefitRedemption[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (isOpen && benefit) {
+      fetchRedemptions()
+    }
+  }, [isOpen, benefit])
+
+  const fetchRedemptions = async () => {
+    if (!benefit) return
+
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await getRedemptions({ benefitId: benefit.id })
+      setRedemptions(data)
+    } catch (err: any) {
+      setError(err.message || "Erro ao carregar resgates")
+      console.error("Error fetching redemptions:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleStatusChange = async (redemptionId: string, newStatus: "PENDING" | "USED" | "CANCELED" | "EXPIRED") => {
+    try {
+      setActionLoading(redemptionId)
+      setError(null)
+      
+      await updateRedemptionStatus(redemptionId, newStatus)
+      
+      // Update local state
+      setRedemptions(prev => 
+        prev.map(r => r.id === redemptionId 
+          ? { ...r, status: newStatus, usedAt: newStatus === "USED" ? new Date().toISOString() : r.usedAt }
+          : r
+        )
+      )
+    } catch (err: any) {
+      setError(err.message || "Erro ao atualizar status do resgate")
+      console.error("Error updating redemption status:", err)
+    } finally {
+      setActionLoading(null)
+    }
+  }
 
   if (!benefit) return null
 
   const filteredRedemptions = redemptions.filter((redemption) => {
     const matchesSearch =
-      redemption.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      redemption.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      redemption.redemptionCode.toLowerCase().includes(searchTerm.toLowerCase())
+      redemption.professional?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      redemption.professional?.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      redemption.code?.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesTab =
       activeTab === "all" ||
-      (activeTab === "pending" && redemption.status === "pending") ||
-      (activeTab === "approved" && redemption.status === "approved") ||
-      (activeTab === "used" && redemption.status === "used") ||
-      (activeTab === "expired" && redemption.status === "expired")
+      (activeTab === "pending" && redemption.status === "PENDING") ||
+      (activeTab === "used" && redemption.status === "USED") ||
+      (activeTab === "expired" && redemption.status === "EXPIRED") ||
+      (activeTab === "canceled" && redemption.status === "CANCELED")
 
     return matchesSearch && matchesTab
   })
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "pending":
+      case "PENDING":
         return (
           <Badge variant="outline" className="text-yellow-600 border-yellow-600 text-xs">
             <Clock className="h-3 w-3 mr-1" />
             Pendente
           </Badge>
         )
-      case "approved":
-        return (
-          <Badge variant="outline" className="text-blue-600 border-blue-600 text-xs">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Aprovado
-          </Badge>
-        )
-      case "used":
+      case "USED":
         return (
           <Badge variant="outline" className="text-green-600 border-green-600 text-xs">
             <CheckCircle className="h-3 w-3 mr-1" />
             Utilizado
           </Badge>
         )
-      case "expired":
+      case "EXPIRED":
         return (
           <Badge variant="outline" className="text-red-600 border-red-600 text-xs">
             <XCircle className="h-3 w-3 mr-1" />
             Expirado
           </Badge>
         )
-      case "cancelled":
+      case "CANCELED":
         return (
           <Badge variant="outline" className="text-gray-600 border-gray-600 text-xs">
             <XCircle className="h-3 w-3 mr-1" />
@@ -161,10 +124,15 @@ export function RedemptionsModal({ benefit, isOpen, onClose }: RedemptionsModalP
     }
   }
 
-  const pendingCount = redemptions.filter((r) => r.status === "pending").length
-  const approvedCount = redemptions.filter((r) => r.status === "approved").length
-  const usedCount = redemptions.filter((r) => r.status === "used").length
-  const expiredCount = redemptions.filter((r) => r.status === "expired").length
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('pt-BR')
+  }
+
+  const pendingCount = redemptions.filter((r) => r.status === "PENDING").length
+  const usedCount = redemptions.filter((r) => r.status === "USED").length
+  const expiredCount = redemptions.filter((r) => r.status === "EXPIRED").length
+  const canceledCount = redemptions.filter((r) => r.status === "CANCELED").length
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -172,7 +140,7 @@ export function RedemptionsModal({ benefit, isOpen, onClose }: RedemptionsModalP
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle className="flex items-center gap-3">
             <Gift className="h-5 w-5" />
-            <span className="text-lg">{benefit.title} - Resgates</span>
+            <span className="text-lg">{benefit.name} - Resgates</span>
             <Badge variant="outline" className="text-primary">
               {redemptions.length} resgates
             </Badge>
@@ -180,7 +148,15 @@ export function RedemptionsModal({ benefit, isOpen, onClose }: RedemptionsModalP
         </DialogHeader>
 
         <div className="flex-1 flex flex-col px-6 py-4 space-y-4 overflow-hidden">
-          {/* Stats - Compactas em uma linha */}
+          {/* Error Alert */}
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Stats */}
           <div className="grid grid-cols-5 gap-3">
             <div className="bg-muted/50 rounded-lg p-3 text-center">
               <div className="text-xl font-bold text-card-foreground">{redemptions.length}</div>
@@ -190,10 +166,6 @@ export function RedemptionsModal({ benefit, isOpen, onClose }: RedemptionsModalP
               <div className="text-xl font-bold text-yellow-600">{pendingCount}</div>
               <div className="text-xs text-muted-foreground">Pendentes</div>
             </div>
-            <div className="bg-blue-50 rounded-lg p-3 text-center">
-              <div className="text-xl font-bold text-blue-600">{approvedCount}</div>
-              <div className="text-xs text-muted-foreground">Aprovados</div>
-            </div>
             <div className="bg-green-50 rounded-lg p-3 text-center">
               <div className="text-xl font-bold text-green-600">{usedCount}</div>
               <div className="text-xs text-muted-foreground">Utilizados</div>
@@ -202,14 +174,18 @@ export function RedemptionsModal({ benefit, isOpen, onClose }: RedemptionsModalP
               <div className="text-xl font-bold text-red-600">{expiredCount}</div>
               <div className="text-xs text-muted-foreground">Expirados</div>
             </div>
+            <div className="bg-gray-50 rounded-lg p-3 text-center">
+              <div className="text-xl font-bold text-gray-600">{canceledCount}</div>
+              <div className="text-xs text-muted-foreground">Cancelados</div>
+            </div>
           </div>
 
-          {/* Search e Export - Em linha */}
+          {/* Search */}
           <div className="flex items-center gap-4">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por usuário, email ou código..."
+                placeholder="Buscar por profissional, email ou código..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -217,94 +193,118 @@ export function RedemptionsModal({ benefit, isOpen, onClose }: RedemptionsModalP
             </div>
           </div>
 
-          {/* Tabs compactas */}
+          {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
             <TabsList className="grid w-full grid-cols-5 mb-3">
               <TabsTrigger value="all" className="text-xs">Todos</TabsTrigger>
               <TabsTrigger value="pending" className="text-xs">Pendentes</TabsTrigger>
-              <TabsTrigger value="approved" className="text-xs">Aprovados</TabsTrigger>
               <TabsTrigger value="used" className="text-xs">Utilizados</TabsTrigger>
               <TabsTrigger value="expired" className="text-xs">Expirados</TabsTrigger>
+              <TabsTrigger value="canceled" className="text-xs">Cancelados</TabsTrigger>
             </TabsList>
 
             <TabsContent value={activeTab} className="flex-1 overflow-hidden">
-              <div className="h-full overflow-y-auto pr-2">
-                <div className="space-y-2">
-                  {filteredRedemptions.map((redemption) => (
-                    <div
-                      key={redemption.id}
-                      className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg hover:bg-muted/25 transition-colors"
-                    >
-                      <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                          {redemption.userName
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
+              {loading ? (
+                <div className="flex items-center justify-center h-full">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="h-full overflow-y-auto pr-2">
+                  <div className="space-y-2">
+                    {filteredRedemptions.map((redemption) => (
+                      <div
+                        key={redemption.id}
+                        className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg hover:bg-muted/25 transition-colors"
+                      >
+                        <Avatar className="h-8 w-8 shrink-0">
+                          <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                            {redemption.professional?.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-medium text-card-foreground text-sm truncate">
-                            {redemption.userName}
-                          </h4>
-                          {getStatusBadge(redemption.status)}
-                        </div>
-                        
-                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-1 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1 truncate">
-                            <User className="h-3 w-3 shrink-0" />
-                            <span className="truncate">{redemption.userEmail}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-medium text-card-foreground text-sm truncate">
+                              {redemption.professional?.name}
+                            </h4>
+                            {getStatusBadge(redemption.status)}
                           </div>
-                          <div className="flex items-center gap-1 truncate">
-                            <Gift className="h-3 w-3 shrink-0" />
-                            <span className="truncate">{redemption.redemptionCode}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3 shrink-0" />
-                            <span>{redemption.redemptionDate}</span>
-                          </div>
-                          {redemption.usedDate && (
-                            <div className="flex items-center gap-1">
-                              <CheckCircle className="h-3 w-3 shrink-0" />
-                              <span>Usado {redemption.usedDate}</span>
+                          
+                          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-1 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1 truncate">
+                              <User className="h-3 w-3 shrink-0" />
+                              <span className="truncate">{redemption.professional?.user.email}</span>
                             </div>
+                            {redemption.code && (
+                              <div className="flex items-center gap-1 truncate">
+                                <Gift className="h-3 w-3 shrink-0" />
+                                <span className="truncate">{redemption.code}</span>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3 shrink-0" />
+                              <span>Resgatado {formatDate(redemption.redeemedAt)}</span>
+                            </div>
+                            {redemption.usedAt && (
+                              <div className="flex items-center gap-1">
+                                <CheckCircle className="h-3 w-3 shrink-0" />
+                                <span>Usado {formatDate(redemption.usedAt)}</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="text-xs text-muted-foreground mt-1">
+                            <span className="font-medium">{redemption.pointsSpent} pontos</span>
+                            {redemption.expiresAt && (
+                              <span className="ml-2">• Expira {formatDate(redemption.expiresAt)}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2 shrink-0">
+                          {redemption.status === "PENDING" && (
+                            <>
+                              <Button 
+                                size="sm" 
+                                className="gap-1 text-xs px-3"
+                                onClick={() => handleStatusChange(redemption.id, "USED")}
+                                disabled={actionLoading === redemption.id}
+                              >
+                                {actionLoading === redemption.id ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="h-3 w-3" />
+                                )}
+                                Marcar Usado
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                className="gap-1 text-xs px-3"
+                                onClick={() => handleStatusChange(redemption.id, "CANCELED")}
+                                disabled={actionLoading === redemption.id}
+                              >
+                                <XCircle className="h-3 w-3" />
+                                Cancelar
+                              </Button>
+                            </>
                           )}
                         </div>
-                        
-                        {redemption.notes && (
-                          <p className="text-xs text-muted-foreground mt-1 italic truncate">
-                            {redemption.notes}
-                          </p>
-                        )}
                       </div>
+                    ))}
 
-                      <div className="flex gap-2 shrink-0">
-                        {redemption.status === "pending" && (
-                          <Button size="sm" className="gap-1 text-xs px-3">
-                            <CheckCircle className="h-3 w-3" />
-                            Aprovar
-                          </Button>
-                        )}
-                        {redemption.status === "approved" && (
-                          <Button size="sm" variant="outline" className="gap-1 bg-transparent text-xs px-3">
-                            <CheckCircle className="h-3 w-3" />
-                            Marcar Usado
-                          </Button>
-                        )}
+                    {filteredRedemptions.length === 0 && (
+                      <div className="text-center py-8">
+                        <Gift className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <p className="text-muted-foreground">Nenhum resgate encontrado.</p>
                       </div>
-                    </div>
-                  ))}
-
-                  {filteredRedemptions.length === 0 && (
-                    <div className="text-center py-8">
-                      <Gift className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">Nenhum resgate encontrado.</p>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>
