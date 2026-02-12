@@ -11,6 +11,8 @@ export interface Supplier {
   contact: string
   status: SupplierStatus
   storeId: string | null
+  createdAt: string
+  updatedAt: string
   store: {
     id: string
     name: string
@@ -31,6 +33,20 @@ export interface Supplier {
       zipCode: string
     }
   } | null
+  user: {
+    email: string
+    profileImage: string
+    address: {
+      id: string
+      state: string
+      city: string
+      district: string
+      street: string
+      complement: string | null
+      number: string | null
+      zipCode: string
+    }
+  }
 }
 
 export class SuppliersService {
