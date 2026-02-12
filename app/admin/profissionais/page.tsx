@@ -2,15 +2,16 @@
 
 import { useState } from "react"
 import { AdminLayout } from "@/components/admin-layout"
+import { AdminPageLayout } from "@/components/admin-page-layout"
 import { ProfessionalCard } from "@/components/professional-card"
 import { ProfessionalFormModal } from "@/components/professional-form-modal"
 import { ProfessionalDetailsModal } from "@/components/professional-details-modal"
+import { CardSkeleton } from "@/components/card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Skeleton } from "@/components/ui/skeleton"
 import { Search, Plus, Users, AlertCircle, RefreshCw } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 import { RecommendedProfessional, CreateRecommendedProfessionalDto, UpdateRecommendedProfessionalDto } from "@/lib/services/recommended-professional"
@@ -133,55 +134,44 @@ export default function ProfessionalsPage() {
   const professions = [...new Set(professionals.map((p) => p.profession))]
   const cities = [...new Set(professionals.map((p) => p.address?.city).filter(Boolean))]
 
-  if (error) {
-    return (
-      <AdminLayout>
-        <div className="p-6">
-          <Alert variant="destructive">
+  return (
+    <AdminLayout>
+      <AdminPageLayout
+        title="Profissionais Recomendados"
+        description="Gerencie profissionais recomendados da plataforma"
+        actions={
+          <Button size="sm" onClick={handleCreate} className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Adicionar Profissional
+          </Button>
+        }
+      >
+        {error && (
+          <Alert variant="destructive" className="border-destructive/50">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="flex items-center justify-between">
               {error}
-              <Button variant="outline" size="sm" onClick={refetch}>
+              <Button variant="outline" size="sm" onClick={refetch} className="transition-colors">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Tentar novamente
               </Button>
             </AlertDescription>
           </Alert>
-        </div>
-      </AdminLayout>
-    )
-  }
-
-  return (
-    <AdminLayout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Profissionais Recomendados</h1>
-            <p className="text-muted-foreground">Gerencie profissionais recomendados da plataforma</p>
-          </div>
-          <div className="flex gap-2">
-            <Button size="sm" onClick={handleCreate} className="bg-primary text-primary-foreground hover:bg-primary/90">
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Profissional
-            </Button>
-          </div>
-        </div>
+        )}
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por nome, profissão ou localização..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 border-border/50 focus:border-primary/50 focus:ring-primary/20"
             />
           </div>
           <Select value={professionFilter} onValueChange={setProfessionFilter}>
-            <SelectTrigger className="w-full sm:w-48">
+            <SelectTrigger className="w-full sm:w-48 border-border/50">
               <SelectValue placeholder="Profissão" />
             </SelectTrigger>
             <SelectContent>
@@ -194,7 +184,7 @@ export default function ProfessionalsPage() {
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-32">
+            <SelectTrigger className="w-full sm:w-36 border-border/50">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -204,7 +194,7 @@ export default function ProfessionalsPage() {
             </SelectContent>
           </Select>
           <Select value={cityFilter} onValueChange={setCityFilter}>
-            <SelectTrigger className="w-full sm:w-48">
+            <SelectTrigger className="w-full sm:w-48 border-border/50">
               <SelectValue placeholder="Cidade" />
             </SelectTrigger>
             <SelectContent>
@@ -219,46 +209,34 @@ export default function ProfessionalsPage() {
         </div>
 
         {/* Results Count */}
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-muted-foreground">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="outline" className="text-muted-foreground border-border/50 bg-muted/30 font-medium">
             {filteredProfessionals.length} profissional{filteredProfessionals.length !== 1 ? "is" : ""} encontrado
             {filteredProfessionals.length !== 1 ? "s" : ""}
           </Badge>
           {professionFilter !== "all" && (
-            <Badge variant="outline" className="text-primary">
+            <Badge variant="outline" className="border-primary/50 bg-primary/5 text-primary font-medium">
               Profissão: {professionFilter}
             </Badge>
           )}
           {statusFilter !== "all" && (
-            <Badge variant="outline" className="text-secondary">
+            <Badge variant="outline" className="border-secondary/50 bg-secondary/5 text-secondary font-medium">
               Status: {statusFilter === "active" ? "Ativo" : "Inativo"}
             </Badge>
           )}
           {cityFilter !== "all" && (
-            <Badge variant="outline" className="text-accent">
+            <Badge variant="outline" className="border-accent/50 bg-accent/5 text-accent font-medium">
               Cidade: {cityFilter}
             </Badge>
           )}
         </div>
 
         {/* Professionals Grid */}
-        {loading ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-card border border-border rounded-lg p-6">
-                <Skeleton className="h-6 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-1/2 mb-4" />
-                <Skeleton className="h-20 w-full mb-4" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-8 w-20" />
-                  <Skeleton className="h-8 w-20" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredProfessionals.map((professional) => (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {loading ? (
+            <CardSkeleton count={6} />
+          ) : (
+            filteredProfessionals.map((professional) => (
               <ProfessionalCard
                 key={professional.id}
                 professional={professional}
@@ -267,9 +245,9 @@ export default function ProfessionalsPage() {
                 onToggleStatus={handleToggleStatus}
                 onViewDetails={handleViewDetails}
               />
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
 
         {!loading && filteredProfessionals.length === 0 && (
           <div className="text-center py-12">
@@ -293,7 +271,7 @@ export default function ProfessionalsPage() {
           isOpen={isDetailsModalOpen}
           onClose={() => setIsDetailsModalOpen(false)}
         />
-      </div>
+      </AdminPageLayout>
     </AdminLayout>
   )
 }

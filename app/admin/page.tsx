@@ -1,4 +1,5 @@
 import { AdminLayout } from "@/components/admin-layout";
+import { PageTransition } from "@/components/page-transition";
 import { DashboardStats } from "@/components/dashboard-stats";
 import { RecentActivity } from "@/components/recent-activity";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,18 +10,19 @@ import Link from "next/link";
 export default function AdminDashboard() {
   return (
     <AdminLayout>
-      <div className="p-6 space-y-6">
+      <PageTransition>
+        <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold text-foreground tracking-tight">Dashboard</h1>
             <p className="text-muted-foreground">
               Visão geral do sistema UPConnection
             </p>
           </div>
-          <span className="text-sidebar-accent-foreground font-bold text-sm bg-red-500 p-2 rounded-2xl">
-            UP
-          </span>
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
+            <span className="text-white font-bold text-lg">UP</span>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -41,18 +43,20 @@ export default function AdminDashboard() {
               </CardTitle>
             </CardHeader>
 
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2.5">
               <Button
                 asChild
                 variant="outline"
-                className="w-full justify-start gap-3 h-12 bg-transparent"
+                className="w-full justify-start gap-3 h-12 bg-transparent hover:bg-muted/50 transition-colors"
               >
                 <Link href="/admin/fornecedores">
-                  <Users className="h-5 w-5 text-primary" />
-                  <div className="text-left">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="text-left flex-1">
                     <div className="font-medium">Aprovar Fornecedores</div>
                     <div className="text-xs text-muted-foreground">
-                    Ver solicitações
+                      Ver solicitações
                     </div>
                   </div>
                 </Link>
@@ -61,11 +65,13 @@ export default function AdminDashboard() {
               <Button
                 asChild
                 variant="outline"
-                className="w-full justify-start gap-3 h-12 bg-transparent"
+                className="w-full justify-start gap-3 h-12 bg-transparent hover:bg-muted/50 transition-colors"
               >
                 <Link href="/admin/eventos">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  <div className="text-left">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Calendar className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="text-left flex-1">
                     <div className="font-medium">Criar Evento</div>
                     <div className="text-xs text-muted-foreground">
                       Novo evento
@@ -77,11 +83,13 @@ export default function AdminDashboard() {
               <Button
                 asChild
                 variant="outline"
-                className="w-full justify-start gap-3 h-12 bg-transparent"
+                className="w-full justify-start gap-3 h-12 bg-transparent hover:bg-muted/50 transition-colors"
               >
                 <Link href="/admin/profissionais">
-                  <Plus className="h-5 w-5 text-primary" />
-                  <div className="text-left">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Plus className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="text-left flex-1">
                     <div className="font-medium">Adicionar Profissional</div>
                     <div className="text-xs text-muted-foreground">
                       Recomendado
@@ -93,6 +101,7 @@ export default function AdminDashboard() {
           </Card>
         </div>
       </div>
+      </PageTransition>
     </AdminLayout>
   );
 }

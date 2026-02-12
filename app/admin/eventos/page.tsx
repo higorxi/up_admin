@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react"
 import { useEvents } from "@/hooks/use-events"
 import { AdminLayout } from "@/components/admin-layout"
+import { AdminPageLayout } from "@/components/admin-page-layout"
 import { EventCard } from "@/components/event-card"
 import { EventFormModal } from "@/components/event-form-modal"
 import { AttendeesModal } from "@/components/attendees-modal"
+import { CardSkeleton } from "@/components/card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -108,39 +110,19 @@ export default function EventsPage() {
 
   const eventTypes = [...new Set(events.map((e) => e.type))]
 
-  if (loading) {
-    return (
-      <AdminLayout>
-        <div className="p-6 flex items-center justify-center min-h-96">
-          <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2 text-muted-foreground">Carregando eventos...</span>
-        </div>
-      </AdminLayout>
-    )
-  }
-
   return (
     <AdminLayout>
-      <div className="p-6 space-y-6">
-        {/* Error Alert */}
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Eventos</h1>
-            <p className="text-muted-foreground">Gerencie eventos e validação de presença</p>
-          </div>
-          <div className="flex gap-2">
+      <AdminPageLayout
+        title="Eventos"
+        description="Gerencie eventos e validação de presença"
+        actions={
+          <>
             <Button 
               variant="outline" 
               size="sm" 
               onClick={refetch}
               disabled={loading}
+              className="transition-colors"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Atualizar
@@ -148,13 +130,19 @@ export default function EventsPage() {
             <Button 
               size="sm" 
               onClick={handleCreate} 
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
             >
               <Plus className="h-4 w-4 mr-2" />
               Criar Evento
             </Button>
-          </div>
-        </div>
+          </>
+        }
+      >
+        {error && (
+          <Alert variant="destructive" className="border-destructive/50">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4">
@@ -208,18 +196,18 @@ export default function EventsPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por nome, descrição, loja ou endereço..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 border-border/50 focus:border-primary/50 focus:ring-primary/20"
             />
           </div>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-full sm:w-48">
+            <SelectTrigger className="w-full sm:w-48 border-border/50">
               <SelectValue placeholder="Tipo" />
             </SelectTrigger>
             <SelectContent>
@@ -232,7 +220,7 @@ export default function EventsPage() {
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-48">
+            <SelectTrigger className="w-full sm:w-36 border-border/50">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -244,18 +232,18 @@ export default function EventsPage() {
         </div>
 
         {/* Results Count */}
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-muted-foreground">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="outline" className="text-muted-foreground border-border/50 bg-muted/30 font-medium">
             {filteredEvents.length} evento{filteredEvents.length !== 1 ? "s" : ""} encontrado
             {filteredEvents.length !== 1 ? "s" : ""}
           </Badge>
           {typeFilter !== "all" && (
-            <Badge variant="outline" className="text-primary">
+            <Badge variant="outline" className="border-primary/50 bg-primary/5 text-primary font-medium">
               Tipo: {typeFilter}
             </Badge>
           )}
           {statusFilter !== "all" && (
-            <Badge variant="outline" className="text-secondary">
+            <Badge variant="outline" className="border-secondary/50 bg-secondary/5 text-secondary font-medium">
               Status: {statusFilter === "active" ? "Ativos" : "Inativos"}
             </Badge>
           )}
@@ -263,16 +251,20 @@ export default function EventsPage() {
 
         {/* Events Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredEvents.map((event) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              onEdit={handleEdit}
-              onToggle={handleToggleEvent}
-              onViewDetails={handleViewDetails}
-              onManageAttendees={handleManageAttendees}
-            />
-          ))}
+          {loading ? (
+            <CardSkeleton count={6} />
+          ) : (
+            filteredEvents.map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                onEdit={handleEdit}
+                onToggle={handleToggleEvent}
+                onViewDetails={handleViewDetails}
+                onManageAttendees={handleManageAttendees}
+              />
+            ))
+          )}
         </div>
 
         {filteredEvents.length === 0 && !loading && (
@@ -304,7 +296,7 @@ export default function EventsPage() {
           onCheckIn={handleCheckIn}
           getParticipants={getEventParticipants}
         />
-      </div>
+      </AdminPageLayout>
     </AdminLayout>
   )
 }

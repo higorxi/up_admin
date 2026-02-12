@@ -47,67 +47,76 @@ export function EventCard({
   }
 
   return (
-    <Card className="bg-card border-border hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-semibold text-card-foreground line-clamp-1">
+    <Card className="bg-card border-border hover:shadow-lg transition-all duration-300 hover:scale-[1.02] flex flex-col">
+      <CardHeader className="pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <h3 className="font-semibold text-card-foreground truncate">
                 {event.name}
               </h3>
               <Badge 
                 variant="outline" 
                 className={event.isActive 
-                  ? "text-green-600 border-green-600" 
-                  : "text-gray-600 border-gray-600"
+                  ? "text-green-700 border-green-500 bg-green-50 font-medium" 
+                  : "text-gray-700 border-gray-500 bg-gray-50 font-medium"
                 }
               >
                 {event.isActive ? "Ativo" : "Inativo"}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground mb-2">{event.type}</p>
-            <p className="text-sm text-muted-foreground line-clamp-2">
+            <p className="text-sm text-muted-foreground mb-2 font-medium">{event.type}</p>
+            <p className="text-sm text-card-foreground/80 line-clamp-2 leading-relaxed">
               {event.description}
             </p>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 gap-3 text-sm">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            <span>{formatDate(event.date)}</span>
+      <CardContent className="space-y-4 flex-1 flex flex-col pt-0">
+        <div className="space-y-2.5 text-sm">
+          <div className="flex items-center gap-2.5 text-muted-foreground">
+            <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">
+              <Calendar className="h-4 w-4" />
+            </div>
+            <span className="truncate">{formatDate(event.date)}</span>
           </div>
           
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <MapPin className="h-4 w-4" />
-            <span className="line-clamp-1">{getAddressString()}</span>
+          <div className="flex items-center gap-2.5 text-muted-foreground">
+            <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">
+              <MapPin className="h-4 w-4" />
+            </div>
+            <span className="truncate">{getAddressString()}</span>
           </div>
           
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Users className="h-4 w-4" />
-            <span className={getOccupancyColor()}>
+          <div className="flex items-center gap-2.5 text-muted-foreground">
+            <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">
+              <Users className="h-4 w-4" />
+            </div>
+            <span className={`${getOccupancyColor()} font-medium`}>
               {event.filledSpots}/{event.totalSpots} participantes
             </span>
           </div>
           
           {event.points > 0 && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Star className="h-4 w-4" />
-              <span className="text-primary font-medium">
+            <div className="flex items-center gap-2.5 text-muted-foreground">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Star className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-primary font-semibold">
                 {event.points} pontos
               </span>
             </div>
           )}
         </div>
 
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-2 pt-3 mt-auto border-t border-border/50">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => onEdit(event)}
+            className="flex-1 hover:bg-muted/50 transition-colors"
           >
-            <Edit className="h-4 w-4 mr-2" />
+            <Edit className="h-4 w-4 mr-1.5" />
             Editar
           </Button>
           
@@ -115,9 +124,9 @@ export function EventCard({
             variant="outline" 
             size="sm" 
             onClick={() => onToggle(event)}
-            className={event.isActive ? "text-red-600" : "text-green-600"}
+            className={`flex-1 transition-colors ${event.isActive ? "text-red-600 hover:bg-red-50" : "text-green-600 hover:bg-green-50"}`}
           >
-            <Power className="h-4 w-4 mr-2" />
+            <Power className="h-4 w-4 mr-1.5" />
             {event.isActive ? "Desativar" : "Ativar"}
           </Button>
           
@@ -125,6 +134,7 @@ export function EventCard({
             variant="outline" 
             size="sm" 
             onClick={() => onManageAttendees(event)}
+            className="hover:bg-muted/50 transition-colors"
           >
             <Users className="h-4 w-4" />
           </Button>

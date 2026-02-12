@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { AdminLayout } from "@/components/admin-layout"
+import { AdminPageLayout } from "@/components/admin-page-layout"
 import { BenefitFormModal } from "@/components/benefit-form-modal"
 import { RedemptionsModal } from "@/components/redemptions-modal"
+import { CardSkeleton } from "@/components/card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -136,36 +138,30 @@ export default function BenefitsPage() {
 
   return (
     <AdminLayout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Benefícios e Resgates</h1>
-            <p className="text-muted-foreground">Gerencie benefícios disponíveis e acompanhe resgates</p>
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              onClick={handleCreate} 
-              disabled={actionLoading}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Criar Benefício
-            </Button>
-          </div>
-        </div>
-
-        {/* Errors */}
+      <AdminPageLayout
+        title="Benefícios e Resgates"
+        description="Gerencie benefícios disponíveis e acompanhe resgates"
+        actions={
+          <Button 
+            size="sm" 
+            onClick={handleCreate} 
+            disabled={actionLoading}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Criar Benefício
+          </Button>
+        }
+      >
         {hookError && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="border-destructive/50">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{hookError}</AlertDescription>
           </Alert>
         )}
 
         {actionError && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="border-destructive/50">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{actionError}</AlertDescription>
           </Alert>
@@ -223,18 +219,18 @@ export default function BenefitsPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por título ou descrição..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 border-border/50 focus:border-primary/50 focus:ring-primary/20"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-48">
+            <SelectTrigger className="w-full sm:w-48 border-border/50">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -248,13 +244,13 @@ export default function BenefitsPage() {
         </div>
 
         {/* Results Count */}
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-muted-foreground">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="outline" className="text-muted-foreground border-border/50 bg-muted/30 font-medium">
             {filteredBenefits.length} benefício{filteredBenefits.length !== 1 ? "s" : ""} encontrado
             {filteredBenefits.length !== 1 ? "s" : ""}
           </Badge>
           {statusFilter !== "all" && (
-            <Badge variant="outline" className="text-secondary">
+            <Badge variant="outline" className="border-secondary/50 bg-secondary/5 text-secondary font-medium">
               Status:{" "}
               {statusFilter === "active"
                 ? "Ativos"
@@ -267,17 +263,12 @@ export default function BenefitsPage() {
           )}
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        )}
-
         {/* Benefits Grid */}
-        {!loading && (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredBenefits.map((benefit) => (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {loading ? (
+            <CardSkeleton count={6} />
+          ) : (
+            filteredBenefits.map((benefit) => (
               <BenefitCard
                 key={benefit.id}
                 benefit={benefit}
@@ -287,9 +278,9 @@ export default function BenefitsPage() {
                 onViewRedemptions={handleViewRedemptions}
                 disabled={actionLoading}
               />
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
 
         {!loading && filteredBenefits.length === 0 && (
           <div className="text-center py-12">
@@ -318,7 +309,7 @@ export default function BenefitsPage() {
           isOpen={isRedemptionsModalOpen}
           onClose={() => setIsRedemptionsModalOpen(false)}
         />
-      </div>
+      </AdminPageLayout>
     </AdminLayout>
   )
 }

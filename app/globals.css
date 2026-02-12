@@ -123,4 +123,25 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Smooth transitions for page changes */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Prevent layout shift during page transitions */
+  main {
+    min-height: 100vh;
+  }
+  
+  /* Smooth fade for all interactive elements */
+  button, a, [role="button"] {
+    transition: all 0.2s ease-in-out;
+  }
+  
+  /* Optimize rendering for smooth animations */
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }

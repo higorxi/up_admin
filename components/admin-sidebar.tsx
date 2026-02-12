@@ -61,11 +61,11 @@ export function AdminSidebar() {
       <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
         {!collapsed && (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-sidebar-accent rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 bg-gradient-to-br from-sidebar-accent to-sidebar-accent/80 rounded-xl flex items-center justify-center shadow-sm">
               <span className="text-sidebar-accent-foreground font-bold text-sm">UP</span>
             </div>
             <div>
-              <h1 className="text-sidebar-foreground font-semibold text-lg">UP Connection</h1>
+              <h1 className="text-sidebar-foreground font-semibold text-lg tracking-tight">UP Connection</h1>
               <p className="text-sidebar-foreground/70 text-xs">Painel Administrativo</p>
             </div>
           </div>
@@ -74,9 +74,9 @@ export function AdminSidebar() {
           variant="ghost"
           size="sm"
           onClick={() => setCollapsed(!collapsed)}
-          className="text-sidebar-foreground hover:bg-sidebar-accent/20"
+          className="text-sidebar-foreground hover:bg-sidebar-accent/20 transition-colors"
         >
-          <ChevronLeft className={cn("h-4 w-4 transition-transform", collapsed && "rotate-180")} />
+          <ChevronLeft className={cn("h-4 w-4 transition-transform duration-300", collapsed && "rotate-180")} />
         </Button>
       </div>
 

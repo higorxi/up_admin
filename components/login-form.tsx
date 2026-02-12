@@ -35,38 +35,40 @@ export function LoginForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center">
-            <span className="text-2xl font-bold text-primary-foreground">UP</span>
+      <Card className="w-full max-w-md shadow-lg border-border/50">
+        <CardHeader className="text-center space-y-4 pb-6">
+          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg">
+            <span className="text-3xl font-bold text-primary-foreground">UP</span>
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold text-foreground">UP Connection</CardTitle>
-            <CardDescription className="text-muted-foreground">Sistema Administrativo</CardDescription>
+            <CardTitle className="text-2xl font-bold text-foreground tracking-tight">UP Connection</CardTitle>
+            <CardDescription className="text-muted-foreground mt-1">Sistema Administrativo</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="border-destructive/50">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+            <div className="space-y-2.5">
+              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
               <Input
                 id="email"
                 type="email"
+                placeholder="seu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
+                className="border-border/50 focus:border-primary/50 focus:ring-primary/20"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
+            <div className="space-y-2.5">
+              <Label htmlFor="password" className="text-sm font-medium">Senha</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -76,6 +78,7 @@ export function LoginForm() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
+                  className="pr-10 border-border/50 focus:border-primary/50 focus:ring-primary/20"
                 />
                 <Button
                   type="button"
@@ -94,7 +97,7 @@ export function LoginForm() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full mt-6 shadow-sm transition-all" disabled={isLoading}>
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
