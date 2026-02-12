@@ -27,19 +27,19 @@ export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onR
     switch (supplier.status) {
       case "PENDING":
         return (
-          <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+          <Badge variant="outline" className="text-yellow-700 border-yellow-500 bg-yellow-50 font-medium">
             Pendente
           </Badge>
         )
       case "APPROVED":
         return (
-          <Badge variant="outline" className="text-green-600 border-green-600">
+          <Badge variant="outline" className="text-green-700 border-green-500 bg-green-50 font-medium">
             Aprovado
           </Badge>
         )
       case "REJECTED":
         return (
-          <Badge variant="outline" className="text-red-600 border-red-600">
+          <Badge variant="outline" className="text-red-700 border-red-500 bg-red-50 font-medium">
             Rejeitado
           </Badge>
         )
@@ -90,129 +90,135 @@ export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onR
         <ScrollArea className="max-h-[70vh]">
           <div className="space-y-6 pr-4">
             {/* Contact Information */}
-            <div className="bg-muted/30 p-4 rounded-lg">
-              <h3 className="font-semibold mb-3 text-card-foreground flex items-center gap-2">
-                <Mail className="h-4 w-4" />
+            <div className="bg-muted/30 p-5 rounded-xl border border-border/50">
+              <h3 className="font-semibold mb-4 text-card-foreground flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Mail className="h-4 w-4 text-primary" />
+                </div>
                 Informações de Contato
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-2 text-sm p-2 bg-background rounded">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span>{supplier.contact.email}</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
+                  <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <span className="truncate">{supplier.contact.email}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm p-2 bg-background rounded">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{supplier.contact.phone}</span>
+                <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
+                  <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <span className="truncate">{supplier.contact.phone}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm p-2 bg-background rounded">
-                  <Building className="h-4 w-4 text-muted-foreground" />
-                  <span>{supplier.companyName}</span>
+                <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
+                  <Building className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <span className="truncate">{supplier.companyName}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm p-2 bg-background rounded">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span>CNPJ: {supplier.document}</span>
+                <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
+                  <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <span className="truncate">CNPJ: {supplier.document}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm p-2 bg-background rounded md:col-span-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50 md:col-span-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <span>Cadastrado em {formatDate(supplier.createdAt)}</span>
                 </div>
                 {supplier.updatedAt && (
-                  <div className="flex items-center gap-2 text-sm p-2 bg-background rounded md:col-span-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50 md:col-span-2">
+                    <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <span>Última atualização em {formatDate(supplier.updatedAt)}</span>
                   </div>
                 )}
               </div>
             </div>
 
-            <Separator />
+            <Separator className="my-6" />
 
             {/* Store Information */}
             {supplier.store && (
               <>
-                <div className="bg-muted/30 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-3 text-card-foreground flex items-center gap-2">
-                    <Store className="h-4 w-4" />
+                <div className="bg-muted/30 p-5 rounded-xl border border-border/50">
+                  <h3 className="font-semibold mb-4 text-card-foreground flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Store className="h-4 w-4 text-primary" />
+                    </div>
                     Informações da Loja
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-center gap-2 text-sm p-2 bg-background rounded">
-                      <Building className="h-4 w-4 text-muted-foreground" />
-                      <span>{supplier.store.name}</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
+                      <Building className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <span className="truncate">{supplier.store.name}</span>
                     </div>
                     {supplier.store.address && (
                       <>
-                        <div className="flex items-center gap-2 text-sm p-2 bg-background rounded">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span>
+                        <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50 md:col-span-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <span className="truncate">
                             {supplier.store.address.street}, {supplier.store.address.city} -{" "}
                             {supplier.store.address.state}
                           </span>
                         </div>
                         {supplier.store.address.zipCode && (
-                          <div className="flex items-center gap-2 text-sm p-2 bg-background rounded">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
+                            <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                             <span>CEP: {supplier.store.address.zipCode}</span>
                           </div>
                         )}
                         {supplier.store.address.neighborhood && (
-                          <div className="flex items-center gap-2 text-sm p-2 bg-background rounded">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
+                            <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                             <span>Bairro: {supplier.store.address.neighborhood}</span>
                           </div>
                         )}
                       </>
                     )}
                     {supplier.store.phone && (
-                      <div className="flex items-center gap-2 text-sm p-2 bg-background rounded">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <span>{supplier.store.phone}</span>
+                      <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
+                        <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <span className="truncate">{supplier.store.phone}</span>
                       </div>
                     )}
                     {supplier.store.email && (
-                      <div className="flex items-center gap-2 text-sm p-2 bg-background rounded">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <span>{supplier.store.email}</span>
+                      <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
+                        <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <span className="truncate">{supplier.store.email}</span>
                       </div>
                     )}
                     {supplier.store.website && (
-                      <div className="flex items-center gap-2 text-sm p-2 bg-background rounded">
-                        <Globe className="h-4 w-4 text-muted-foreground" />
-                        <span>{supplier.store.website}</span>
+                      <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
+                        <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <span className="truncate">{supplier.store.website}</span>
                       </div>
                     )}
                   </div>
                   {supplier.store.description && (
-                    <div className="mt-4 p-3 bg-background rounded">
-                      <h4 className="font-medium mb-2">Descrição da Loja</h4>
-                      <p className="text-sm text-muted-foreground">{supplier.store.description}</p>
+                    <div className="mt-4 p-4 bg-background rounded-lg border border-border/50">
+                      <h4 className="font-medium mb-2 text-card-foreground">Descrição da Loja</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{supplier.store.description}</p>
                     </div>
                   )}
                 </div>
-                <Separator />
+                <Separator className="my-6" />
               </>
             )}
 
             {/* Additional Information */}
-            <div className="bg-muted/30 p-4 rounded-lg">
-              <h3 className="font-semibold mb-3 text-card-foreground flex items-center gap-2">
-                <FileText className="h-4 w-4" />
+            <div className="bg-muted/30 p-5 rounded-xl border border-border/50">
+              <h3 className="font-semibold mb-4 text-card-foreground flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-primary" />
+                </div>
                 Informações Adicionais
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-2 text-sm p-2 bg-background rounded">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
                   <span className="font-medium">ID:</span>
-                  <span className="text-muted-foreground">{supplier.id}</span>
+                  <span className="text-muted-foreground truncate">{supplier.id}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm p-2 bg-background rounded">
+                <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
                   <span className="font-medium">Status de Acesso:</span>
                   <span
                     className={
                       supplier.status === "PENDING"
-                        ? "text-yellow-600"
+                        ? "text-yellow-700 font-medium"
                         : supplier.status === "APPROVED"
-                          ? "text-green-600"
-                          : "text-red-600"
+                          ? "text-green-700 font-medium"
+                          : "text-red-700 font-medium"
                     }
                   >
                     {supplier.status === "PENDING" ? "Pendente" : supplier.status === "APPROVED" ? "Aprovado" : "Rejeitado"}

@@ -20,19 +20,19 @@ export function SupplierCard({ supplier, onApprove, onReject, onViewDetails, onD
     switch (supplier.status) {
       case "PENDING":
         return (
-          <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+          <Badge variant="outline" className="text-yellow-700 border-yellow-500 bg-yellow-50 font-medium">
             Pendente
           </Badge>
         )
       case "APPROVED":
         return (
-          <Badge variant="outline" className="text-green-600 border-green-600">
+          <Badge variant="outline" className="text-green-700 border-green-500 bg-green-50 font-medium">
             Aprovado
           </Badge>
         )
       case "REJECTED":
         return (
-          <Badge variant="outline" className="text-red-600 border-red-600">
+          <Badge variant="outline" className="text-red-700 border-red-500 bg-red-50 font-medium">
             Rejeitado
           </Badge>
         )
@@ -42,79 +42,97 @@ export function SupplierCard({ supplier, onApprove, onReject, onViewDetails, onD
   }
 
   return (
-    <Card className="bg-card border-border hover:shadow-md transition-shadow h-full flex flex-col">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12">
-              <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+    <Card className="bg-card border-border hover:shadow-lg transition-all duration-300 hover:scale-[1.02] h-full flex flex-col">
+      <CardHeader className="pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <Avatar className="h-12 w-12 flex-shrink-0">
+              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-lg font-semibold">
                 {supplier.tradeName
                   .split(" ")
                   .map((n) => n[0])
-                  .join("")}
+                  .slice(0, 2)
+                  .join("")
+                  .toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div>
-              <h3 className="font-semibold text-card-foreground">{supplier.tradeName}</h3>
-              <p className="text-sm text-muted-foreground">{supplier.companyName}</p>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-card-foreground truncate">{supplier.tradeName}</h3>
+              <p className="text-sm text-muted-foreground truncate">{supplier.companyName}</p>
             </div>
           </div>
-          {getStatusBadge()}
+          <div className="flex-shrink-0">
+            {getStatusBadge()}
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4 flex-1 flex flex-col">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <FileText className="h-4 w-4" />
-            <span>{supplier.document}</span>
+      <CardContent className="space-y-4 flex-1 flex flex-col pt-0">
+        <div className="space-y-2.5 text-sm">
+          <div className="flex items-center gap-2.5 text-muted-foreground">
+            <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">
+              <FileText className="h-4 w-4" />
+            </div>
+            <span className="truncate">{supplier.document}</span>
           </div>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Phone className="h-4 w-4" />
-            <span>{supplier.contact}</span>
+          <div className="flex items-center gap-2.5 text-muted-foreground">
+            <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">
+              <Phone className="h-4 w-4" />
+            </div>
+            <span className="truncate">{supplier.contact}</span>
           </div>
           {supplier.store?.address && (
-            <div className="flex items-center gap-2 text-muted-foreground md:col-span-2">
-              <MapPin className="h-4 w-4" />
-              <span>
+            <div className="flex items-center gap-2.5 text-muted-foreground">
+              <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">
+                <MapPin className="h-4 w-4" />
+              </div>
+              <span className="truncate">
                 {supplier.store.address.city}, {supplier.store.address.state}
               </span>
             </div>
           )}
           {supplier.store && (
-            <div className="flex items-center gap-2 text-muted-foreground md:col-span-2">
-              <Building className="h-4 w-4" />
-              <span>{supplier.store.name}</span>
+            <div className="flex items-center gap-2.5 text-muted-foreground">
+              <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">
+                <Building className="h-4 w-4" />
+              </div>
+              <span className="truncate">{supplier.store.name}</span>
             </div>
           )}
         </div>
 
         {supplier.store?.description && (
-          <div className="flex-1">
-            <p className="text-sm text-card-foreground line-clamp-2">{supplier.store.description}</p>
+          <div className="flex-1 pt-2">
+            <p className="text-sm text-card-foreground/80 line-clamp-2 leading-relaxed">{supplier.store.description}</p>
           </div>
         )}
 
-        <div className="flex gap-2 pt-2 mt-auto">
-          <Button variant="outline" size="sm" onClick={() => onViewDetails(supplier)} className="flex-1">
+        <div className="flex gap-2 pt-3 mt-auto border-t border-border/50">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => onViewDetails(supplier)} 
+            className="flex-1 hover:bg-muted/50 transition-colors"
+          >
             <Eye className="h-4 w-4 mr-2" />
-            Ver Detalhes
+            Detalhes
           </Button>
           {supplier.status === "PENDING" && (
             <>
               <Button
                 size="sm"
                 onClick={() => onApprove(supplier.id)}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white transition-colors shadow-sm"
               >
-                <Check className="h-4 w-4 mr-2" />
+                <Check className="h-4 w-4 mr-1.5" />
                 Aprovar
               </Button>
               <Button
                 size="sm"
                 onClick={() => onReject(supplier.id)}
                 variant="destructive"
+                className="flex-1 transition-colors shadow-sm"
               >
-                <X className="h-4 w-4 mr-2" />
+                <X className="h-4 w-4 mr-1.5" />
                 Rejeitar
               </Button>
             </>

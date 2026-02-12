@@ -139,8 +139,8 @@ export default function BenefitsPage() {
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Benefícios e Resgates</h1>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold text-foreground tracking-tight">Benefícios e Resgates</h1>
             <p className="text-muted-foreground">Gerencie benefícios disponíveis e acompanhe resgates</p>
           </div>
           <div className="flex gap-2">
@@ -148,7 +148,7 @@ export default function BenefitsPage() {
               size="sm" 
               onClick={handleCreate} 
               disabled={actionLoading}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
             >
               <Plus className="h-4 w-4 mr-2" />
               Criar Benefício
@@ -223,18 +223,18 @@ export default function BenefitsPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por título ou descrição..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 border-border/50 focus:border-primary/50 focus:ring-primary/20"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-48">
+            <SelectTrigger className="w-full sm:w-48 border-border/50">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -248,13 +248,13 @@ export default function BenefitsPage() {
         </div>
 
         {/* Results Count */}
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-muted-foreground">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="outline" className="text-muted-foreground border-border/50 bg-muted/30 font-medium">
             {filteredBenefits.length} benefício{filteredBenefits.length !== 1 ? "s" : ""} encontrado
             {filteredBenefits.length !== 1 ? "s" : ""}
           </Badge>
           {statusFilter !== "all" && (
-            <Badge variant="outline" className="text-secondary">
+            <Badge variant="outline" className="border-secondary/50 bg-secondary/5 text-secondary font-medium">
               Status:{" "}
               {statusFilter === "active"
                 ? "Ativos"

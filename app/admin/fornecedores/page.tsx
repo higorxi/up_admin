@@ -88,21 +88,34 @@ export default function SuppliersPage() {
     setIsModalOpen(true)
   }
 
-  const filteredSuppliers = suppliers.filter((supplier) => {
-    const matchesSearch =
-      supplier.tradeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.document.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (supplier.store?.name && supplier.store.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredSuppliers = suppliers
+    .filter((supplier) => {
+      const matchesSearch =
+        supplier.tradeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        supplier.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        supplier.document.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (supplier.store?.name && supplier.store.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "pending" && supplier.status === "PENDING") ||
-      (statusFilter === "approved" && supplier.status === "APPROVED") ||
-      (statusFilter === "rejected" && supplier.status === "REJECTED")
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "pending" && supplier.status === "PENDING") ||
+        (statusFilter === "approved" && supplier.status === "APPROVED") ||
+        (statusFilter === "rejected" && supplier.status === "REJECTED")
 
-    return matchesSearch && matchesStatus
-  })
+      return matchesSearch && matchesStatus
+    })
+    .sort((a, b) => {
+      // Ordenação por status: PENDING -> APPROVED -> REJECTED
+      const statusOrder = { PENDING: 1, APPROVED: 2, REJECTED: 3 }
+      const statusComparison = statusOrder[a.status] - statusOrder[b.status]
+      
+      if (statusComparison !== 0) {
+        return statusComparison
+      }
+      
+      // Ordenação alfabética dentro do mesmo status
+      return a.tradeName.localeCompare(b.tradeName, 'pt-BR', { sensitivity: 'base' })
+    })
 
   if (error) {
     return (
@@ -128,25 +141,25 @@ export default function SuppliersPage() {
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Fornecedores Parceiros</h1>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold text-foreground tracking-tight">Fornecedores Parceiros</h1>
             <p className="text-muted-foreground">Gerencie aprovações e cadastros de fornecedores</p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por nome comercial, empresa, documento..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 border-border/50 focus:border-primary/50 focus:ring-primary/20"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-48">
+            <SelectTrigger className="w-full sm:w-52 border-border/50">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -159,13 +172,13 @@ export default function SuppliersPage() {
         </div>
 
         {/* Results Count */}
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-muted-foreground">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="outline" className="text-muted-foreground border-border/50 bg-muted/30 font-medium">
             {filteredSuppliers.length} fornecedor{filteredSuppliers.length !== 1 ? "es" : ""} encontrado
             {filteredSuppliers.length !== 1 ? "s" : ""}
           </Badge>
           {statusFilter !== "all" && (
-            <Badge variant="outline" className="text-primary">
+            <Badge variant="outline" className="border-primary/50 bg-primary/5 text-primary font-medium">
               Status:{" "}
               {statusFilter === "pending" ? "Pendente" : statusFilter === "approved" ? "Aprovado" : "Rejeitado"}
             </Badge>
