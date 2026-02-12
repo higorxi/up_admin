@@ -3,10 +3,10 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Check, Mail, Phone, MapPin, Calendar, Building, FileText, Store, Globe, Clock, X } from "lucide-react"
+import { Check, Mail, Phone, MapPin, Calendar, Building, FileText, Store, Globe, Clock, X, User } from "lucide-react"
 import { useState } from "react"
 import type { Supplier } from "@/lib/services/suppliers"
 
@@ -93,19 +93,11 @@ export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onR
             <div className="bg-muted/30 p-5 rounded-xl border border-border/50">
               <h3 className="font-semibold mb-4 text-card-foreground flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Mail className="h-4 w-4 text-primary" />
+                  <Building className="h-4 w-4 text-primary" />
                 </div>
-                Informações de Contato
+                Informações da Empresa
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
-                  <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <span className="truncate">{supplier.contact.email}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
-                  <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <span className="truncate">{supplier.contact.phone}</span>
-                </div>
                 <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
                   <Building className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <span className="truncate">{supplier.companyName}</span>
@@ -114,6 +106,16 @@ export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onR
                   <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <span className="truncate">CNPJ: {supplier.document}</span>
                 </div>
+                <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
+                  <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <span className="truncate">{supplier.contact}</span>
+                </div>
+                {supplier.stateRegistration && (
+                  <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
+                    <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="truncate">IE: {supplier.stateRegistration}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50 md:col-span-2">
                   <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <span>Cadastrado em {formatDate(supplier.createdAt)}</span>
@@ -128,6 +130,72 @@ export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onR
             </div>
 
             <Separator className="my-6" />
+
+            {/* User Information */}
+            {supplier.user && (
+              <>
+                <div className="bg-muted/30 p-5 rounded-xl border border-border/50">
+                  <h3 className="font-semibold mb-4 text-card-foreground flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <User className="h-4 w-4 text-primary" />
+                    </div>
+                    Informações do Usuário
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4 p-4 bg-background rounded-lg border border-border/50">
+                      <Avatar className="h-16 w-16">
+                        {supplier.user.profileImage ? (
+                          <AvatarImage src={supplier.user.profileImage} alt="Imagem de perfil" />
+                        ) : null}
+                        <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                          {supplier.user.email.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 text-sm mb-2">
+                          <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <span className="truncate">{supplier.user.email}</span>
+                        </div>
+                      </div>
+                    </div>
+                    {supplier.user.address && (
+                      <div className="p-4 bg-background rounded-lg border border-border/50">
+                        <h4 className="font-medium mb-3 text-card-foreground flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          Endereço do Usuário
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-muted-foreground">Rua:</span>
+                            <span className="font-medium">{supplier.user.address.street}{supplier.user.address.number ? `, ${supplier.user.address.number}` : ''}</span>
+                          </div>
+                          {supplier.user.address.complement && (
+                            <div className="flex flex-col gap-1">
+                              <span className="text-muted-foreground">Complemento:</span>
+                              <span className="font-medium">{supplier.user.address.complement}</span>
+                            </div>
+                          )}
+                          <div className="flex flex-col gap-1">
+                            <span className="text-muted-foreground">Bairro:</span>
+                            <span className="font-medium">{supplier.user.address.district}</span>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <span className="text-muted-foreground">Cidade/Estado:</span>
+                            <span className="font-medium">{supplier.user.address.city} - {supplier.user.address.state}</span>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <span className="text-muted-foreground">CEP:</span>
+                            <span className="font-medium">{supplier.user.address.zipCode}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <Separator className="my-6" />
+              </>
+            )}
+
 
             {/* Store Information */}
             {supplier.store && (
