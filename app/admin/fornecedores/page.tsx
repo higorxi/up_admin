@@ -4,6 +4,7 @@ import { useState } from "react"
 import { AdminLayout } from "@/components/admin-layout"
 import { SupplierCard } from "@/components/supplier-card"
 import { SupplierDetailsModal } from "@/components/supplier-details-modal"
+import { RejectSupplierDialog } from "@/components/reject-supplier-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -19,6 +20,8 @@ export default function SuppliersPage() {
 
   const [selectedSupplier, setSelectedSupplier] = useState<(typeof suppliers)[0] | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false)
+  const [supplierToReject, setSupplierToReject] = useState<{ id: string; name: string } | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
 
@@ -38,9 +41,16 @@ export default function SuppliersPage() {
     }
   }
 
-  const handleReject = async (id: string, reason: string) => {
+  const handleRejectClick = (id: string, name: string) => {
+    setSupplierToReject({ id, name })
+    setIsRejectDialogOpen(true)
+  }
+
+  const handleRejectConfirm = async (reason: string) => {
+    if (!supplierToReject) return
+
     try {
-      await reject(id, reason)
+      await reject(supplierToReject.id, reason)
       toast({
         title: "Fornecedor rejeitado",
         description: "O fornecedor foi rejeitado com sucesso.",
@@ -51,6 +61,7 @@ export default function SuppliersPage() {
         description: "Não foi possível rejeitar o fornecedor. Tente novamente.",
         variant: "destructive",
       })
+      throw error
     }
   }
 
@@ -183,7 +194,7 @@ export default function SuppliersPage() {
                 key={supplier.id}
                 supplier={supplier}
                 onApprove={handleApprove}
-                onReject={handleReject}
+                onReject={() => handleRejectClick(supplier.id, supplier.tradeName)}
                 onViewDetails={handleViewDetails}
                 onDelete={handleDelete}
               />
@@ -205,7 +216,23 @@ export default function SuppliersPage() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onApprove={handleApprove}
-          onReject={handleReject}
+          onReject={(id) => {
+            const supplier = suppliers.find((s) => s.id === id)
+            if (supplier) {
+              handleRejectClick(id, supplier.tradeName)
+            }
+          }}
+        />
+
+        {/* Reject Dialog */}
+        <RejectSupplierDialog
+          isOpen={isRejectDialogOpen}
+          onClose={() => {
+            setIsRejectDialogOpen(false)
+            setSupplierToReject(null)
+          }}
+          onConfirm={handleRejectConfirm}
+          supplierName={supplierToReject?.name || ""}
         />
       </div>
     </AdminLayout>

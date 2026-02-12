@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Check, Mail, Phone, MapPin, Calendar, Building, FileText, Store, Globe, Clock } from "lucide-react"
+import { Check, Mail, Phone, MapPin, Calendar, Building, FileText, Store, Globe, Clock, X } from "lucide-react"
 import { useState } from "react"
 import type { Supplier } from "@/lib/services/suppliers"
 
@@ -15,9 +15,10 @@ interface SupplierDetailsModalProps {
   isOpen: boolean
   onClose: () => void
   onApprove: (id: string) => Promise<void>
+  onReject: (id: string) => void
 }
 
-export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove }: SupplierDetailsModalProps) {
+export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onReject }: SupplierDetailsModalProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   if (!supplier) return null
@@ -231,6 +232,18 @@ export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove }: S
             >
               <Check className="h-4 w-4 mr-2" />
               {isLoading ? "Aprovando..." : "Aprovar Fornecedor"}
+            </Button>
+            <Button
+              onClick={() => {
+                onReject(supplier.id)
+                onClose()
+              }}
+              disabled={isLoading}
+              variant="destructive"
+              className="flex-1"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Rejeitar Fornecedor
             </Button>
           </div>
         )}

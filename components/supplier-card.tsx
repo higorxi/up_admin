@@ -4,17 +4,18 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Check, Eye, Phone, MapPin, Building, FileText } from "lucide-react"
+import { Check, Eye, Phone, MapPin, Building, FileText, X } from "lucide-react"
 import type { Supplier } from "@/lib/services/suppliers"
 
 interface SupplierCardProps {
   supplier: Supplier
   onApprove: (id: string) => void
+  onReject: (id: string) => void
   onViewDetails: (supplier: Supplier) => void
   onDelete?: (id: string) => void
 }
 
-export function SupplierCard({ supplier, onApprove, onViewDetails, onDelete }: SupplierCardProps) {
+export function SupplierCard({ supplier, onApprove, onReject, onViewDetails, onDelete }: SupplierCardProps) {
   const getStatusBadge = () => {
     switch (supplier.status) {
       case "PENDING":
@@ -99,14 +100,24 @@ export function SupplierCard({ supplier, onApprove, onViewDetails, onDelete }: S
             Ver Detalhes
           </Button>
           {supplier.status === "PENDING" && (
-            <Button
-              size="sm"
-              onClick={() => onApprove(supplier.id)}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              <Check className="h-4 w-4 mr-2" />
-              Aprovar
-            </Button>
+            <>
+              <Button
+                size="sm"
+                onClick={() => onApprove(supplier.id)}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Check className="h-4 w-4 mr-2" />
+                Aprovar
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => onReject(supplier.id)}
+                variant="destructive"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Rejeitar
+              </Button>
+            </>
           )}
         </div>
       </CardContent>
