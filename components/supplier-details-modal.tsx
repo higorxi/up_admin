@@ -148,13 +148,15 @@ export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onR
                           <AvatarImage src={supplier.user.profileImage} alt="Imagem de perfil" />
                         ) : null}
                         <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                          {supplier.user.email.charAt(0).toUpperCase()}
+                          <span className="truncate max-w-[70px]" title={supplier.user.email}>
+                            {supplier.user.email.charAt(0).toUpperCase()}
+                          </span>
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <div className="flex items-center gap-3 text-sm mb-2">
                           <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <span className="truncate">{supplier.user.email}</span>
+                          <span className="truncate max-w-[200px]" title={supplier.user.email}>{supplier.user.email}</span>
                         </div>
                       </div>
                     </div>
