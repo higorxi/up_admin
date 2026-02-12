@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react"
 import { useEvents } from "@/hooks/use-events"
 import { AdminLayout } from "@/components/admin-layout"
+import { AdminPageLayout } from "@/components/admin-page-layout"
 import { EventCard } from "@/components/event-card"
 import { EventFormModal } from "@/components/event-form-modal"
 import { AttendeesModal } from "@/components/attendees-modal"
+import { CardSkeleton } from "@/components/card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -108,34 +110,13 @@ export default function EventsPage() {
 
   const eventTypes = [...new Set(events.map((e) => e.type))]
 
-  if (loading) {
-    return (
-      <AdminLayout>
-        <div className="p-6 flex items-center justify-center min-h-96">
-          <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2 text-muted-foreground">Carregando eventos...</span>
-        </div>
-      </AdminLayout>
-    )
-  }
-
   return (
     <AdminLayout>
-      <div className="p-6 space-y-6">
-        {/* Error Alert */}
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold text-foreground tracking-tight">Eventos</h1>
-            <p className="text-muted-foreground">Gerencie eventos e validação de presença</p>
-          </div>
-          <div className="flex gap-2">
+      <AdminPageLayout
+        title="Eventos"
+        description="Gerencie eventos e validação de presença"
+        actions={
+          <>
             <Button 
               variant="outline" 
               size="sm" 
@@ -154,8 +135,14 @@ export default function EventsPage() {
               <Plus className="h-4 w-4 mr-2" />
               Criar Evento
             </Button>
-          </div>
-        </div>
+          </>
+        }
+      >
+        {error && (
+          <Alert variant="destructive" className="border-destructive/50">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4">
@@ -264,16 +251,20 @@ export default function EventsPage() {
 
         {/* Events Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredEvents.map((event) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              onEdit={handleEdit}
-              onToggle={handleToggleEvent}
-              onViewDetails={handleViewDetails}
-              onManageAttendees={handleManageAttendees}
-            />
-          ))}
+          {loading ? (
+            <CardSkeleton count={6} />
+          ) : (
+            filteredEvents.map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                onEdit={handleEdit}
+                onToggle={handleToggleEvent}
+                onViewDetails={handleViewDetails}
+                onManageAttendees={handleManageAttendees}
+              />
+            ))
+          )}
         </div>
 
         {filteredEvents.length === 0 && !loading && (
@@ -305,7 +296,7 @@ export default function EventsPage() {
           onCheckIn={handleCheckIn}
           getParticipants={getEventParticipants}
         />
-      </div>
+      </AdminPageLayout>
     </AdminLayout>
   )
 }

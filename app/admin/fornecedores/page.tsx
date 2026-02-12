@@ -2,15 +2,16 @@
 
 import { useState } from "react"
 import { AdminLayout } from "@/components/admin-layout"
+import { AdminPageLayout } from "@/components/admin-page-layout"
 import { SupplierCard } from "@/components/supplier-card"
 import { SupplierDetailsModal } from "@/components/supplier-details-modal"
 import { RejectSupplierDialog } from "@/components/reject-supplier-dialog"
+import { CardSkeleton } from "@/components/card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Skeleton } from "@/components/ui/skeleton"
 import { Search, Download, UserCheck, AlertCircle, RefreshCw } from "lucide-react"
 import { useSuppliers } from "@/hooks/use-suppliers"
 import { toast } from "@/hooks/use-toast"
@@ -117,35 +118,24 @@ export default function SuppliersPage() {
       return a.tradeName.localeCompare(b.tradeName, 'pt-BR', { sensitivity: 'base' })
     })
 
-  if (error) {
-    return (
-      <AdminLayout>
-        <div className="p-6">
-          <Alert variant="destructive">
+  return (
+    <AdminLayout>
+      <AdminPageLayout
+        title="Fornecedores Parceiros"
+        description="Gerencie aprovações e cadastros de fornecedores"
+      >
+        {error && (
+          <Alert variant="destructive" className="border-destructive/50">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="flex items-center justify-between">
               {error}
-              <Button variant="outline" size="sm" onClick={refetch}>
+              <Button variant="outline" size="sm" onClick={refetch} className="transition-colors">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Tentar novamente
               </Button>
             </AlertDescription>
           </Alert>
-        </div>
-      </AdminLayout>
-    )
-  }
-
-  return (
-    <AdminLayout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold text-foreground tracking-tight">Fornecedores Parceiros</h1>
-            <p className="text-muted-foreground">Gerencie aprovações e cadastros de fornecedores</p>
-          </div>
-        </div>
+        )}
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
@@ -186,23 +176,11 @@ export default function SuppliersPage() {
         </div>
 
         {/* Suppliers Grid */}
-        {loading ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-card border border-border rounded-lg p-6">
-                <Skeleton className="h-6 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-1/2 mb-4" />
-                <Skeleton className="h-20 w-full mb-4" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-8 w-20" />
-                  <Skeleton className="h-8 w-20" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredSuppliers.map((supplier) => (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {loading ? (
+            <CardSkeleton count={6} />
+          ) : (
+            filteredSuppliers.map((supplier) => (
               <SupplierCard
                 key={supplier.id}
                 supplier={supplier}
@@ -211,9 +189,9 @@ export default function SuppliersPage() {
                 onViewDetails={handleViewDetails}
                 onDelete={handleDelete}
               />
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
 
         {!loading && filteredSuppliers.length === 0 && (
           <div className="text-center py-12">
@@ -223,7 +201,7 @@ export default function SuppliersPage() {
           </div>
         )}
 
-        {/* Details Modal */}
+        {/* Modals */}
         <SupplierDetailsModal
           supplier={selectedSupplier}
           isOpen={isModalOpen}
@@ -237,7 +215,6 @@ export default function SuppliersPage() {
           }}
         />
 
-        {/* Reject Dialog */}
         <RejectSupplierDialog
           isOpen={isRejectDialogOpen}
           onClose={() => {
@@ -247,7 +224,7 @@ export default function SuppliersPage() {
           onConfirm={handleRejectConfirm}
           supplierName={supplierToReject?.name || ""}
         />
-      </div>
+      </AdminPageLayout>
     </AdminLayout>
   )
 }

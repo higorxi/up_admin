@@ -1,4 +1,5 @@
 import { AdminLayout } from "@/components/admin-layout";
+import { PageTransition } from "@/components/page-transition";
 import { DashboardStats } from "@/components/dashboard-stats";
 import { RecentActivity } from "@/components/recent-activity";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,8 @@ import Link from "next/link";
 export default function AdminDashboard() {
   return (
     <AdminLayout>
-      <div className="p-6 space-y-6">
+      <PageTransition>
+        <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="space-y-1">
@@ -99,6 +101,7 @@ export default function AdminDashboard() {
           </Card>
         </div>
       </div>
+      </PageTransition>
     </AdminLayout>
   );
 }

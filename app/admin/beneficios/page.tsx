@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { AdminLayout } from "@/components/admin-layout"
+import { AdminPageLayout } from "@/components/admin-page-layout"
 import { BenefitFormModal } from "@/components/benefit-form-modal"
 import { RedemptionsModal } from "@/components/redemptions-modal"
+import { CardSkeleton } from "@/components/card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -136,36 +138,30 @@ export default function BenefitsPage() {
 
   return (
     <AdminLayout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold text-foreground tracking-tight">Benefícios e Resgates</h1>
-            <p className="text-muted-foreground">Gerencie benefícios disponíveis e acompanhe resgates</p>
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              onClick={handleCreate} 
-              disabled={actionLoading}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Criar Benefício
-            </Button>
-          </div>
-        </div>
-
-        {/* Errors */}
+      <AdminPageLayout
+        title="Benefícios e Resgates"
+        description="Gerencie benefícios disponíveis e acompanhe resgates"
+        actions={
+          <Button 
+            size="sm" 
+            onClick={handleCreate} 
+            disabled={actionLoading}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Criar Benefício
+          </Button>
+        }
+      >
         {hookError && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="border-destructive/50">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{hookError}</AlertDescription>
           </Alert>
         )}
 
         {actionError && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="border-destructive/50">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{actionError}</AlertDescription>
           </Alert>
@@ -267,17 +263,12 @@ export default function BenefitsPage() {
           )}
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        )}
-
         {/* Benefits Grid */}
-        {!loading && (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredBenefits.map((benefit) => (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {loading ? (
+            <CardSkeleton count={6} />
+          ) : (
+            filteredBenefits.map((benefit) => (
               <BenefitCard
                 key={benefit.id}
                 benefit={benefit}
@@ -287,9 +278,9 @@ export default function BenefitsPage() {
                 onViewRedemptions={handleViewRedemptions}
                 disabled={actionLoading}
               />
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
 
         {!loading && filteredBenefits.length === 0 && (
           <div className="text-center py-12">
@@ -318,7 +309,7 @@ export default function BenefitsPage() {
           isOpen={isRedemptionsModalOpen}
           onClose={() => setIsRedemptionsModalOpen(false)}
         />
-      </div>
+      </AdminPageLayout>
     </AdminLayout>
   )
 }
