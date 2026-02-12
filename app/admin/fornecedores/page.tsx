@@ -86,8 +86,9 @@ export default function SuppliersPage() {
 
     const matchesStatus =
       statusFilter === "all" ||
-      (statusFilter === "pending" && supplier.accessPending) ||
-      (statusFilter === "approved" && !supplier.accessPending)
+      (statusFilter === "pending" && supplier.status === "PENDING") ||
+      (statusFilter === "approved" && supplier.status === "APPROVED") ||
+      (statusFilter === "rejected" && supplier.status === "REJECTED")
 
     return matchesSearch && matchesStatus
   })
@@ -141,6 +142,7 @@ export default function SuppliersPage() {
               <SelectItem value="all">Todos os Status</SelectItem>
               <SelectItem value="pending">Pendente</SelectItem>
               <SelectItem value="approved">Aprovado</SelectItem>
+              <SelectItem value="rejected">Rejeitado</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -153,7 +155,8 @@ export default function SuppliersPage() {
           </Badge>
           {statusFilter !== "all" && (
             <Badge variant="outline" className="text-primary">
-              Status: {statusFilter === "pending" ? "Pendente" : "Aprovado"}
+              Status:{" "}
+              {statusFilter === "pending" ? "Pendente" : statusFilter === "approved" ? "Aprovado" : "Rejeitado"}
             </Badge>
           )}
         </div>

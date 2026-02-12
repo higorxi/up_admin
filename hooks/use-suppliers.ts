@@ -41,7 +41,7 @@ export function useSuppliers(): UseSuppliersReturn {
     try {
       await SuppliersService.approve(id)
       setSuppliers((prev) =>
-        prev.map((supplier) => (supplier.id === id ? { ...supplier, accessPending: false } : supplier)),
+        prev.map((supplier) => (supplier.id === id ? { ...supplier, status: "APPROVED" } : supplier)),
       )
     } catch (err) {
       console.error("[v0] Error approving supplier:", err)
@@ -53,7 +53,7 @@ export function useSuppliers(): UseSuppliersReturn {
     try {
       await SuppliersService.reject(id, reason)
       setSuppliers((prev) =>
-        prev.map((supplier) => (supplier.id === id ? { ...supplier, accessPending: true } : supplier)),
+        prev.map((supplier) => (supplier.id === id ? { ...supplier, status: "REJECTED" } : supplier)),
       )
     } catch (err) {
       console.error("[v0] Error rejecting supplier:", err)

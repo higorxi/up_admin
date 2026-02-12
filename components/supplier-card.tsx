@@ -16,18 +16,27 @@ interface SupplierCardProps {
 
 export function SupplierCard({ supplier, onApprove, onViewDetails, onDelete }: SupplierCardProps) {
   const getStatusBadge = () => {
-    if (supplier.accessPending) {
-      return (
-        <Badge variant="outline" className="text-yellow-600 border-yellow-600">
-          Pendente
-        </Badge>
-      )
-    } else {
-      return (
-        <Badge variant="outline" className="text-green-600 border-green-600">
-          Aprovado
-        </Badge>
-      )
+    switch (supplier.status) {
+      case "PENDING":
+        return (
+          <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+            Pendente
+          </Badge>
+        )
+      case "APPROVED":
+        return (
+          <Badge variant="outline" className="text-green-600 border-green-600">
+            Aprovado
+          </Badge>
+        )
+      case "REJECTED":
+        return (
+          <Badge variant="outline" className="text-red-600 border-red-600">
+            Rejeitado
+          </Badge>
+        )
+      default:
+        return null
     }
   }
 
@@ -89,7 +98,7 @@ export function SupplierCard({ supplier, onApprove, onViewDetails, onDelete }: S
             <Eye className="h-4 w-4 mr-2" />
             Ver Detalhes
           </Button>
-          {supplier.accessPending && (
+          {supplier.status === "PENDING" && (
             <Button
               size="sm"
               onClick={() => onApprove(supplier.id)}
