@@ -6,35 +6,45 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Check, Mail, Phone, MapPin, Calendar, Building, FileText, Store, Globe, Clock } from "lucide-react"
+import { Check, Mail, Phone, MapPin, Calendar, Building, FileText, Store, Globe, Clock, X } from "lucide-react"
 import { useState } from "react"
-import type { PartnerSupplier } from "@/lib/services/suppliers"
+import type { Supplier } from "@/lib/services/suppliers"
 
 interface SupplierDetailsModalProps {
-  supplier: PartnerSupplier | null
+  supplier: Supplier | null
   isOpen: boolean
   onClose: () => void
   onApprove: (id: string) => Promise<void>
+  onReject: (id: string) => void
 }
 
-export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove }: SupplierDetailsModalProps) {
+export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onReject }: SupplierDetailsModalProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   if (!supplier) return null
 
   const getStatusBadge = () => {
-    if (supplier.accessPending) {
-      return (
-        <Badge variant="outline" className="text-yellow-600 border-yellow-600">
-          Pendente
-        </Badge>
-      )
-    } else {
-      return (
-        <Badge variant="outline" className="text-green-600 border-green-600">
-          Aprovado
-        </Badge>
-      )
+    switch (supplier.status) {
+      case "PENDING":
+        return (
+          <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+            Pendente
+          </Badge>
+        )
+      case "APPROVED":
+        return (
+          <Badge variant="outline" className="text-green-600 border-green-600">
+            Aprovado
+          </Badge>
+        )
+      case "REJECTED":
+        return (
+          <Badge variant="outline" className="text-red-600 border-red-600">
+            Rejeitado
+          </Badge>
+        )
+      default:
+        return null
     }
   }
 
@@ -196,8 +206,16 @@ export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove }: S
                 </div>
                 <div className="flex items-center gap-2 text-sm p-2 bg-background rounded">
                   <span className="font-medium">Status de Acesso:</span>
-                  <span className={supplier.accessPending ? "text-yellow-600" : "text-green-600"}>
-                    {supplier.accessPending ? "Pendente" : "Aprovado"}
+                  <span
+                    className={
+                      supplier.status === "PENDING"
+                        ? "text-yellow-600"
+                        : supplier.status === "APPROVED"
+                          ? "text-green-600"
+                          : "text-red-600"
+                    }
+                  >
+                    {supplier.status === "PENDING" ? "Pendente" : supplier.status === "APPROVED" ? "Aprovado" : "Rejeitado"}
                   </span>
                 </div>
               </div>
@@ -205,7 +223,7 @@ export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove }: S
           </div>
         </ScrollArea>
 
-        {supplier.accessPending && (
+        {supplier.status === "PENDING" && (
           <div className="flex gap-3 pt-4 border-t">
             <Button
               onClick={handleApprove}
@@ -214,6 +232,18 @@ export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove }: S
             >
               <Check className="h-4 w-4 mr-2" />
               {isLoading ? "Aprovando..." : "Aprovar Fornecedor"}
+            </Button>
+            <Button
+              onClick={() => {
+                onReject(supplier.id)
+                onClose()
+              }}
+              disabled={isLoading}
+              variant="destructive"
+              className="flex-1"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Rejeitar Fornecedor
             </Button>
           </div>
         )}

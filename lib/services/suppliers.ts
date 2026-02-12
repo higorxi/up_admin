@@ -1,5 +1,7 @@
 import { ApiService } from "./api"
 
+export type SupplierStatus = "PENDING" | "APPROVED" | "REJECTED"
+
 export interface Supplier {
   id: string
   tradeName: string
@@ -7,7 +9,7 @@ export interface Supplier {
   document: string
   stateRegistration: string
   contact: string
-  accessPending: boolean
+  status: SupplierStatus
   storeId: string | null
   store: {
     id: string
@@ -41,16 +43,14 @@ export class SuppliersService {
   }
 
   static async approve(id: string): Promise<void> {
-    return ApiService.put(`/pending/${id}`, {})
+    return ApiService.patch(`/approve-partner/${id}`, {})
   }
 
   static async reject(id: string, reason: string): Promise<void> {
-    return ApiService.put(`/partner-suppliers/${id}/reject`, { reason })
+    return ApiService.patch(`/reject-partner/${id}`, { reason })
   }
 
   static async delete(id: string): Promise<void> {
     return ApiService.delete(`/partner-suppliers/${id}`)
   }
-
-  // static async getStats() - removido
 }
