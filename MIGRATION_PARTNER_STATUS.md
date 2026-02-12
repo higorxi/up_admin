@@ -84,6 +84,19 @@ Agora exibem 3 estados possíveis:
 - 🟢 **Aprovado** (`status === "APPROVED"`)
 - 🔴 **Rejeitado** (`status === "REJECTED"`)
 
+Para fornecedores pendentes, ambos os componentes exibem:
+- ✅ Botão "Aprovar" (verde)
+- ❌ Botão "Rejeitar" (vermelho)
+
+#### `RejectSupplierDialog`
+
+Novo componente criado para solicitar o motivo da rejeição:
+- Modal com validação obrigatória de motivo
+- Campo de texto para descrição detalhada
+- Exibe nome do fornecedor sendo rejeitado
+- Feedback visual de loading durante o processo
+- Mensagem explicativa sobre o impacto da rejeição
+
 #### Página de Fornecedores (`app/admin/fornecedores/page.tsx`)
 
 Filtros atualizados:
@@ -127,9 +140,16 @@ Se um fornecedor com `status: REJECTED` tentar fazer login:
 1. ✅ Verificar listagem de fornecedores com diferentes status
 2. ✅ Testar filtros (Todos, Pendente, Aprovado, Rejeitado)
 3. ✅ Aprovar um fornecedor pendente
-4. ✅ Rejeitar um fornecedor pendente (com motivo)
+4. ✅ Rejeitar um fornecedor pendente:
+   - Clicar no botão "Rejeitar"
+   - Verificar abertura do diálogo
+   - Tentar submeter sem motivo (deve mostrar erro)
+   - Preencher motivo e confirmar
+   - Verificar toast de sucesso
 5. ✅ Verificar exibição correta dos badges de status
 6. ✅ Verificar que fornecedores rejeitados aparecem com badge vermelho
+7. ✅ Testar rejeição pelo modal de detalhes
+8. ✅ Testar cancelamento do diálogo de rejeição
 
 ### Backend (quando disponível)
 1. Verificar que fornecedores rejeitados recebem 403 no login
@@ -156,12 +176,14 @@ git revert 4457c13
 
 - `lib/services/suppliers.ts` - Interface e endpoints atualizados
 - `hooks/use-suppliers.ts` - Lógica de aprovação/rejeição
-- `app/admin/fornecedores/page.tsx` - Filtros e listagem
-- `components/supplier-card.tsx` - Exibição de status
+- `app/admin/fornecedores/page.tsx` - Filtros, listagem e integração com diálogo de rejeição
+- `components/supplier-card.tsx` - Exibição de status e botões de ação
 - `components/supplier-details-modal.tsx` - Modal de detalhes e ações
+- `components/reject-supplier-dialog.tsx` - **NOVO** - Diálogo para solicitar motivo da rejeição
 
-## Commit
+## Commits
 
+### 1. Migração do sistema de status (4457c13)
 ```
 feat: migrar de accessPending para status enum no fluxo de fornecedores
 
@@ -174,7 +196,23 @@ feat: migrar de accessPending para status enum no fluxo de fornecedores
 - Atualizar hook use-suppliers para trabalhar com novo status enum
 ```
 
-Commit SHA: `4457c13`
+### 2. Documentação (fbff9fc)
+```
+docs: adicionar documentação de migração do sistema de status de fornecedores
+```
+
+### 3. Funcionalidade de rejeição (dde9635)
+```
+feat: adicionar funcionalidade de rejeição de fornecedores com diálogo
+
+- Criar componente RejectSupplierDialog para solicitar motivo da rejeição
+- Adicionar botão de rejeitar no SupplierCard para fornecedores pendentes
+- Adicionar botão de rejeitar no SupplierDetailsModal
+- Integrar diálogo de rejeição na página de fornecedores
+- Validar que o motivo da rejeição é obrigatório
+- Exibir toast de sucesso/erro após ação de rejeitar
+```
+
 Branch: `cursor/admin-partner-access-status-c6a7`
 
 ---
