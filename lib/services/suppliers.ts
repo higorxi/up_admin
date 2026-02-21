@@ -13,8 +13,13 @@ export interface GrantTrialPayload {
 
 export interface SupplierSubscription {
   id?: string
+  partnerSupplierId?: string
+  stripeCustomerId?: string | null
+  subscriptionId?: string | null
   status?: SubscriptionStatus | string | null
+  subscriptionStatus?: SubscriptionStatus | string | null
   planType?: PlanType | string | null
+  cancelAtPeriodEnd?: boolean | null
   isManual?: boolean | null
   trialEndsAt?: string | null
   currentPeriodEnd?: string | null
@@ -58,6 +63,10 @@ export interface Supplier {
     totalProducts?: number
     totalEvents?: number
     subscription?: SupplierSubscription | null
+    _count?: {
+      products?: number
+      events?: number
+    } | null
     address: {
       id: string
       state: string
@@ -121,8 +130,19 @@ const normalizeSubscriptionStatus = (status: string | null | undefined) => statu
 const getSupplierSubscription = (supplier: Supplier): SupplierSubscription | null =>
   supplier.subscription ?? supplier.store?.subscription ?? null
 
+const getSupplierIsManual = (supplier: Supplier): boolean | null => {
+  const subscription = getSupplierSubscription(supplier)
+  const manualValue = supplier.isManual ?? subscription?.isManual
+
+  return typeof manualValue === "boolean" ? manualValue : null
+}
+
 export const getSupplierSubscriptionStatus = (supplier: Supplier): string | null => {
-  return normalizeSubscriptionStatus(supplier.subscriptionStatus ?? getSupplierSubscription(supplier)?.status)
+  const subscription = getSupplierSubscription(supplier)
+
+  return normalizeSubscriptionStatus(
+    supplier.subscriptionStatus ?? subscription?.subscriptionStatus ?? subscription?.status,
+  )
 }
 
 export const getSupplierTrialEndsAt = (supplier: Supplier): string | null => {
@@ -142,13 +162,15 @@ export const getSupplierHasTrial = (supplier: Supplier): boolean => {
     return supplier.hasTrial
   }
 
-  const subscription = getSupplierSubscription(supplier)
-  const isManualTrial = supplier.isManual ?? subscription?.isManual
-  if (typeof isManualTrial === "boolean") {
-    return isManualTrial
+  const status = getSupplierSubscriptionStatus(supplier)
+  const isManual = getSupplierIsManual(supplier)
+
+  if (isManual) {
+    // Trials manuais podem estar marcados como ACTIVE ou TRIALING no back.
+    return status === "ACTIVE" || status === "TRIALING"
   }
 
-  return getSupplierSubscriptionStatus(supplier) === "TRIALING"
+  return status === "TRIALING"
 }
 
 export const getSupplierHasActivePlan = (supplier: Supplier): boolean => {
@@ -156,7 +178,13 @@ export const getSupplierHasActivePlan = (supplier: Supplier): boolean => {
     return supplier.hasActivePlan
   }
 
-  return getSupplierSubscriptionStatus(supplier) === "ACTIVE" && !getSupplierHasTrial(supplier)
+  const status = getSupplierSubscriptionStatus(supplier)
+  if (status !== "ACTIVE") return false
+
+  // ACTIVE manual representa trial em alguns cenários.
+  if (getSupplierIsManual(supplier)) return false
+
+  return !getSupplierHasTrial(supplier)
 }
 
 export const canSupplierReceiveTrial = (supplier: Supplier): boolean => {
