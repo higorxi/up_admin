@@ -12,6 +12,7 @@ interface UseSuppliersReturn {
   approve: (id: string) => Promise<void>
   reject: (id: string, reason: string) => Promise<void>
   grantTrial: (id: string, payload: GrantTrialPayload) => Promise<void>
+  cancelTrial: (id: string) => Promise<void>
   deleteSupplier: (id: string) => Promise<void>
 }
 
@@ -71,6 +72,15 @@ export function useSuppliers(): UseSuppliersReturn {
     }
   }
 
+  const cancelTrial = async (id: string) => {
+    try {
+      await SuppliersService.cancelTrial(id)
+    } catch (err) {
+      console.error("[v0] Error canceling trial:", err)
+      throw err
+    }
+  }
+
   const deleteSupplier = async (id: string) => {
     try {
       await SuppliersService.delete(id)
@@ -93,6 +103,7 @@ export function useSuppliers(): UseSuppliersReturn {
     approve,
     reject,
     grantTrial,
+    cancelTrial,
     deleteSupplier,
   }
 }
