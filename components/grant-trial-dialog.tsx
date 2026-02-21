@@ -165,8 +165,14 @@ export function GrantTrialDialog({ isOpen, onClose, onConfirm, supplierName }: G
           <Button variant="outline" onClick={handleClose} disabled={isLoading}>
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} disabled={isLoading} className="shadow-sm">
-            {isLoading ? "Concedendo..." : "Conceder Trial"}
+          <Button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            loading={isLoading}
+            loadingText="Concedendo..."
+            className="shadow-sm"
+          >
+            Conceder Trial
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   Dialog,
   DialogContent,
@@ -53,6 +53,7 @@ export function EventFormModal({
   const { stores, loading: storesLoading, error: storesError } = useStores()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const submitLockRef = useRef(false)
   const [includeAddress, setIncludeAddress] = useState(false)
 
   const [formData, setFormData] = useState<CreateEventData>({
@@ -111,6 +112,9 @@ export function EventFormModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (submitLockRef.current) return
+
+    submitLockRef.current = true
     setLoading(true)
     setError(null)
 
@@ -175,6 +179,7 @@ export function EventFormModal({
       setError(err instanceof Error ? err.message : "Erro ao salvar evento")
     } finally {
       setLoading(false)
+      submitLockRef.current = false
     }
   }
 
@@ -441,8 +446,13 @@ export function EventFormModal({
             <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading || storesLoading}>
-              {loading ? "Salvando..." : mode === "create" ? "Criar Evento" : "Salvar Alterações"}
+            <Button
+              type="submit"
+              disabled={loading || storesLoading}
+              loading={loading}
+              loadingText="Salvando..."
+            >
+              {mode === "create" ? "Criar Evento" : "Salvar Alterações"}
             </Button>
           </div>
         </form>

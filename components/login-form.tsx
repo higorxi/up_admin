@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,10 +17,14 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const submitLockRef = useRef(false)
   const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (submitLockRef.current) return
+
+    submitLockRef.current = true
     setError("")
     setIsLoading(true)
 
@@ -30,6 +34,7 @@ export function LoginForm() {
       setError(err instanceof Error ? err.message : "Erro ao fazer login")
     } finally {
       setIsLoading(false)
+      submitLockRef.current = false
     }
   }
 
@@ -97,18 +102,17 @@ export function LoginForm() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full mt-6 shadow-sm transition-all" disabled={isLoading}>
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  Entrando...
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <LogIn className="h-4 w-4" />
-                  Entrar
-                </div>
-              )}
+            <Button
+              type="submit"
+              className="w-full mt-6 shadow-sm transition-all"
+              disabled={isLoading}
+              loading={isLoading}
+              loadingText="Entrando..."
+            >
+              <div className="flex items-center gap-2">
+                <LogIn className="h-4 w-4" />
+                Entrar
+              </div>
             </Button>
           </form>
         </CardContent>
