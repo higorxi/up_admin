@@ -305,10 +305,12 @@ export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onR
             <Button
               onClick={handleApprove}
               disabled={isLoading}
+              loading={isLoading}
+              loadingText="Aprovando..."
               className="flex-1 bg-green-600 hover:bg-green-700 text-white"
             >
               <Check className="h-4 w-4 mr-2" />
-              {isLoading ? "Aprovando..." : "Aprovar Fornecedor"}
+              Aprovar Fornecedor
             </Button>
             <Button
               onClick={() => {

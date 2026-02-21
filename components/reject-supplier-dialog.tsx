@@ -100,18 +100,18 @@ export function RejectSupplierDialog({ isOpen, onClose, onConfirm, supplierName 
           <Button variant="outline" onClick={handleClose} disabled={isLoading} className="transition-colors">
             Cancelar
           </Button>
-          <Button variant="destructive" onClick={handleSubmit} disabled={isLoading} className="transition-colors shadow-sm">
-            {isLoading ? (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Rejeitando...
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <X className="h-4 w-4" />
-                Confirmar Rejeição
-              </div>
-            )}
+          <Button
+            variant="destructive"
+            onClick={handleSubmit}
+            disabled={isLoading}
+            loading={isLoading}
+            loadingText="Rejeitando..."
+            className="transition-colors shadow-sm"
+          >
+            <div className="flex items-center gap-2">
+              <X className="h-4 w-4" />
+              Confirmar Rejeição
+            </div>
           </Button>
         </DialogFooter>
       </DialogContent>

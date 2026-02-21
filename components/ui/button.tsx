@@ -1,6 +1,9 @@
+'use client'
+
 import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
+import { Loader2 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
@@ -40,19 +43,119 @@ function Button({
   variant,
   size,
   asChild = false,
+  loading = false,
+  loadingText,
+  preventDoubleClick = true,
+  onClick,
+  disabled,
+  type,
+  children,
   ...props
 }: React.ComponentProps<'button'> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    loading?: boolean
+    loadingText?: React.ReactNode
+    preventDoubleClick?: boolean
   }) {
+  const SUBMIT_CLICK_LOCK_MS = 400
   const Comp = asChild ? Slot : 'button'
+  const [internalLoading, setInternalLoading] = React.useState(false)
+  const lockRef = React.useRef(false)
+  const submitLockTimeoutRef = React.useRef<number | null>(null)
+
+  const isLoading = loading || internalLoading
+  const isDisabled = Boolean(disabled || isLoading)
+
+  React.useEffect(() => {
+    return () => {
+      if (submitLockTimeoutRef.current !== null) {
+        window.clearTimeout(submitLockTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  const isPromiseLike = (value: unknown): value is Promise<unknown> => {
+    return typeof value === 'object' && value !== null && 'then' in value && typeof value.then === 'function'
+  }
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (!preventDoubleClick) {
+      onClick?.(event)
+      return
+    }
+
+    if (isDisabled || lockRef.current) {
+      event.preventDefault()
+      event.stopPropagation()
+      return
+    }
+
+    const isSubmitButton = type === 'submit' || (type === undefined && event.currentTarget.form !== null)
+    const shouldGuardSubmit = isSubmitButton && !onClick
+
+    if (!onClick && !shouldGuardSubmit) {
+      return
+    }
+
+    lockRef.current = true
+
+    let result: unknown
+
+    try {
+      result = onClick?.(event)
+    } catch (error) {
+      lockRef.current = false
+      throw error
+    }
+
+    if (isPromiseLike(result)) {
+      setInternalLoading(true)
+
+      void Promise.resolve(result)
+        .catch(() => undefined)
+        .finally(() => {
+          lockRef.current = false
+          setInternalLoading(false)
+        })
+      return
+    }
+
+    if (shouldGuardSubmit) {
+      setInternalLoading(true)
+      if (submitLockTimeoutRef.current !== null) {
+        window.clearTimeout(submitLockTimeoutRef.current)
+      }
+      submitLockTimeoutRef.current = window.setTimeout(() => {
+        lockRef.current = false
+        setInternalLoading(false)
+      }, SUBMIT_CLICK_LOCK_MS)
+      return
+    }
+
+    lockRef.current = false
+  }
 
   return (
     <Comp
       data-slot="button"
+      data-loading={isLoading ? 'true' : undefined}
+      aria-busy={isLoading || undefined}
+      aria-disabled={isDisabled || undefined}
+      disabled={asChild ? undefined : isDisabled}
       className={cn(buttonVariants({ variant, size, className }))}
+      onClick={asChild ? onClick : handleClick}
       {...props}
-    />
+    >
+      {!asChild && isLoading ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          {loadingText ?? children}
+        </>
+      ) : (
+        children
+      )}
+    </Comp>
   )
 }
 

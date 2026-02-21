@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -70,6 +70,7 @@ export function ProfessionalFormModal({
     availableDays: [] as WeekDay[],
   });
   const [isLoading, setIsLoading] = useState(false);
+  const submitLockRef = useRef(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -148,9 +149,11 @@ export function ProfessionalFormModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitLockRef.current) return;
 
     if (!validateForm()) return;
 
+    submitLockRef.current = true;
     setIsLoading(true);
     try {
       const payload: any = {
@@ -188,6 +191,7 @@ export function ProfessionalFormModal({
       console.error("Erro ao salvar profissional:", error);
     } finally {
       setIsLoading(false);
+      submitLockRef.current = false;
     }
   };
 
@@ -534,8 +538,8 @@ export function ProfessionalFormModal({
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Salvando..." : mode === "create" ? "Adicionar" : "Salvar Alterações"}
+              <Button type="submit" disabled={isLoading} loading={isLoading} loadingText="Salvando...">
+                {mode === "create" ? "Adicionar" : "Salvar Alterações"}
               </Button>
             </div>
           </form>
