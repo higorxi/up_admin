@@ -19,7 +19,7 @@ import { toast } from "@/hooks/use-toast"
 import type { GrantTrialPayload, TrialDurationUnit, PlanType } from "@/lib/services/suppliers"
 
 export default function SuppliersPage() {
-  const { suppliers, loading, error, refetch, approve, reject, grantTrial, deleteSupplier } = useSuppliers()
+  const { suppliers, loading, error, refetch, approve, reject, grantTrial, cancelTrial, deleteSupplier } = useSuppliers()
 
   const [selectedSupplier, setSelectedSupplier] = useState<(typeof suppliers)[0] | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -127,7 +127,28 @@ export default function SuppliersPage() {
     } catch (error) {
       toast({
         title: "Erro ao conceder trial",
-        description: "Não foi possível conceder o período de trial. Tente novamente.",
+        description: error instanceof Error ? error.message : "Não foi possível conceder o período de trial. Tente novamente.",
+        variant: "destructive",
+      })
+      throw error
+    }
+  }
+
+  const handleCancelTrial = async (id: string) => {
+    if (!confirm("Tem certeza que deseja cancelar o trial deste fornecedor?")) return
+
+    try {
+      await cancelTrial(id)
+      await refetch()
+
+      toast({
+        title: "Trial cancelado",
+        description: "O trial manual foi cancelado com sucesso.",
+      })
+    } catch (error) {
+      toast({
+        title: "Erro ao cancelar trial",
+        description: error instanceof Error ? error.message : "Não foi possível cancelar o período de trial. Tente novamente.",
         variant: "destructive",
       })
       throw error
@@ -237,6 +258,7 @@ export default function SuppliersPage() {
                 onApprove={handleApprove}
                 onReject={() => handleRejectClick(supplier.id, supplier.tradeName)}
                 onGrantTrial={handleGrantTrialClick}
+                onCancelTrial={handleCancelTrial}
                 onViewDetails={handleViewDetails}
                 onDelete={handleDelete}
               />
@@ -265,6 +287,7 @@ export default function SuppliersPage() {
             }
           }}
           onGrantTrial={handleGrantTrialClick}
+          onCancelTrial={handleCancelTrial}
         />
 
         <RejectSupplierDialog

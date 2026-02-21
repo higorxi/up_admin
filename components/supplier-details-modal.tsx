@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Check, Mail, Phone, MapPin, Calendar, Building, FileText, Store, Globe, Clock, X, User, Sparkles } from "lucide-react"
+import { Check, Mail, Phone, MapPin, Calendar, Building, FileText, Store, Globe, Clock, X, User, Sparkles, Ban } from "lucide-react"
 import { useState } from "react"
-import type { Supplier } from "@/lib/services/suppliers"
+import { canSupplierReceiveTrial, getSupplierHasTrial, getSupplierTrialEndsAt, type Supplier } from "@/lib/services/suppliers"
 
 interface SupplierDetailsModalProps {
   supplier: Supplier | null
@@ -17,12 +17,25 @@ interface SupplierDetailsModalProps {
   onApprove: (id: string) => Promise<void>
   onReject: (id: string) => void
   onGrantTrial?: (supplier: Supplier) => void
+  onCancelTrial?: (id: string) => Promise<void>
 }
 
-export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onReject, onGrantTrial }: SupplierDetailsModalProps) {
+export function SupplierDetailsModal({
+  supplier,
+  isOpen,
+  onClose,
+  onApprove,
+  onReject,
+  onGrantTrial,
+  onCancelTrial,
+}: SupplierDetailsModalProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   if (!supplier) return null
+
+  const hasTrial = getSupplierHasTrial(supplier)
+  const trialEndsAt = getSupplierTrialEndsAt(supplier)
+  const canGrantTrial = canSupplierReceiveTrial(supplier)
 
   const getStatusBadge = () => {
     switch (supplier.status) {
@@ -62,7 +75,30 @@ export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onR
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("pt-BR")
+    const parsedDate = new Date(dateString)
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return "Data não informada"
+    }
+
+    return parsedDate.toLocaleDateString("pt-BR")
+  }
+
+  const handleCancelTrial = async () => {
+    if (!onCancelTrial) return
+
+    const shouldCancel = window.confirm("Tem certeza que deseja cancelar o trial deste fornecedor?")
+    if (!shouldCancel) return
+
+    setIsLoading(true)
+    try {
+      await onCancelTrial(supplier.id)
+      onClose()
+    } catch (error) {
+      console.error("Erro ao cancelar trial:", error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -295,6 +331,16 @@ export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onR
                     {supplier.status === "PENDING" ? "Pendente" : supplier.status === "APPROVED" ? "Aprovado" : "Rejeitado"}
                   </span>
                 </div>
+                <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
+                  <span className="font-medium">Trial Manual:</span>
+                  <span className={hasTrial ? "text-primary font-medium" : "text-muted-foreground"}>
+                    {hasTrial ? "Ativo" : "Inativo"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
+                  <span className="font-medium">Término do Trial:</span>
+                  <span className="text-muted-foreground">{trialEndsAt ? formatDate(trialEndsAt) : "Data não informada"}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -327,18 +373,34 @@ export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onR
           </div>
         )}
 
-        {supplier.status === "APPROVED" && onGrantTrial && (
-          <div className="flex pt-4 border-t">
-            <Button
-              onClick={() => {
-                onGrantTrial(supplier)
-                onClose()
-              }}
-              className="w-full shadow-sm"
-            >
-              <Sparkles className="h-4 w-4 mr-2" />
-              Conceder Trial
-            </Button>
+        {supplier.status === "APPROVED" && ((canGrantTrial && onGrantTrial) || (hasTrial && onCancelTrial)) && (
+          <div className="flex gap-3 pt-4 border-t">
+            {canGrantTrial && onGrantTrial && (
+              <Button
+                onClick={() => {
+                  onGrantTrial(supplier)
+                  onClose()
+                }}
+                disabled={isLoading}
+                className="flex-1 shadow-sm"
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Conceder Trial
+              </Button>
+            )}
+            {hasTrial && onCancelTrial && (
+              <Button
+                onClick={handleCancelTrial}
+                disabled={isLoading}
+                variant="destructive"
+                loading={isLoading}
+                loadingText="Cancelando..."
+                className="flex-1 shadow-sm"
+              >
+                <Ban className="h-4 w-4 mr-2" />
+                Cancelar Trial
+              </Button>
+            )}
           </div>
         )}
       </DialogContent>

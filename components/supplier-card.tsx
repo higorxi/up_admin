@@ -4,19 +4,48 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Check, Eye, Phone, MapPin, Building, FileText, X, Sparkles } from "lucide-react"
-import type { Supplier } from "@/lib/services/suppliers"
+import { Check, Eye, Phone, MapPin, Building, FileText, X, Sparkles, Calendar, Ban } from "lucide-react"
+import {
+  canSupplierReceiveTrial,
+  getSupplierHasActivePlan,
+  getSupplierHasTrial,
+  getSupplierTrialEndsAt,
+  type Supplier,
+} from "@/lib/services/suppliers"
 
 interface SupplierCardProps {
   supplier: Supplier
   onApprove: (id: string) => void
   onReject: (id: string) => void
   onGrantTrial?: (supplier: Supplier) => void
+  onCancelTrial?: (id: string) => void | Promise<void>
   onViewDetails: (supplier: Supplier) => void
   onDelete?: (id: string) => void
 }
 
-export function SupplierCard({ supplier, onApprove, onReject, onGrantTrial, onViewDetails, onDelete }: SupplierCardProps) {
+export function SupplierCard({
+  supplier,
+  onApprove,
+  onReject,
+  onGrantTrial,
+  onCancelTrial,
+  onViewDetails,
+  onDelete,
+}: SupplierCardProps) {
+  const hasTrial = getSupplierHasTrial(supplier)
+  const hasActivePlan = getSupplierHasActivePlan(supplier)
+  const canGrantTrial = canSupplierReceiveTrial(supplier)
+  const trialEndsAt = getSupplierTrialEndsAt(supplier)
+
+  const formatTrialDate = (dateString: string | null) => {
+    if (!dateString) return "Data não informada"
+
+    const parsedDate = new Date(dateString)
+    if (Number.isNaN(parsedDate.getTime())) return "Data não informada"
+
+    return parsedDate.toLocaleDateString("pt-BR")
+  }
+
   const getStatusBadge = () => {
     switch (supplier.status) {
       case "PENDING":
@@ -107,11 +136,27 @@ export function SupplierCard({ supplier, onApprove, onReject, onGrantTrial, onVi
           </div>
         )}
 
+        {supplier.status === "APPROVED" && hasTrial && (
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-1.5">
+            <div className="flex items-center gap-2 text-sm font-medium text-primary">
+              <Calendar className="h-4 w-4" />
+              Trial ativo
+            </div>
+            <p className="text-xs text-muted-foreground">Término: {formatTrialDate(trialEndsAt)}</p>
+          </div>
+        )}
+
+        {supplier.status === "APPROVED" && hasActivePlan && !hasTrial && (
+          <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
+            <p className="text-xs text-muted-foreground">Fornecedor com plano ativo. Trial manual indisponível.</p>
+          </div>
+        )}
+
         <div className="flex gap-2 pt-3 mt-auto border-t border-border/50">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => onViewDetails(supplier)} 
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onViewDetails(supplier)}
             className="flex-1 hover:bg-muted/50 transition-colors"
           >
             <Eye className="h-4 w-4 mr-2" />
@@ -138,10 +183,16 @@ export function SupplierCard({ supplier, onApprove, onReject, onGrantTrial, onVi
               </Button>
             </>
           )}
-          {supplier.status === "APPROVED" && onGrantTrial && (
+          {supplier.status === "APPROVED" && canGrantTrial && onGrantTrial && (
             <Button size="sm" onClick={() => onGrantTrial(supplier)} className="flex-1 shadow-sm">
               <Sparkles className="h-4 w-4 mr-1.5" />
               Conceder Trial
+            </Button>
+          )}
+          {supplier.status === "APPROVED" && hasTrial && onCancelTrial && (
+            <Button size="sm" variant="destructive" onClick={() => onCancelTrial(supplier.id)} className="flex-1 shadow-sm">
+              <Ban className="h-4 w-4 mr-1.5" />
+              Cancelar Trial
             </Button>
           )}
         </div>
