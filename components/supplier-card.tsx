@@ -4,18 +4,19 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Check, Eye, Phone, MapPin, Building, FileText, X } from "lucide-react"
+import { Check, Eye, Phone, MapPin, Building, FileText, X, Sparkles } from "lucide-react"
 import type { Supplier } from "@/lib/services/suppliers"
 
 interface SupplierCardProps {
   supplier: Supplier
   onApprove: (id: string) => void
   onReject: (id: string) => void
+  onGrantTrial?: (supplier: Supplier) => void
   onViewDetails: (supplier: Supplier) => void
   onDelete?: (id: string) => void
 }
 
-export function SupplierCard({ supplier, onApprove, onReject, onViewDetails, onDelete }: SupplierCardProps) {
+export function SupplierCard({ supplier, onApprove, onReject, onGrantTrial, onViewDetails, onDelete }: SupplierCardProps) {
   const getStatusBadge = () => {
     switch (supplier.status) {
       case "PENDING":
@@ -136,6 +137,12 @@ export function SupplierCard({ supplier, onApprove, onReject, onViewDetails, onD
                 Rejeitar
               </Button>
             </>
+          )}
+          {supplier.status === "APPROVED" && onGrantTrial && (
+            <Button size="sm" onClick={() => onGrantTrial(supplier)} className="flex-1 shadow-sm">
+              <Sparkles className="h-4 w-4 mr-1.5" />
+              Conceder Trial
+            </Button>
           )}
         </div>
       </CardContent>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { SuppliersService, type Supplier } from "@/lib/services/suppliers"
+import { SuppliersService, type Supplier, type GrantTrialPayload } from "@/lib/services/suppliers"
 import { useAuth } from "./use-auth"
 
 interface UseSuppliersReturn {
@@ -11,6 +11,7 @@ interface UseSuppliersReturn {
   refetch: () => Promise<void>
   approve: (id: string) => Promise<void>
   reject: (id: string, reason: string) => Promise<void>
+  grantTrial: (id: string, payload: GrantTrialPayload) => Promise<void>
   deleteSupplier: (id: string) => Promise<void>
 }
 
@@ -61,6 +62,15 @@ export function useSuppliers(): UseSuppliersReturn {
     }
   }
 
+  const grantTrial = async (id: string, payload: GrantTrialPayload) => {
+    try {
+      await SuppliersService.grantTrial(id, payload)
+    } catch (err) {
+      console.error("[v0] Error granting trial:", err)
+      throw err
+    }
+  }
+
   const deleteSupplier = async (id: string) => {
     try {
       await SuppliersService.delete(id)
@@ -82,6 +92,7 @@ export function useSuppliers(): UseSuppliersReturn {
     refetch: fetchSuppliers,
     approve,
     reject,
+    grantTrial,
     deleteSupplier,
   }
 }
