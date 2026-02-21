@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Check, Mail, Phone, MapPin, Calendar, Building, FileText, Store, Globe, Clock, X, User } from "lucide-react"
+import { Check, Mail, Phone, MapPin, Calendar, Building, FileText, Store, Globe, Clock, X, User, Sparkles } from "lucide-react"
 import { useState } from "react"
 import type { Supplier } from "@/lib/services/suppliers"
 
@@ -16,9 +16,10 @@ interface SupplierDetailsModalProps {
   onClose: () => void
   onApprove: (id: string) => Promise<void>
   onReject: (id: string) => void
+  onGrantTrial?: (supplier: Supplier) => void
 }
 
-export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onReject }: SupplierDetailsModalProps) {
+export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onReject, onGrantTrial }: SupplierDetailsModalProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   if (!supplier) return null
@@ -320,6 +321,21 @@ export function SupplierDetailsModal({ supplier, isOpen, onClose, onApprove, onR
             >
               <X className="h-4 w-4 mr-2" />
               Rejeitar Fornecedor
+            </Button>
+          </div>
+        )}
+
+        {supplier.status === "APPROVED" && onGrantTrial && (
+          <div className="flex pt-4 border-t">
+            <Button
+              onClick={() => {
+                onGrantTrial(supplier)
+                onClose()
+              }}
+              className="w-full shadow-sm"
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              Conceder Trial
             </Button>
           </div>
         )}

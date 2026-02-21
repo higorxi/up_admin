@@ -6,23 +6,27 @@ import { AdminPageLayout } from "@/components/admin-page-layout"
 import { SupplierCard } from "@/components/supplier-card"
 import { SupplierDetailsModal } from "@/components/supplier-details-modal"
 import { RejectSupplierDialog } from "@/components/reject-supplier-dialog"
+import { GrantTrialDialog } from "@/components/grant-trial-dialog"
 import { CardSkeleton } from "@/components/card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Search, Download, UserCheck, AlertCircle, RefreshCw } from "lucide-react"
+import { Search, UserCheck, AlertCircle, RefreshCw } from "lucide-react"
 import { useSuppliers } from "@/hooks/use-suppliers"
 import { toast } from "@/hooks/use-toast"
+import type { GrantTrialPayload, TrialDurationUnit, PlanType } from "@/lib/services/suppliers"
 
 export default function SuppliersPage() {
-  const { suppliers, loading, error, refetch, approve, reject, deleteSupplier } = useSuppliers()
+  const { suppliers, loading, error, refetch, approve, reject, grantTrial, deleteSupplier } = useSuppliers()
 
   const [selectedSupplier, setSelectedSupplier] = useState<(typeof suppliers)[0] | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false)
   const [supplierToReject, setSupplierToReject] = useState<{ id: string; name: string } | null>(null)
+  const [isGrantTrialDialogOpen, setIsGrantTrialDialogOpen] = useState(false)
+  const [supplierToGrantTrial, setSupplierToGrantTrial] = useState<{ id: string; name: string } | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
 
@@ -81,6 +85,52 @@ export default function SuppliersPage() {
           variant: "destructive",
         })
       }
+    }
+  }
+
+  const handleGrantTrialClick = (supplier: (typeof suppliers)[0]) => {
+    setSupplierToGrantTrial({ id: supplier.id, name: supplier.tradeName })
+    setIsGrantTrialDialogOpen(true)
+  }
+
+  const formatTrialUnitLabel = (unit: TrialDurationUnit) => {
+    const unitLabels: Record<TrialDurationUnit, string> = {
+      days: "dia(s)",
+      weeks: "semana(s)",
+      months: "mês(es)",
+    }
+
+    return unitLabels[unit]
+  }
+
+  const formatPlanLabel = (planType: PlanType) => {
+    const planLabels: Record<PlanType, string> = {
+      SILVER: "Silver",
+      GOLD: "Gold",
+      PREMIUM: "Premium",
+    }
+
+    return planLabels[planType]
+  }
+
+  const handleGrantTrialConfirm = async (payload: GrantTrialPayload) => {
+    if (!supplierToGrantTrial) return
+
+    try {
+      await grantTrial(supplierToGrantTrial.id, payload)
+      await refetch()
+
+      toast({
+        title: "Trial concedido",
+        description: `${payload.duration} ${formatTrialUnitLabel(payload.unit)} no plano ${formatPlanLabel(payload.planType)}.`,
+      })
+    } catch (error) {
+      toast({
+        title: "Erro ao conceder trial",
+        description: "Não foi possível conceder o período de trial. Tente novamente.",
+        variant: "destructive",
+      })
+      throw error
     }
   }
 
@@ -186,6 +236,7 @@ export default function SuppliersPage() {
                 supplier={supplier}
                 onApprove={handleApprove}
                 onReject={() => handleRejectClick(supplier.id, supplier.tradeName)}
+                onGrantTrial={handleGrantTrialClick}
                 onViewDetails={handleViewDetails}
                 onDelete={handleDelete}
               />
@@ -213,6 +264,7 @@ export default function SuppliersPage() {
               handleRejectClick(id, supplier.tradeName)
             }
           }}
+          onGrantTrial={handleGrantTrialClick}
         />
 
         <RejectSupplierDialog
@@ -223,6 +275,16 @@ export default function SuppliersPage() {
           }}
           onConfirm={handleRejectConfirm}
           supplierName={supplierToReject?.name || ""}
+        />
+
+        <GrantTrialDialog
+          isOpen={isGrantTrialDialogOpen}
+          onClose={() => {
+            setIsGrantTrialDialogOpen(false)
+            setSupplierToGrantTrial(null)
+          }}
+          onConfirm={handleGrantTrialConfirm}
+          supplierName={supplierToGrantTrial?.name || ""}
         />
       </AdminPageLayout>
     </AdminLayout>

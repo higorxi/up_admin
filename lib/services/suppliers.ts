@@ -1,6 +1,14 @@
 import { ApiService } from "./api"
 
 export type SupplierStatus = "PENDING" | "APPROVED" | "REJECTED"
+export type TrialDurationUnit = "days" | "weeks" | "months"
+export type PlanType = "SILVER" | "GOLD" | "PREMIUM"
+
+export interface GrantTrialPayload {
+  duration: number
+  unit: TrialDurationUnit
+  planType: PlanType
+}
 
 export interface Supplier {
   id: string
@@ -17,9 +25,11 @@ export interface Supplier {
     id: string
     name: string
     description: string
-    website: string
+    website: string | null
     rating: number
     openingHours: string
+    phone?: string | null
+    email?: string | null
     addressId: string
     partnerId: string
     address: {
@@ -27,6 +37,7 @@ export interface Supplier {
       state: string
       city: string
       district: string
+      neighborhood?: string | null
       street: string
       complement: string | null
       number: string | null
@@ -35,7 +46,7 @@ export interface Supplier {
   } | null
   user: {
     email: string
-    profileImage: string
+    profileImage: string | null
     address: {
       id: string
       state: string
@@ -64,6 +75,10 @@ export class SuppliersService {
 
   static async reject(id: string, reason: string): Promise<void> {
     return ApiService.patch(`/reject-partner/${id}`, { reason })
+  }
+
+  static async grantTrial(id: string, payload: GrantTrialPayload): Promise<void> {
+    return ApiService.patch(`/grant-trial/${id}`, payload)
   }
 
   static async delete(id: string): Promise<void> {
