@@ -87,9 +87,6 @@ export function SupplierDetailsModal({
   const handleCancelTrial = async () => {
     if (!onCancelTrial) return
 
-    const shouldCancel = window.confirm("Tem certeza que deseja cancelar o trial deste fornecedor?")
-    if (!shouldCancel) return
-
     setIsLoading(true)
     try {
       await onCancelTrial(supplier.id)
