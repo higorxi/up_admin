@@ -122,13 +122,18 @@ function Button({
     }
 
     if (shouldGuardSubmit) {
-      setInternalLoading(true)
+      // Do NOT call setInternalLoading(true) here.
+      // In React 18, state updates inside event handlers flush synchronously
+      // before the browser fires the form's submit event. Setting disabled=true
+      // at this point causes the browser to cancel the form submission entirely,
+      // which is why clicks had no effect while Enter (which bypasses handleClick)
+      // still worked. The parent's `loading` prop handles the visual loading state
+      // once the onSubmit handler sets it.
       if (submitLockTimeoutRef.current !== null) {
         window.clearTimeout(submitLockTimeoutRef.current)
       }
       submitLockTimeoutRef.current = window.setTimeout(() => {
         lockRef.current = false
-        setInternalLoading(false)
       }, SUBMIT_CLICK_LOCK_MS)
       return
     }
@@ -145,6 +150,7 @@ function Button({
       disabled={asChild ? undefined : isDisabled}
       className={cn(buttonVariants({ variant, size, className }))}
       onClick={asChild ? onClick : handleClick}
+      type={type}
       {...props}
     >
       {!asChild && isLoading ? (
