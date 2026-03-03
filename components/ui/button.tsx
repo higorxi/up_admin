@@ -58,22 +58,12 @@ function Button({
     loadingText?: React.ReactNode
     preventDoubleClick?: boolean
   }) {
-  const SUBMIT_CLICK_LOCK_MS = 400
   const Comp = asChild ? Slot : 'button'
   const [internalLoading, setInternalLoading] = React.useState(false)
   const lockRef = React.useRef(false)
-  const submitLockTimeoutRef = React.useRef<number | null>(null)
 
   const isLoading = loading || internalLoading
   const isDisabled = Boolean(disabled || isLoading)
-
-  React.useEffect(() => {
-    return () => {
-      if (submitLockTimeoutRef.current !== null) {
-        window.clearTimeout(submitLockTimeoutRef.current)
-      }
-    }
-  }, [])
 
   const isPromiseLike = (value: unknown): value is Promise<unknown> => {
     return typeof value === 'object' && value !== null && 'then' in value && typeof value.then === 'function'
@@ -94,7 +84,17 @@ function Button({
     const isSubmitButton = type === 'submit' || (type === undefined && event.currentTarget.form !== null)
     const shouldGuardSubmit = isSubmitButton && !onClick
 
-    if (!onClick && !shouldGuardSubmit) {
+    // Para botões type="submit" sem onClick não interceptamos o clique.
+    // Qualquer mutação de estado aqui (inclusive lockRef) pode impedir o browser
+    // de disparar o evento submit do formulário no React 18, pois as atualizações
+    // de estado são aplicadas sincronamente antes do submit. A proteção contra
+    // double-submit é responsabilidade do onSubmit do formulário pai e do prop
+    // loading={isLoading} que desabilita o botão após o primeiro clique.
+    if (shouldGuardSubmit) {
+      return
+    }
+
+    if (!onClick) {
       return
     }
 
@@ -103,7 +103,7 @@ function Button({
     let result: unknown
 
     try {
-      result = onClick?.(event)
+      result = onClick(event)
     } catch (error) {
       lockRef.current = false
       throw error
@@ -121,18 +121,6 @@ function Button({
       return
     }
 
-    if (shouldGuardSubmit) {
-      setInternalLoading(true)
-      if (submitLockTimeoutRef.current !== null) {
-        window.clearTimeout(submitLockTimeoutRef.current)
-      }
-      submitLockTimeoutRef.current = window.setTimeout(() => {
-        lockRef.current = false
-        setInternalLoading(false)
-      }, SUBMIT_CLICK_LOCK_MS)
-      return
-    }
-
     lockRef.current = false
   }
 
@@ -143,6 +131,7 @@ function Button({
       aria-busy={isLoading || undefined}
       aria-disabled={isDisabled || undefined}
       disabled={asChild ? undefined : isDisabled}
+      type={asChild ? undefined : type}
       className={cn(buttonVariants({ variant, size, className }))}
       onClick={asChild ? onClick : handleClick}
       {...props}
