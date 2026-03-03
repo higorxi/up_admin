@@ -122,13 +122,11 @@ function Button({
     }
 
     if (shouldGuardSubmit) {
-      setInternalLoading(true)
       if (submitLockTimeoutRef.current !== null) {
         window.clearTimeout(submitLockTimeoutRef.current)
       }
       submitLockTimeoutRef.current = window.setTimeout(() => {
         lockRef.current = false
-        setInternalLoading(false)
       }, SUBMIT_CLICK_LOCK_MS)
       return
     }
@@ -143,6 +141,7 @@ function Button({
       aria-busy={isLoading || undefined}
       aria-disabled={isDisabled || undefined}
       disabled={asChild ? undefined : isDisabled}
+      type={asChild ? undefined : type}
       className={cn(buttonVariants({ variant, size, className }))}
       onClick={asChild ? onClick : handleClick}
       {...props}
