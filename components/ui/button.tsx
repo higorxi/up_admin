@@ -58,22 +58,12 @@ function Button({
     loadingText?: React.ReactNode
     preventDoubleClick?: boolean
   }) {
-  const SUBMIT_CLICK_LOCK_MS = 400
   const Comp = asChild ? Slot : 'button'
   const [internalLoading, setInternalLoading] = React.useState(false)
   const lockRef = React.useRef(false)
-  const submitLockTimeoutRef = React.useRef<number | null>(null)
 
   const isLoading = loading || internalLoading
   const isDisabled = Boolean(disabled || isLoading)
-
-  React.useEffect(() => {
-    return () => {
-      if (submitLockTimeoutRef.current !== null) {
-        window.clearTimeout(submitLockTimeoutRef.current)
-      }
-    }
-  }, [])
 
   const isPromiseLike = (value: unknown): value is Promise<unknown> => {
     return typeof value === 'object' && value !== null && 'then' in value && typeof value.then === 'function'
@@ -94,7 +84,16 @@ function Button({
     const isSubmitButton = type === 'submit' || (type === undefined && event.currentTarget.form !== null)
     const shouldGuardSubmit = isSubmitButton && !onClick
 
-    if (!onClick && !shouldGuardSubmit) {
+    // For native form submit buttons (type="submit" with no onClick), don't
+    // intercept the click at all. Any state mutation here (even setting lockRef)
+    // can interfere with the browser firing the form's submit event.
+    // Double-submit protection is handled by the form's own onSubmit handler
+    // (submitLockRef) and by the button becoming disabled via the loading prop.
+    if (shouldGuardSubmit) {
+      return
+    }
+
+    if (!onClick) {
       return
     }
 
@@ -103,7 +102,7 @@ function Button({
     let result: unknown
 
     try {
-      result = onClick?.(event)
+      result = onClick(event)
     } catch (error) {
       lockRef.current = false
       throw error
@@ -118,23 +117,6 @@ function Button({
           lockRef.current = false
           setInternalLoading(false)
         })
-      return
-    }
-
-    if (shouldGuardSubmit) {
-      // Do NOT call setInternalLoading(true) here.
-      // In React 18, state updates inside event handlers flush synchronously
-      // before the browser fires the form's submit event. Setting disabled=true
-      // at this point causes the browser to cancel the form submission entirely,
-      // which is why clicks had no effect while Enter (which bypasses handleClick)
-      // still worked. The parent's `loading` prop handles the visual loading state
-      // once the onSubmit handler sets it.
-      if (submitLockTimeoutRef.current !== null) {
-        window.clearTimeout(submitLockTimeoutRef.current)
-      }
-      submitLockTimeoutRef.current = window.setTimeout(() => {
-        lockRef.current = false
-      }, SUBMIT_CLICK_LOCK_MS)
       return
     }
 
