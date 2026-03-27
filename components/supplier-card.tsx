@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Check, Eye, Phone, MapPin, Building, FileText, X, Sparkles, Calendar, Ban } from "lucide-react"
+import { Check, Eye, Phone, MapPin, Building, FileText, X, Sparkles, Calendar, Ban, Trash2 } from "lucide-react"
 import {
   canSupplierReceiveTrial,
   getSupplierHasActivePlan,
@@ -224,6 +224,18 @@ export function SupplierCard({
             <Button size="sm" variant="destructive" onClick={() => onCancelTrial(supplier.id)} className="flex-1 shadow-sm">
               <Ban className="h-4 w-4 mr-1.5" />
               Cancelar Trial
+            </Button>
+          )}
+
+          {onDelete && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onDelete(supplier.id)}
+              className="px-2.5 text-destructive hover:bg-destructive/10 hover:text-destructive border-border/50"
+              title="Excluir Lojista"
+            >
+              <Trash2 className="h-4 w-4" />
             </Button>
           )}
         </div>

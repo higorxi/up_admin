@@ -7,6 +7,7 @@ import { SupplierCard } from "@/components/supplier-card"
 import { SupplierDetailsModal } from "@/components/supplier-details-modal"
 import { RejectSupplierDialog } from "@/components/reject-supplier-dialog"
 import { GrantTrialDialog } from "@/components/grant-trial-dialog"
+import { DeleteSupplierDialog } from "@/components/delete-supplier-dialog"
 import { CardSkeleton } from "@/components/card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,6 +28,8 @@ export default function SuppliersPage() {
   const [supplierToReject, setSupplierToReject] = useState<{ id: string; name: string } | null>(null)
   const [isGrantTrialDialogOpen, setIsGrantTrialDialogOpen] = useState(false)
   const [supplierToGrantTrial, setSupplierToGrantTrial] = useState<{ id: string; name: string } | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [supplierToDelete, setSupplierToDelete] = useState<{ id: string; name: string } | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
 
@@ -70,21 +73,28 @@ export default function SuppliersPage() {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Tem certeza que deseja excluir este lojista parceiro?")) {
-      try {
-        await deleteSupplier(id)
-        toast({
-          title: "Lojista Parceiro excluído",
-          description: "O lojista parceiro foi excluído com sucesso.",
-        })
-      } catch (error) {
-        toast({
-          title: "Erro ao excluir",
-          description: "Não foi possível excluir o lojista parceiro. Tente novamente.",
-          variant: "destructive",
-        })
-      }
+  const handleDeleteClick = (id: string, name: string) => {
+    setSupplierToDelete({ id, name })
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!supplierToDelete) return
+
+    try {
+      await deleteSupplier(supplierToDelete.id)
+      await refetch()
+      toast({
+        title: "Lojista Parceiro desativado",
+        description: "O lojista parceiro foi desativado com sucesso.",
+      })
+    } catch (error) {
+      toast({
+        title: "Erro ao desativar",
+        description: "Não foi possível desativar o lojista parceiro. Tente novamente.",
+        variant: "destructive",
+      })
+      throw error
     }
   }
 
@@ -272,7 +282,7 @@ export default function SuppliersPage() {
                 onGrantTrial={handleGrantTrialClick}
                 onCancelTrial={handleCancelTrial}
                 onViewDetails={handleViewDetails}
-                onDelete={handleDelete}
+                onDelete={(id) => handleDeleteClick(id, supplier.tradeName)}
               />
             ))
           )}
@@ -320,6 +330,16 @@ export default function SuppliersPage() {
           }}
           onConfirm={handleGrantTrialConfirm}
           supplierName={supplierToGrantTrial?.name || ""}
+        />
+
+        <DeleteSupplierDialog
+          isOpen={isDeleteDialogOpen}
+          onClose={() => {
+            setIsDeleteDialogOpen(false)
+            setSupplierToDelete(null)
+          }}
+          onConfirm={handleDeleteConfirm}
+          supplierName={supplierToDelete?.name || ""}
         />
       </AdminPageLayout>
     </AdminLayout>

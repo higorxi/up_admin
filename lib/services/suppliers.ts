@@ -121,7 +121,7 @@ export class SuppliersService {
   }
 
   static async delete(id: string): Promise<void> {
-    return ApiService.delete(`/partner-suppliers/${id}`)
+    return ApiService.delete(`/partner-supplier/${id}`)
   }
 }
 
