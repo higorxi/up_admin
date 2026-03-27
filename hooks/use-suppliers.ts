@@ -33,7 +33,7 @@ export function useSuppliers(): UseSuppliersReturn {
       setSuppliers(suppliersData)
     } catch (err) {
       console.error("[v0] Error fetching suppliers:", err)
-      setError(err instanceof Error ? err.message : "Erro ao carregar lojistas parcerias")
+      setError(err instanceof Error ? err.message : "Erro ao carregar lojistas parceiros")
     } finally {
       setLoading(false)
     }

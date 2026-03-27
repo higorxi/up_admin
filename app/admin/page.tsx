@@ -49,12 +49,12 @@ export default function AdminDashboard() {
                 variant="outline"
                 className="w-full justify-start gap-3 h-12 bg-transparent hover:bg-muted/50 transition-colors"
               >
-                <Link href="/admin/lojistas-parcerias">
+                <Link href="/admin/lojista-parceiro">
                   <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
                     <Users className="h-5 w-5 text-primary" />
                   </div>
                   <div className="text-left flex-1">
-                    <div className="font-medium">Aprovar Lojistas Parcerias</div>
+                    <div className="font-medium">Aprovar Lojista Parceiro</div>
                     <div className="text-xs text-muted-foreground">
                       Ver solicitações
                     </div>

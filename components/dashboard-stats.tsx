@@ -27,7 +27,7 @@ export function DashboardStats() {
       description: "Profissionais ativos"
     },
     {
-      title: "Lojistas Parcerias Ativos",
+      title: "Lojista Parceiro Ativos",
       value: stats ? stats.totalPartnerSuppliers.toLocaleString() : "...",
       icon: UserCheck,
       gradient: "from-green-500 to-green-600",

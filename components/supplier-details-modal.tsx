@@ -353,7 +353,7 @@ export function SupplierDetailsModal({
               className="flex-1 bg-green-600 hover:bg-green-700 text-white"
             >
               <Check className="h-4 w-4 mr-2" />
-              Aprovar Lojista Parceria
+              Aprovar Lojista Parceiro
             </Button>
             <Button
               onClick={() => {
@@ -365,7 +365,7 @@ export function SupplierDetailsModal({
               className="flex-1"
             >
               <X className="h-4 w-4 mr-2" />
-              Rejeitar Lojista Parceria
+              Rejeitar Lojista Parceiro
             </Button>
           </div>
         )}

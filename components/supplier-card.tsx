@@ -148,7 +148,7 @@ export function SupplierCard({
 
         {supplier.status === "APPROVED" && hasActivePlan && !hasTrial && (
           <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
-            <p className="text-xs text-muted-foreground">Lojista Parceria com plano ativo. Trial manual indisponível.</p>
+            <p className="text-xs text-muted-foreground">Lojista Parceiro com plano ativo. Trial manual indisponível.</p>
           </div>
         )}
 
