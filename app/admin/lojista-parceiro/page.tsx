@@ -16,7 +16,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Search, UserCheck, AlertCircle, RefreshCw } from "lucide-react"
 import { useSuppliers } from "@/hooks/use-suppliers"
 import { toast } from "@/hooks/use-toast"
-import type { GrantTrialPayload, TrialDurationUnit, PlanType } from "@/lib/services/suppliers"
+import { getSupplierPlanType, type GrantTrialPayload, TrialDurationUnit, PlanType } from "@/lib/services/suppliers"
 
 export default function SuppliersPage() {
   const { suppliers, loading, error, refetch, approve, reject, grantTrial, cancelTrial, deleteSupplier } = useSuppliers()
@@ -177,6 +177,18 @@ export default function SuppliersPage() {
       return matchesSearch && matchesStatus
     })
     .sort((a, b) => {
+      // Ordenação por plano: PREMIUM -> GOLD -> SILVER -> SEM PLANO
+      const planOrder: Record<string, number> = { PREMIUM: 1, GOLD: 2, SILVER: 3 }
+      const planA = getSupplierPlanType(a) || "NONE"
+      const planB = getSupplierPlanType(b) || "NONE"
+
+      const planAOrder = planOrder[planA] || 4
+      const planBOrder = planOrder[planB] || 4
+
+      if (planAOrder !== planBOrder) {
+        return planAOrder - planBOrder
+      }
+
       // Ordenação por status: PENDING -> APPROVED -> REJECTED
       const statusOrder = { PENDING: 1, APPROVED: 2, REJECTED: 3 }
       const statusComparison = statusOrder[a.status] - statusOrder[b.status]
@@ -185,7 +197,7 @@ export default function SuppliersPage() {
         return statusComparison
       }
       
-      // Ordenação alfabética dentro do mesmo status
+      // Ordenação alfabética dentro do mesmo status/plano
       return a.tradeName.localeCompare(b.tradeName, 'pt-BR', { sensitivity: 'base' })
     })
 
