@@ -34,6 +34,11 @@ const navigation = [
     icon: Users,
   },
   {
+    name: "CRM Profissionais",
+    href: "/admin/crm-profissionais",
+    icon: Users,
+  },
+  {
     name: "Eventos",
     href: "/admin/eventos",
     icon: Calendar,

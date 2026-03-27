@@ -1,0 +1,411 @@
+"use client"
+
+import { useState, useEffect, useCallback } from "react"
+import { AdminLayout } from "@/components/admin-layout"
+import { AdminPageLayout } from "@/components/admin-page-layout"
+import { useProfessionals } from "@/hooks/use-professionals"
+import {
+  ProfessionalLevel,
+  GetProfessionalsParams
+} from "@/lib/services/professionals"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious
+} from "@/components/ui/pagination"
+import {
+  Search,
+  CheckCircle2,
+  XCircle,
+  Instagram,
+  Linkedin,
+  Phone,
+  ArrowUpDown,
+  FilterX
+} from "lucide-react"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
+
+export default function CRMProfessionalsPage() {
+  const [params, setParams] = useState<GetProfessionalsParams>({
+    page: 1,
+    limit: 10,
+    orderBy: "createdAt",
+    order: "desc"
+  })
+
+  const [searchTerm, setSearchTerm] = useState("")
+
+  const { professionals, professions, meta, loading, error } = useProfessionals(params)
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setParams(prev => ({ ...prev, search: searchTerm, page: 1 }))
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value)
+  }
+
+  const handleLevelChange = (value: string) => {
+    setParams(prev => ({ ...prev, level: value === "all" ? undefined : value as ProfessionalLevel, page: 1 }))
+  }
+
+  const handleProfessionChange = (value: string) => {
+    setParams(prev => ({ ...prev, professionId: value === "all" ? undefined : value, page: 1 }))
+  }
+
+  const handleVerifiedChange = (value: string) => {
+    setParams(prev => ({
+      ...prev,
+      verified: value === "all" ? undefined : value === "true",
+      page: 1
+    }))
+  }
+
+  const handleSort = (field: "name" | "createdAt" | "points" | "level") => {
+    setParams(prev => ({
+      ...prev,
+      orderBy: field,
+      order: prev.orderBy === field && prev.order === "asc" ? "desc" : "asc"
+    }))
+  }
+
+  const handlePageChange = (page: number) => {
+    setParams(prev => ({ ...prev, page }))
+  }
+
+  const clearFilters = () => {
+    setSearchTerm("")
+    setParams({
+      page: 1,
+      limit: 10,
+      orderBy: "createdAt",
+      order: "desc"
+    })
+  }
+
+  const getLevelBadge = (level: ProfessionalLevel) => {
+    switch (level) {
+      case "BRONZE": return <Badge variant="outline" className="border-orange-500 text-orange-500 bg-orange-50">Bronze</Badge>
+      case "SILVER": return <Badge variant="outline" className="border-slate-400 text-slate-400 bg-slate-50">Silver</Badge>
+      case "GOLD": return <Badge variant="outline" className="border-yellow-500 text-yellow-500 bg-yellow-50">Gold</Badge>
+      case "PLATINUM": return <Badge variant="outline" className="border-purple-500 text-purple-500 bg-purple-50">Platinum</Badge>
+      default: return <Badge variant="outline">{level}</Badge>
+    }
+  }
+
+  // Helper function for pagination to handle many pages
+  const renderPaginationItems = () => {
+    if (!meta) return null
+
+    const pages = []
+    const totalPages = meta.totalPages
+    const currentPage = meta.page
+
+    // Always show first page
+    pages.push(
+      <PaginationItem key={1}>
+        <PaginationLink isActive={currentPage === 1} onClick={() => handlePageChange(1)} className="cursor-pointer">
+          1
+        </PaginationLink>
+      </PaginationItem>
+    )
+
+    if (currentPage > 3) {
+      pages.push(<PaginationItem key="ellipsis-start"><span className="px-2">...</span></PaginationItem>)
+    }
+
+    // Show pages around current page
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+      pages.push(
+        <PaginationItem key={i}>
+          <PaginationLink isActive={currentPage === i} onClick={() => handlePageChange(i)} className="cursor-pointer">
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      )
+    }
+
+    if (currentPage < totalPages - 2) {
+      pages.push(<PaginationItem key="ellipsis-end"><span className="px-2">...</span></PaginationItem>)
+    }
+
+    // Always show last page
+    if (totalPages > 1) {
+      pages.push(
+        <PaginationItem key={totalPages}>
+          <PaginationLink isActive={currentPage === totalPages} onClick={() => handlePageChange(totalPages)} className="cursor-pointer">
+            {totalPages}
+          </PaginationLink>
+        </PaginationItem>
+      )
+    }
+
+    return pages
+  }
+
+  return (
+    <AdminLayout>
+      <AdminPageLayout
+        title="CRM de Profissionais"
+        description="Visualize e gerencie dados detalhados dos profissionais da plataforma"
+      >
+        {/* Filters */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 items-end">
+          <div className="space-y-2 lg:col-span-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome, email, documento ou telefone..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Select value={params.level || "all"} onValueChange={handleLevelChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Nível" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Níveis</SelectItem>
+                <SelectItem value="BRONZE">Bronze</SelectItem>
+                <SelectItem value="SILVER">Silver</SelectItem>
+                <SelectItem value="GOLD">Gold</SelectItem>
+                <SelectItem value="PLATINUM">Platinum</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Select value={params.professionId || "all"} onValueChange={handleProfessionChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Profissão" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as Profissões</SelectItem>
+                {professions.map(p => (
+                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <Select
+                value={params.verified === undefined ? "all" : params.verified.toString()}
+                onValueChange={handleVerifiedChange}
+              >
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Verificado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Status de Verificação</SelectItem>
+                  <SelectItem value="true">Verificado</SelectItem>
+                  <SelectItem value="false">Não Verificado</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={clearFilters}
+                title="Limpar filtros"
+              >
+                <FilterX className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="border rounded-md bg-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
+                    <button
+                      onClick={() => handleSort("name")}
+                      className="flex items-center gap-1 hover:text-foreground transition-colors"
+                    >
+                      Nome <ArrowUpDown className="h-3 w-3" />
+                    </button>
+                  </TableHead>
+                  <TableHead>Contato</TableHead>
+                  <TableHead>Profissão</TableHead>
+                  <TableHead>
+                    <button
+                      onClick={() => handleSort("level")}
+                      className="flex items-center gap-1 hover:text-foreground transition-colors"
+                    >
+                      Nível <ArrowUpDown className="h-3 w-3" />
+                    </button>
+                  </TableHead>
+                  <TableHead>
+                    <button
+                      onClick={() => handleSort("points")}
+                      className="flex items-center gap-1 hover:text-foreground transition-colors"
+                    >
+                      Pontos <ArrowUpDown className="h-3 w-3" />
+                    </button>
+                  </TableHead>
+                  <TableHead className="text-center">Atividade</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>
+                    <button
+                      onClick={() => handleSort("createdAt")}
+                      className="flex items-center gap-1 hover:text-foreground transition-colors"
+                    >
+                      Cadastro <ArrowUpDown className="h-3 w-3" />
+                    </button>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-24 text-center">
+                      Carregando profissionais...
+                    </TableCell>
+                  </TableRow>
+                ) : professionals.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-24 text-center">
+                      Nenhum profissional encontrado.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  professionals.map((professional) => (
+                    <TableRow key={professional.id}>
+                      <TableCell className="font-medium whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span>{professional.name}</span>
+                          <span className="text-xs text-muted-foreground">{professional.document}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1 text-sm">
+                          <span className="flex items-center gap-1 truncate max-w-[150px]" title={professional.email}>
+                            {professional.email}
+                          </span>
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
+                            <Phone className="h-3 w-3" /> {professional.phone}
+                          </span>
+                          <div className="flex gap-2 mt-1">
+                            {professional.socialMedia?.instagram && (
+                              <a href={professional.socialMedia.instagram} target="_blank" rel="noopener noreferrer">
+                                <Instagram className="h-3.5 w-3.5 text-muted-foreground hover:text-pink-600 transition-colors" />
+                              </a>
+                            )}
+                            {professional.socialMedia?.linkedin && (
+                              <a href={professional.socialMedia.linkedin} target="_blank" rel="noopener noreferrer">
+                                <Linkedin className="h-3.5 w-3.5 text-muted-foreground hover:text-blue-600 transition-colors" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">{professional.profession.name}</TableCell>
+                      <TableCell>{getLevelBadge(professional.level)}</TableCell>
+                      <TableCell>{professional.points}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1 items-center">
+                          <div className="flex gap-2 text-xs">
+                            <div className="flex flex-col items-center">
+                              <span className="font-semibold">{professional._count.eventRegistrations}</span>
+                              <span className="text-[10px] text-muted-foreground uppercase">Eventos</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                              <span className="font-semibold">{professional._count.workshops}</span>
+                              <span className="text-[10px] text-muted-foreground uppercase">Workshops</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                              <span className="font-semibold">{professional._count.redemptions}</span>
+                              <span className="text-[10px] text-muted-foreground uppercase">Resgates</span>
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {professional.verified ? (
+                          <div className="flex items-center gap-1 text-green-600 text-xs font-medium whitespace-nowrap">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Verificado
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-amber-500 text-xs font-medium whitespace-nowrap">
+                            <XCircle className="h-3.5 w-3.5" /> Pendente
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm whitespace-nowrap">
+                        {format(new Date(professional.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        {/* Pagination */}
+        {!loading && meta && meta.totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-muted-foreground">
+              Mostrando {professionals.length} de {meta.total} profissionais
+            </div>
+            <Pagination className="justify-center sm:justify-end w-auto">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => meta.page > 1 && handlePageChange(meta.page - 1)}
+                    className={meta.page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+
+                {renderPaginationItems()}
+
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => meta.page < meta.totalPages && handlePageChange(meta.page + 1)}
+                    className={meta.page === meta.totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+      </AdminPageLayout>
+    </AdminLayout>
+  )
+}
