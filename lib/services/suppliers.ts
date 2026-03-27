@@ -145,6 +145,11 @@ export const getSupplierSubscriptionStatus = (supplier: Supplier): string | null
   )
 }
 
+export const getSupplierPlanType = (supplier: Supplier): PlanType | null => {
+  const subscription = getSupplierSubscription(supplier)
+  return (subscription?.planType as PlanType) ?? null
+}
+
 export const getSupplierTrialEndsAt = (supplier: Supplier): string | null => {
   const subscription = getSupplierSubscription(supplier)
 

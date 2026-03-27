@@ -10,7 +10,9 @@ import {
   getSupplierHasActivePlan,
   getSupplierHasTrial,
   getSupplierTrialEndsAt,
+  getSupplierPlanType,
   type Supplier,
+  type PlanType,
 } from "@/lib/services/suppliers"
 
 interface SupplierCardProps {
@@ -36,6 +38,7 @@ export function SupplierCard({
   const hasActivePlan = getSupplierHasActivePlan(supplier)
   const canGrantTrial = canSupplierReceiveTrial(supplier)
   const trialEndsAt = getSupplierTrialEndsAt(supplier)
+  const planType = getSupplierPlanType(supplier)
 
   const formatTrialDate = (dateString: string | null) => {
     if (!dateString) return "Data não informada"
@@ -71,6 +74,33 @@ export function SupplierCard({
     }
   }
 
+  const getPlanBadge = () => {
+    if (!planType) return null
+
+    switch (planType) {
+      case "PREMIUM":
+        return (
+          <Badge className="bg-primary text-primary-foreground font-semibold border-primary/20">
+            PREMIUM
+          </Badge>
+        )
+      case "GOLD":
+        return (
+          <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200 font-semibold">
+            GOLD
+          </Badge>
+        )
+      case "SILVER":
+        return (
+          <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-slate-200 font-semibold">
+            SILVER
+          </Badge>
+        )
+      default:
+        return null
+    }
+  }
+
   return (
     <Card className="bg-card border-border hover:shadow-lg transition-all duration-300 hover:scale-[1.02] h-full flex flex-col">
       <CardHeader className="pb-4">
@@ -91,8 +121,9 @@ export function SupplierCard({
               <p className="text-sm text-muted-foreground truncate">{supplier.companyName}</p>
             </div>
           </div>
-          <div className="flex-shrink-0">
+          <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
             {getStatusBadge()}
+            {getPlanBadge()}
           </div>
         </div>
       </CardHeader>
