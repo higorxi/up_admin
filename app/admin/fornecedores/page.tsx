@@ -34,13 +34,13 @@ export default function SuppliersPage() {
     try {
       await approve(id)
       toast({
-        title: "Fornecedor aprovado",
-        description: "O fornecedor foi aprovado com sucesso.",
+        title: "Lojista Parceria aprovado",
+        description: "O lojista parceria foi aprovado com sucesso.",
       })
     } catch (error) {
       toast({
         title: "Erro ao aprovar",
-        description: "Não foi possível aprovar o fornecedor. Tente novamente.",
+        description: "Não foi possível aprovar o lojista parceria. Tente novamente.",
         variant: "destructive",
       })
     }
@@ -57,13 +57,13 @@ export default function SuppliersPage() {
     try {
       await reject(supplierToReject.id, reason)
       toast({
-        title: "Fornecedor rejeitado",
-        description: "O fornecedor foi rejeitado com sucesso.",
+        title: "Lojista Parceria rejeitado",
+        description: "O lojista parceria foi rejeitado com sucesso.",
       })
     } catch (error) {
       toast({
         title: "Erro ao rejeitar",
-        description: "Não foi possível rejeitar o fornecedor. Tente novamente.",
+        description: "Não foi possível rejeitar o lojista parceria. Tente novamente.",
         variant: "destructive",
       })
       throw error
@@ -71,17 +71,17 @@ export default function SuppliersPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm("Tem certeza que deseja excluir este fornecedor?")) {
+    if (confirm("Tem certeza que deseja excluir este lojista parceria?")) {
       try {
         await deleteSupplier(id)
         toast({
-          title: "Fornecedor excluído",
-          description: "O fornecedor foi excluído com sucesso.",
+          title: "Lojista Parceria excluído",
+          description: "O lojista parceria foi excluído com sucesso.",
         })
       } catch (error) {
         toast({
           title: "Erro ao excluir",
-          description: "Não foi possível excluir o fornecedor. Tente novamente.",
+          description: "Não foi possível excluir o lojista parceria. Tente novamente.",
           variant: "destructive",
         })
       }
@@ -135,7 +135,7 @@ export default function SuppliersPage() {
   }
 
   const handleCancelTrial = async (id: string) => {
-    if (!confirm("Tem certeza que deseja cancelar o trial deste fornecedor?")) return
+    if (!confirm("Tem certeza que deseja cancelar o trial deste lojista parceria?")) return
 
     try {
       await cancelTrial(id)
@@ -192,8 +192,8 @@ export default function SuppliersPage() {
   return (
     <AdminLayout>
       <AdminPageLayout
-        title="Fornecedores Parceiros"
-        description="Gerencie aprovações e cadastros de fornecedores"
+        title="Lojistas Parcerias"
+        description="Gerencie aprovações e cadastros de lojistas parceiros"
       >
         {error && (
           <Alert variant="destructive" className="border-destructive/50">
@@ -235,7 +235,7 @@ export default function SuppliersPage() {
         {/* Results Count */}
         <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="outline" className="text-muted-foreground border-border/50 bg-muted/30 font-medium">
-            {filteredSuppliers.length} fornecedor{filteredSuppliers.length !== 1 ? "es" : ""} encontrado
+            {filteredSuppliers.length} lojista parceria{filteredSuppliers.length !== 1 ? "s" : ""} encontrado
             {filteredSuppliers.length !== 1 ? "s" : ""}
           </Badge>
           {statusFilter !== "all" && (
@@ -269,7 +269,7 @@ export default function SuppliersPage() {
         {!loading && filteredSuppliers.length === 0 && (
           <div className="text-center py-12">
             <UserCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-card-foreground mb-2">Nenhum fornecedor encontrado</h3>
+            <h3 className="text-lg font-semibold text-card-foreground mb-2">Nenhum lojista parceria encontrado</h3>
             <p className="text-muted-foreground">Tente ajustar os filtros ou termos de busca.</p>
           </div>
         )}

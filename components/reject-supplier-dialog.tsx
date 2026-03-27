@@ -41,7 +41,7 @@ export function RejectSupplierDialog({ isOpen, onClose, onConfirm, supplierName 
       setReason("")
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao rejeitar fornecedor")
+      setError(err instanceof Error ? err.message : "Erro ao rejeitar lojista parceria")
     } finally {
       setIsLoading(false)
     }
@@ -63,10 +63,10 @@ export function RejectSupplierDialog({ isOpen, onClose, onConfirm, supplierName 
             <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
               <AlertCircle className="h-5 w-5" />
             </div>
-            <span>Rejeitar Fornecedor</span>
+            <span>Rejeitar Lojista Parceria</span>
           </DialogTitle>
           <DialogDescription className="pt-2 leading-relaxed">
-            Você está prestes a rejeitar o cadastro de <strong className="text-foreground">{supplierName}</strong>. O fornecedor não poderá acessar
+            Você está prestes a rejeitar o cadastro de <strong className="text-foreground">{supplierName}</strong>. O lojista parceria não poderá acessar
             o sistema e receberá uma mensagem orientando-o a entrar em contato com o suporte.
           </DialogDescription>
         </DialogHeader>

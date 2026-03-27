@@ -24,8 +24,8 @@ const navigation = [
     icon: LayoutDashboard,
   },
   {
-    name: "Fornecedores Parceiros",
-    href: "/admin/fornecedores",
+    name: "Lojistas Parcerias",
+    href: "/admin/lojistas-parcerias",
     icon: UserCheck,
   },
   {
