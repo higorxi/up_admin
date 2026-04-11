@@ -140,10 +140,12 @@ export function SupplierCard({
               <p className="text-sm text-muted-foreground truncate">{supplier.companyName}</p>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-            {getStatusBadge()}
-            {getPlanBadge()}
-            {getCategoryBadge()}
+          <div className="flex flex-col items-end gap-1.5 flex-shrink-0 max-w-[40%]">
+            <div className="flex flex-wrap justify-end gap-1.5">
+              {getStatusBadge()}
+              {getPlanBadge()}
+              {getCategoryBadge()}
+            </div>
           </div>
         </div>
       </CardHeader>

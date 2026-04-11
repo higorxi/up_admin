@@ -202,7 +202,6 @@ export const getSupplierCategory = (supplier: Supplier): SupplierCategory => {
   if (supplier.category) return supplier.category
 
   const wellnessKeywords = [
-    "studio",
     "clínica",
     "clinica",
     "ginecolog",
@@ -219,6 +218,17 @@ export const getSupplierCategory = (supplier: Supplier): SupplierCategory => {
     "fitness",
     "yoga",
     "pilates",
+    "odonto",
+    "psico",
+    "nutri",
+    "dermato",
+    "spa",
+    "academia",
+    "dentista",
+    "hospital",
+    "terapeuta",
+    "fisioterapia",
+    "fisioterapeuta",
   ]
 
   const textToSearch = `${supplier.tradeName} ${supplier.companyName} ${supplier.store?.name || ""} ${supplier.store?.description || ""}`.toLowerCase()

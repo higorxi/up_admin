@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, UserCheck, AlertCircle, RefreshCw, ShoppingBag, HeartPulse } from "lucide-react"
 import { useSuppliers } from "@/hooks/use-suppliers"
 import { toast } from "@/hooks/use-toast"
-import { getSupplierPlanType, getSupplierCategory, type GrantTrialPayload, TrialDurationUnit, PlanType } from "@/lib/services/suppliers"
+import { getSupplierPlanType, getSupplierCategory, type GrantTrialPayload, TrialDurationUnit, PlanType, Supplier } from "@/lib/services/suppliers"
 
 export default function SuppliersPage() {
   const { suppliers, loading, error, refetch, approve, reject, grantTrial, cancelTrial, deleteSupplier } = useSuppliers()
@@ -379,13 +379,13 @@ export default function SuppliersPage() {
 }
 
 interface SupplierGridProps {
-  suppliers: any[]
+  suppliers: Supplier[]
   loading: boolean
   onApprove: (id: string) => void
   onReject: (id: string, name: string) => void
-  onGrantTrial: (supplier: any) => void
+  onGrantTrial: (supplier: Supplier) => void
   onCancelTrial: (id: string) => void
-  onViewDetails: (supplier: any) => void
+  onViewDetails: (supplier: Supplier) => void
   onDelete: (id: string, name: string) => void
 }
 
