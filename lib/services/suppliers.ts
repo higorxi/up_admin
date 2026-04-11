@@ -1,6 +1,7 @@
 import { ApiService } from "./api"
 
 export type SupplierStatus = "PENDING" | "APPROVED" | "REJECTED"
+export type SupplierCategory = "CONVENTIONAL" | "WELLNESS"
 export type TrialDurationUnit = "days" | "weeks" | "months"
 export type PlanType = "SILVER" | "GOLD" | "PREMIUM"
 export type SubscriptionStatus = "ACTIVE" | "TRIALING" | "CANCELED" | "INACTIVE" | "PAST_DUE" | "UNPAID" | "EXPIRED"
@@ -29,6 +30,7 @@ export interface SupplierSubscription {
 
 export interface Supplier {
   id: string
+  category?: SupplierCategory
   tradeName: string
   companyName: string
   document: string
@@ -194,4 +196,34 @@ export const getSupplierHasActivePlan = (supplier: Supplier): boolean => {
 
 export const canSupplierReceiveTrial = (supplier: Supplier): boolean => {
   return !getSupplierHasActivePlan(supplier) && !getSupplierHasTrial(supplier)
+}
+
+export const getSupplierCategory = (supplier: Supplier): SupplierCategory => {
+  if (supplier.category) return supplier.category
+
+  const wellnessKeywords = [
+    "studio",
+    "clínica",
+    "clinica",
+    "ginecolog",
+    "saúde",
+    "saude",
+    "bem-estar",
+    "wellness",
+    "estética",
+    "estetica",
+    "terapia",
+    "obstetr",
+    "médico",
+    "medico",
+    "fitness",
+    "yoga",
+    "pilates",
+  ]
+
+  const textToSearch = `${supplier.tradeName} ${supplier.companyName} ${supplier.store?.name || ""} ${supplier.store?.description || ""}`.toLowerCase()
+
+  const isWellness = wellnessKeywords.some((keyword) => textToSearch.includes(keyword))
+
+  return isWellness ? "WELLNESS" : "CONVENTIONAL"
 }

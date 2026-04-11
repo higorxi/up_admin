@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Check, Eye, Phone, MapPin, Building, FileText, X, Sparkles, Calendar, Ban, Trash2 } from "lucide-react"
+import { Check, Eye, Phone, MapPin, Building, FileText, X, Sparkles, Calendar, Ban, Trash2, Mail, HeartPulse, ShoppingBag } from "lucide-react"
 import {
   canSupplierReceiveTrial,
   getSupplierHasActivePlan,
   getSupplierHasTrial,
   getSupplierTrialEndsAt,
   getSupplierPlanType,
+  getSupplierCategory,
   type Supplier,
   type PlanType,
 } from "@/lib/services/suppliers"
@@ -39,6 +40,7 @@ export function SupplierCard({
   const canGrantTrial = canSupplierReceiveTrial(supplier)
   const trialEndsAt = getSupplierTrialEndsAt(supplier)
   const planType = getSupplierPlanType(supplier)
+  const category = getSupplierCategory(supplier)
 
   const formatTrialDate = (dateString: string | null) => {
     if (!dateString) return "Data não informada"
@@ -101,6 +103,23 @@ export function SupplierCard({
     }
   }
 
+  const getCategoryBadge = () => {
+    if (category === "WELLNESS") {
+      return (
+        <Badge variant="outline" className="text-purple-700 border-purple-500 bg-purple-50 font-medium gap-1">
+          <HeartPulse className="h-3 w-3" />
+          Wellness
+        </Badge>
+      )
+    }
+    return (
+      <Badge variant="outline" className="text-blue-700 border-blue-500 bg-blue-50 font-medium gap-1">
+        <ShoppingBag className="h-3 w-3" />
+        Convencional
+      </Badge>
+    )
+  }
+
   return (
     <Card className="bg-card border-border hover:shadow-lg transition-all duration-300 hover:scale-[1.02] h-full flex flex-col">
       <CardHeader className="pb-4">
@@ -124,6 +143,7 @@ export function SupplierCard({
           <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
             {getStatusBadge()}
             {getPlanBadge()}
+            {getCategoryBadge()}
           </div>
         </div>
       </CardHeader>
@@ -141,6 +161,14 @@ export function SupplierCard({
             </div>
             <span className="truncate">{supplier.contact}</span>
           </div>
+          {supplier.user?.email && (
+            <div className="flex items-center gap-2.5 text-muted-foreground">
+              <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">
+                <Mail className="h-4 w-4" />
+              </div>
+              <span className="truncate">{supplier.user.email}</span>
+            </div>
+          )}
           {supplier.store?.address && (
             <div className="flex items-center gap-2.5 text-muted-foreground">
               <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">

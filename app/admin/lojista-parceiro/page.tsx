@@ -14,10 +14,11 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Search, UserCheck, AlertCircle, RefreshCw } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Search, UserCheck, AlertCircle, RefreshCw, ShoppingBag, HeartPulse } from "lucide-react"
 import { useSuppliers } from "@/hooks/use-suppliers"
 import { toast } from "@/hooks/use-toast"
-import { getSupplierPlanType, type GrantTrialPayload, TrialDurationUnit, PlanType } from "@/lib/services/suppliers"
+import { getSupplierPlanType, getSupplierCategory, type GrantTrialPayload, TrialDurationUnit, PlanType } from "@/lib/services/suppliers"
 
 export default function SuppliersPage() {
   const { suppliers, loading, error, refetch, approve, reject, grantTrial, cancelTrial, deleteSupplier } = useSuppliers()
@@ -211,6 +212,9 @@ export default function SuppliersPage() {
       return a.tradeName.localeCompare(b.tradeName, 'pt-BR', { sensitivity: 'base' })
     })
 
+  const conventionalSuppliers = filteredSuppliers.filter(s => getSupplierCategory(s) === "CONVENTIONAL")
+  const wellnessSuppliers = filteredSuppliers.filter(s => getSupplierCategory(s) === "WELLNESS")
+
   return (
     <AdminLayout>
       <AdminPageLayout
@@ -268,33 +272,61 @@ export default function SuppliersPage() {
           )}
         </div>
 
-        {/* Suppliers Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {loading ? (
-            <CardSkeleton count={6} />
-          ) : (
-            filteredSuppliers.map((supplier) => (
-              <SupplierCard
-                key={supplier.id}
-                supplier={supplier}
-                onApprove={handleApprove}
-                onReject={() => handleRejectClick(supplier.id, supplier.tradeName)}
-                onGrantTrial={handleGrantTrialClick}
-                onCancelTrial={handleCancelTrial}
-                onViewDetails={handleViewDetails}
-                onDelete={(id) => handleDeleteClick(id, supplier.tradeName)}
-              />
-            ))
-          )}
-        </div>
+        <Tabs defaultValue="all" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="all" className="gap-2">
+              <UserCheck className="h-4 w-4" />
+              Todos ({filteredSuppliers.length})
+            </TabsTrigger>
+            <TabsTrigger value="conventional" className="gap-2">
+              <ShoppingBag className="h-4 w-4" />
+              Convencionais ({conventionalSuppliers.length})
+            </TabsTrigger>
+            <TabsTrigger value="wellness" className="gap-2">
+              <HeartPulse className="h-4 w-4" />
+              Wellness ({wellnessSuppliers.length})
+            </TabsTrigger>
+          </TabsList>
 
-        {!loading && filteredSuppliers.length === 0 && (
-          <div className="text-center py-12">
-            <UserCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-card-foreground mb-2">Nenhum lojista parceiro encontrado</h3>
-            <p className="text-muted-foreground">Tente ajustar os filtros ou termos de busca.</p>
-          </div>
-        )}
+          <TabsContent value="all" className="space-y-6">
+            <SupplierGrid
+              suppliers={filteredSuppliers}
+              loading={loading}
+              onApprove={handleApprove}
+              onReject={handleRejectClick}
+              onGrantTrial={handleGrantTrialClick}
+              onCancelTrial={handleCancelTrial}
+              onViewDetails={handleViewDetails}
+              onDelete={handleDeleteClick}
+            />
+          </TabsContent>
+
+          <TabsContent value="conventional" className="space-y-6">
+            <SupplierGrid
+              suppliers={conventionalSuppliers}
+              loading={loading}
+              onApprove={handleApprove}
+              onReject={handleRejectClick}
+              onGrantTrial={handleGrantTrialClick}
+              onCancelTrial={handleCancelTrial}
+              onViewDetails={handleViewDetails}
+              onDelete={handleDeleteClick}
+            />
+          </TabsContent>
+
+          <TabsContent value="wellness" className="space-y-6">
+            <SupplierGrid
+              suppliers={wellnessSuppliers}
+              loading={loading}
+              onApprove={handleApprove}
+              onReject={handleRejectClick}
+              onGrantTrial={handleGrantTrialClick}
+              onCancelTrial={handleCancelTrial}
+              onViewDetails={handleViewDetails}
+              onDelete={handleDeleteClick}
+            />
+          </TabsContent>
+        </Tabs>
 
         {/* Modals */}
         <SupplierDetailsModal
@@ -343,5 +375,62 @@ export default function SuppliersPage() {
         />
       </AdminPageLayout>
     </AdminLayout>
+  )
+}
+
+interface SupplierGridProps {
+  suppliers: any[]
+  loading: boolean
+  onApprove: (id: string) => void
+  onReject: (id: string, name: string) => void
+  onGrantTrial: (supplier: any) => void
+  onCancelTrial: (id: string) => void
+  onViewDetails: (supplier: any) => void
+  onDelete: (id: string, name: string) => void
+}
+
+function SupplierGrid({
+  suppliers,
+  loading,
+  onApprove,
+  onReject,
+  onGrantTrial,
+  onCancelTrial,
+  onViewDetails,
+  onDelete,
+}: SupplierGridProps) {
+  if (!loading && suppliers.length === 0) {
+    return <EmptyState />
+  }
+
+  return (
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {loading ? (
+        <CardSkeleton count={6} />
+      ) : (
+        suppliers.map((supplier) => (
+          <SupplierCard
+            key={supplier.id}
+            supplier={supplier}
+            onApprove={onApprove}
+            onReject={() => onReject(supplier.id, supplier.tradeName)}
+            onGrantTrial={onGrantTrial}
+            onCancelTrial={onCancelTrial}
+            onViewDetails={onViewDetails}
+            onDelete={(id) => onDelete(id, supplier.tradeName)}
+          />
+        ))
+      )}
+    </div>
+  )
+}
+
+function EmptyState() {
+  return (
+    <div className="text-center py-12">
+      <UserCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+      <h3 className="text-lg font-semibold text-card-foreground mb-2">Nenhum lojista parceiro encontrado</h3>
+      <p className="text-muted-foreground">Tente ajustar os filtros ou termos de busca.</p>
+    </div>
   )
 }

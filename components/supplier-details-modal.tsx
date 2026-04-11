@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Check, Mail, Phone, MapPin, Calendar, Building, FileText, Store, Globe, Clock, X, User, Sparkles, Ban } from "lucide-react"
+import { Check, Mail, Phone, MapPin, Calendar, Building, FileText, Store, Globe, Clock, X, User, Sparkles, Ban, HeartPulse, ShoppingBag } from "lucide-react"
 import { useState } from "react"
-import { canSupplierReceiveTrial, getSupplierHasTrial, getSupplierTrialEndsAt, type Supplier } from "@/lib/services/suppliers"
+import { canSupplierReceiveTrial, getSupplierHasTrial, getSupplierTrialEndsAt, getSupplierCategory, type Supplier } from "@/lib/services/suppliers"
 
 interface SupplierDetailsModalProps {
   supplier: Supplier | null
@@ -36,6 +36,7 @@ export function SupplierDetailsModal({
   const hasTrial = getSupplierHasTrial(supplier)
   const trialEndsAt = getSupplierTrialEndsAt(supplier)
   const canGrantTrial = canSupplierReceiveTrial(supplier)
+  const category = getSupplierCategory(supplier)
 
   const getStatusBadge = () => {
     switch (supplier.status) {
@@ -115,6 +116,17 @@ export function SupplierDetailsModal({
               <div className="flex items-center gap-3">
                 <span className="text-xl">{supplier.tradeName}</span>
                 {getStatusBadge()}
+                {category === "WELLNESS" ? (
+                  <Badge variant="outline" className="text-purple-700 border-purple-500 bg-purple-50 font-medium gap-1">
+                    <HeartPulse className="h-3 w-3" />
+                    Wellness
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-blue-700 border-blue-500 bg-blue-50 font-medium gap-1">
+                    <ShoppingBag className="h-3 w-3" />
+                    Convencional
+                  </Badge>
+                )}
               </div>
               <p className="text-sm text-muted-foreground font-normal">{supplier.companyName}</p>
             </div>
