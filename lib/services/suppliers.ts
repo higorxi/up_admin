@@ -47,6 +47,8 @@ export interface Supplier {
   trialEndDate?: string | null
   trialDuration?: number | null
   trialDurationUnit?: TrialDurationUnit | string | null
+  pointsLimit?: number | null
+  currentPointsAwarded?: number | null
   store: {
     id: string
     name: string
@@ -95,6 +97,45 @@ export interface Supplier {
   } | null
 }
 
+export interface UpdateSupplierPointsLimitPayload {
+  pointsLimit: number
+}
+
+export interface PhysicalSale {
+  id: string
+  code?: string | null
+  pointsCode?: string | null
+  customerName?: string | null
+  clientName?: string | null
+  saleValue?: number | null
+  amount?: number | null
+  pointsAwarded?: number | null
+  isRedeemed?: boolean | null
+  status?: string | null
+  redeemedAt?: string | null
+  createdAt: string
+  partnerSupplier?: {
+    id: string
+    tradeName?: string | null
+    companyName?: string | null
+  } | null
+  partner?: {
+    id: string
+    tradeName?: string | null
+    companyName?: string | null
+    name?: string | null
+  } | null
+  professional?: {
+    id: string
+    email?: string | null
+  } | null
+  redeemedProfessional?: {
+    id: string
+    email?: string | null
+  } | null
+  professionalEmail?: string | null
+}
+
 export class SuppliersService {
   static async getAll(): Promise<Supplier[]> {
     return ApiService.get<Supplier[]>("/partner-suppliers")
@@ -122,6 +163,14 @@ export class SuppliersService {
 
   static async delete(id: string): Promise<void> {
     return ApiService.delete(`/partner-supplier/${id}`)
+  }
+
+  static async updatePointsLimit(id: string, payload: UpdateSupplierPointsLimitPayload): Promise<Supplier> {
+    return ApiService.patch<Supplier>(`/partner-suppliers/${id}/points-limit`, payload)
+  }
+
+  static async getPhysicalSales(): Promise<PhysicalSale[]> {
+    return ApiService.get<PhysicalSale[]>("/physical-sales")
   }
 }
 
