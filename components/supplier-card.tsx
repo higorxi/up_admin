@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Check, Eye, Phone, MapPin, Building, FileText, X, Sparkles, Calendar, Ban, Trash2 } from "lucide-react"
+import { Progress } from "@/components/ui/progress"
+import { Check, Eye, Phone, MapPin, Building, FileText, X, Sparkles, Calendar, Ban, Trash2, Coins } from "lucide-react"
 import {
   canSupplierReceiveTrial,
   getSupplierHasActivePlan,
@@ -23,6 +24,7 @@ interface SupplierCardProps {
   onCancelTrial?: (id: string) => void | Promise<void>
   onViewDetails: (supplier: Supplier) => void
   onDelete?: (id: string) => void
+  onManagePointsLimit?: (supplier: Supplier) => void
 }
 
 export function SupplierCard({
@@ -33,12 +35,16 @@ export function SupplierCard({
   onCancelTrial,
   onViewDetails,
   onDelete,
+  onManagePointsLimit,
 }: SupplierCardProps) {
   const hasTrial = getSupplierHasTrial(supplier)
   const hasActivePlan = getSupplierHasActivePlan(supplier)
   const canGrantTrial = canSupplierReceiveTrial(supplier)
   const trialEndsAt = getSupplierTrialEndsAt(supplier)
   const planType = getSupplierPlanType(supplier)
+  const currentPointsAwarded = supplier.currentPointsAwarded ?? 0
+  const pointsLimit = supplier.pointsLimit ?? 0
+  const pointsUsagePercentage = pointsLimit > 0 ? Math.min((currentPointsAwarded / pointsLimit) * 100, 100) : 0
 
   const formatTrialDate = (dateString: string | null) => {
     if (!dateString) return "Data não informada"
@@ -183,6 +189,18 @@ export function SupplierCard({
           </div>
         )}
 
+        {supplier.status === "APPROVED" && (
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-medium text-primary">Consumo de pontos físicos</p>
+              <p className="text-xs text-muted-foreground">
+                {currentPointsAwarded.toLocaleString("pt-BR")} / {pointsLimit.toLocaleString("pt-BR")}
+              </p>
+            </div>
+            <Progress value={pointsUsagePercentage} />
+          </div>
+        )}
+
         <div className="flex gap-2 pt-3 mt-auto border-t border-border/50">
           <Button
             variant="outline"
@@ -236,6 +254,18 @@ export function SupplierCard({
               title="Excluir Lojista"
             >
               <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+
+          {supplier.status === "APPROVED" && onManagePointsLimit && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onManagePointsLimit(supplier)}
+              className="px-2.5 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+              title="Gerenciar limite de pontos"
+            >
+              <Coins className="h-4 w-4" />
             </Button>
           )}
         </div>

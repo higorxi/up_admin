@@ -4,7 +4,7 @@ import { DashboardStats } from "@/components/dashboard-stats";
 import { RecentActivity } from "@/components/recent-activity";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, Users, Calendar } from "lucide-react";
+import { Plus, Users, Calendar, Ticket } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminDashboard() {
@@ -44,6 +44,24 @@ export default function AdminDashboard() {
             </CardHeader>
 
             <CardContent className="space-y-2.5">
+              <Button
+                asChild
+                variant="outline"
+                className="w-full justify-start gap-3 h-12 bg-transparent hover:bg-muted/50 transition-colors"
+              >
+                <Link href="/admin/conexao-premiada">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Ticket className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-medium">Conexão Premiada</div>
+                    <div className="text-xs text-muted-foreground">
+                      Histórico físico
+                    </div>
+                  </div>
+                </Link>
+              </Button>
+
               <Button
                 asChild
                 variant="outline"

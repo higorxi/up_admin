@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useDashboardStatistics } from "@/hooks/use-dashboard"
-import { Users, UserCheck, Calendar, Gift, Clock, Briefcase, TrendingUp, ArrowUpRight } from "lucide-react"
+import { Users, UserCheck, Calendar, Gift, Clock, Briefcase, ArrowUpRight, Store, Coins } from "lucide-react"
 
 export function DashboardStats() {
   const { stats, loading, error } = useDashboardStatistics()
@@ -62,6 +62,24 @@ export function DashboardStats() {
       iconColor: "text-slate-600",
       description: "Conteúdo criado"
     },
+    {
+      title: "Total de Vendas Físicas",
+      value: stats ? stats.totalPhysicalSales.toLocaleString() : "...",
+      icon: Store,
+      gradient: "from-indigo-500 to-indigo-600",
+      lightBg: "bg-indigo-50",
+      iconColor: "text-indigo-600",
+      description: "Códigos físicos gerados"
+    },
+    {
+      title: "Pontos Distribuídos (Físico)",
+      value: stats ? stats.totalPointsAwardedPhysical.toLocaleString() : "...",
+      icon: Coins,
+      gradient: "from-emerald-500 to-emerald-600",
+      lightBg: "bg-emerald-50",
+      iconColor: "text-emerald-600",
+      description: "Pontos já resgatados"
+    },
   ]
 
   if (error) {
@@ -77,7 +95,7 @@ export function DashboardStats() {
   return (
     <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       {loading
-        ? Array.from({ length: 6 }).map((_, i) => (
+        ? Array.from({ length: 8 }).map((_, i) => (
             <Card
               key={i}
               className="overflow-hidden border-0 shadow-sm"

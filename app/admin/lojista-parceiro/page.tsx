@@ -8,6 +8,7 @@ import { SupplierDetailsModal } from "@/components/supplier-details-modal"
 import { RejectSupplierDialog } from "@/components/reject-supplier-dialog"
 import { GrantTrialDialog } from "@/components/grant-trial-dialog"
 import { DeleteSupplierDialog } from "@/components/delete-supplier-dialog"
+import { SupplierPointsLimitDialog } from "@/components/supplier-points-limit-dialog"
 import { CardSkeleton } from "@/components/card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,7 +21,8 @@ import { toast } from "@/hooks/use-toast"
 import { getSupplierPlanType, type GrantTrialPayload, TrialDurationUnit, PlanType } from "@/lib/services/suppliers"
 
 export default function SuppliersPage() {
-  const { suppliers, loading, error, refetch, approve, reject, grantTrial, cancelTrial, deleteSupplier } = useSuppliers()
+  const { suppliers, loading, error, refetch, approve, reject, grantTrial, cancelTrial, deleteSupplier, updatePointsLimit } =
+    useSuppliers()
 
   const [selectedSupplier, setSelectedSupplier] = useState<(typeof suppliers)[0] | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -30,6 +32,13 @@ export default function SuppliersPage() {
   const [supplierToGrantTrial, setSupplierToGrantTrial] = useState<{ id: string; name: string } | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [supplierToDelete, setSupplierToDelete] = useState<{ id: string; name: string } | null>(null)
+  const [isPointsLimitDialogOpen, setIsPointsLimitDialogOpen] = useState(false)
+  const [supplierToManagePoints, setSupplierToManagePoints] = useState<{
+    id: string
+    name: string
+    pointsLimit?: number | null
+    currentPointsAwarded?: number | null
+  } | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
 
@@ -92,6 +101,35 @@ export default function SuppliersPage() {
       toast({
         title: "Erro ao desativar",
         description: "Não foi possível desativar o lojista parceiro. Tente novamente.",
+        variant: "destructive",
+      })
+      throw error
+    }
+  }
+
+  const handleManagePointsLimitClick = (supplier: (typeof suppliers)[0]) => {
+    setSupplierToManagePoints({
+      id: supplier.id,
+      name: supplier.tradeName,
+      pointsLimit: supplier.pointsLimit,
+      currentPointsAwarded: supplier.currentPointsAwarded,
+    })
+    setIsPointsLimitDialogOpen(true)
+  }
+
+  const handlePointsLimitConfirm = async (pointsLimit: number) => {
+    if (!supplierToManagePoints) return
+
+    try {
+      await updatePointsLimit(supplierToManagePoints.id, pointsLimit)
+      toast({
+        title: "Limite atualizado",
+        description: "O limite de pontos do lojista parceiro foi atualizado com sucesso.",
+      })
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar limite",
+        description: "Não foi possível atualizar o limite de pontos. Tente novamente.",
         variant: "destructive",
       })
       throw error
@@ -283,6 +321,7 @@ export default function SuppliersPage() {
                 onCancelTrial={handleCancelTrial}
                 onViewDetails={handleViewDetails}
                 onDelete={(id) => handleDeleteClick(id, supplier.tradeName)}
+                onManagePointsLimit={handleManagePointsLimitClick}
               />
             ))
           )}
@@ -340,6 +379,18 @@ export default function SuppliersPage() {
           }}
           onConfirm={handleDeleteConfirm}
           supplierName={supplierToDelete?.name || ""}
+        />
+
+        <SupplierPointsLimitDialog
+          isOpen={isPointsLimitDialogOpen}
+          supplierName={supplierToManagePoints?.name || ""}
+          pointsLimit={supplierToManagePoints?.pointsLimit}
+          currentPointsAwarded={supplierToManagePoints?.currentPointsAwarded}
+          onClose={() => {
+            setIsPointsLimitDialogOpen(false)
+            setSupplierToManagePoints(null)
+          }}
+          onConfirm={handlePointsLimitConfirm}
         />
       </AdminPageLayout>
     </AdminLayout>
