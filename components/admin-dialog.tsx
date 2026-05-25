@@ -34,7 +34,7 @@ export function AdminDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "grid h-[min(90vh,900px)] max-h-[calc(100vh-32px)] w-[min(1240px,calc(100vw-32px))] max-w-none grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0",
+          "grid h-[min(90vh,900px)] max-h-[calc(100vh-32px)] w-[min(1240px,calc(100vw-32px))] max-w-none sm:max-w-none grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0",
           className,
         )}
       >
