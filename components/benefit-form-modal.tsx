@@ -1,14 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { AdminDialog } from "@/components/admin-dialog";
+import { DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -171,22 +165,18 @@ export function BenefitFormModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[min(1040px,calc(100vw-32px))] max-w-none max-h-[90vh] overflow-y-auto p-0">
-        <DialogHeader>
-          <div className="border-b bg-muted/40 px-6 py-5">
-            <DialogTitle className="text-2xl">
-              {mode === "create" ? "Criar Novo Benefício" : "Editar Benefício"}
-            </DialogTitle>
-            <DialogDescription className="mt-1 text-base">
-              {mode === "create"
-                ? "Preencha os dados do benefício que ficará disponível para os profissionais."
-                : "Atualize as informações do benefício com atenção antes de salvar."}
-            </DialogDescription>
-          </div>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-6 px-6 pb-6">
+    <AdminDialog
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+      title={mode === "create" ? "Criar Novo Benefício" : "Editar Benefício"}
+      description={
+        mode === "create"
+          ? "Preencha os dados do benefício que ficará disponível para os profissionais."
+          : "Atualize as informações do benefício com atenção antes de salvar."
+      }
+      icon={<CalendarIcon className="h-6 w-6 flex-shrink-0" />}
+    >
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
@@ -352,7 +342,6 @@ export function BenefitFormModal({
             </Button>
           </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+    </AdminDialog>
   );
 }

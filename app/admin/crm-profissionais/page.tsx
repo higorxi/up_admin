@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { AdminLayout } from "@/components/admin-layout"
 import { AdminPageLayout } from "@/components/admin-page-layout"
+import { AdminDialog } from "@/components/admin-dialog"
 import { useProfessionals } from "@/hooks/use-professionals"
 import {
   ProfessionalLevel,
@@ -31,13 +32,7 @@ import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from "@/components/ui/dialog"
+import { DialogFooter } from "@/components/ui/dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -557,15 +552,24 @@ export default function CRMProfessionalsPage() {
           </div>
         )}
 
-        <Dialog open={!!professionalToEdit} onOpenChange={(open) => !open && setProfessionalToEdit(null)}>
-          <DialogContent className="w-[min(1040px,calc(100vw-32px))] max-w-none max-h-[90vh] overflow-y-auto p-0">
-            <DialogHeader>
-              <div className="border-b bg-muted/40 px-6 py-5">
-                <DialogTitle className="text-2xl">Editar Profissional</DialogTitle>
-                <p className="mt-1 text-base text-muted-foreground">Ajuste dados administrativos, verificação, nível e destaque.</p>
-              </div>
-            </DialogHeader>
-            <div className="grid gap-4 px-6 py-5 md:grid-cols-2">
+        <AdminDialog
+          open={!!professionalToEdit}
+          onOpenChange={(open) => !open && setProfessionalToEdit(null)}
+          title="Editar Profissional"
+          description="Ajuste dados administrativos, verificação, nível e destaque."
+          icon={<Edit className="h-6 w-6 flex-shrink-0" />}
+          footer={
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setProfessionalToEdit(null)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleEditSave} disabled={actionLoading}>
+                Salvar alterações
+              </Button>
+            </DialogFooter>
+          }
+        >
+            <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="professional-name">Nome</Label>
                 <Input
@@ -666,16 +670,7 @@ export default function CRMProfessionalsPage() {
                 />
               </div>
             </div>
-            <DialogFooter className="border-t bg-background px-6 py-4">
-              <Button variant="outline" onClick={() => setProfessionalToEdit(null)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleEditSave} disabled={actionLoading}>
-                Salvar alterações
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        </AdminDialog>
 
         <AlertDialog open={!!professionalToDelete} onOpenChange={(open) => !open && setProfessionalToDelete(null)}>
           <AlertDialogContent>

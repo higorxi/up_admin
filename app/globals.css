@@ -144,6 +144,46 @@
   main {
     min-height: 100vh;
   }
+
+  .admin-dialog-scroll [data-slot="scroll-area-viewport"] {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--accent) 55%, transparent) color-mix(in srgb, var(--muted) 80%, transparent);
+  }
+
+  .admin-dialog-scroll [data-slot="scroll-area-scrollbar"] {
+    width: 0.75rem;
+    padding: 0.125rem;
+  }
+
+  .admin-dialog-scroll [data-slot="scroll-area-thumb"] {
+    background: color-mix(in srgb, var(--accent) 55%, var(--primary));
+    min-height: 3rem;
+  }
+
+  .admin-dialog-scroll [data-slot="scroll-area-thumb"]:hover {
+    background: var(--accent);
+  }
+
+  .admin-native-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--accent) 55%, transparent) color-mix(in srgb, var(--muted) 80%, transparent);
+  }
+
+  .admin-native-scroll::-webkit-scrollbar {
+    height: 0.75rem;
+    width: 0.75rem;
+  }
+
+  .admin-native-scroll::-webkit-scrollbar-track {
+    background: color-mix(in srgb, var(--muted) 80%, transparent);
+    border-radius: 999px;
+  }
+
+  .admin-native-scroll::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--accent) 55%, var(--primary));
+    border: 2px solid color-mix(in srgb, var(--muted) 80%, transparent);
+    border-radius: 999px;
+  }
   
   /* Smooth fade for all interactive elements */
   button, a, [role="button"] {

@@ -92,16 +92,21 @@ export function AdminSidebar() {
 
       {/* Navigation */}
       <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-2">
+        <nav className="space-y-1.5">
+          {!collapsed && (
+            <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wide text-sidebar-foreground/55">
+              Módulos
+            </div>
+          )}
           {navigation.map((item) => {
             const isActive = pathname === item.href
             return (
-              <Link key={item.name} href={item.href}>
+              <Link key={item.name} href={item.href} prefetch>
                 <Button
                   variant={isActive ? "secondary" : "ghost"}
                   className={cn(
-                    "w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent/20",
-                    isActive && "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent",
+                    "h-11 w-full justify-start gap-3 rounded-md text-sidebar-foreground/85 hover:bg-sidebar-accent/15 hover:text-sidebar-foreground",
+                    isActive && "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                     collapsed && "justify-center px-2",
                   )}
                 >
@@ -114,7 +119,7 @@ export function AdminSidebar() {
         </nav>
       </ScrollArea>
 
-      <div className="p-4 border-t border-sidebar-border">
+      <div className="space-y-3 border-t border-sidebar-border p-3">
         <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -163,6 +168,18 @@ export function AdminSidebar() {
             </div>
           )}
         </div>
+        <Button
+          variant="ghost"
+          onClick={logout}
+          className={cn(
+            "h-10 w-full justify-start gap-3 rounded-md border border-sidebar-border/80 bg-sidebar-foreground/5 text-sidebar-foreground/90 hover:bg-destructive/15 hover:text-sidebar-foreground",
+            collapsed && "justify-center px-2",
+          )}
+          title="Sair"
+        >
+          <LogOut className="h-4 w-4 flex-shrink-0" />
+          {!collapsed && <span>Sair do admin</span>}
+        </Button>
       </div>
     </div>
   )

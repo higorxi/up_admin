@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react"
 import { SuppliersService, type Supplier, type GrantTrialPayload, type UpdateSupplierPayload } from "@/lib/services/suppliers"
 import { useAuth } from "./use-auth"
+import { getCachedResource, setCachedResource, updateCachedResource } from "@/lib/admin-resource-cache"
+
+const SUPPLIERS_CACHE_KEY = "admin:suppliers"
 
 interface UseSuppliersReturn {
   suppliers: Supplier[]
@@ -19,18 +22,20 @@ interface UseSuppliersReturn {
 
 export function useSuppliers(): UseSuppliersReturn {
   const { isAuthenticated } = useAuth()
-  const [suppliers, setSuppliers] = useState<Supplier[]>([])
-  const [loading, setLoading] = useState(true)
+  const cachedSuppliers = getCachedResource<Supplier[]>(SUPPLIERS_CACHE_KEY)
+  const [suppliers, setSuppliers] = useState<Supplier[]>(cachedSuppliers ?? [])
+  const [loading, setLoading] = useState(!cachedSuppliers)
   const [error, setError] = useState<string | null>(null)
 
   const fetchSuppliers = async () => {
     if (!isAuthenticated) return
 
     try {
-      setLoading(true)
+      setLoading(suppliers.length === 0)
       setError(null)
 
       const suppliersData = await SuppliersService.getAll()
+      setCachedResource(SUPPLIERS_CACHE_KEY, suppliersData)
       setSuppliers(suppliersData)
     } catch (err) {
       console.error("[v0] Error fetching suppliers:", err)
@@ -44,7 +49,9 @@ export function useSuppliers(): UseSuppliersReturn {
     try {
       await SuppliersService.approve(id)
       setSuppliers((prev) =>
-        prev.map((supplier) => (supplier.id === id ? { ...supplier, status: "APPROVED" } : supplier)),
+        updateCachedResource<Supplier[]>(SUPPLIERS_CACHE_KEY, () =>
+          prev.map((supplier) => (supplier.id === id ? { ...supplier, status: "APPROVED" } : supplier)),
+        ),
       )
     } catch (err) {
       console.error("[v0] Error approving supplier:", err)
@@ -56,7 +63,9 @@ export function useSuppliers(): UseSuppliersReturn {
     try {
       const updatedSupplier = await SuppliersService.update(id, payload)
       setSuppliers((prev) =>
-        prev.map((supplier) => (supplier.id === id ? { ...supplier, ...updatedSupplier } : supplier)),
+        updateCachedResource<Supplier[]>(SUPPLIERS_CACHE_KEY, () =>
+          prev.map((supplier) => (supplier.id === id ? { ...supplier, ...updatedSupplier } : supplier)),
+        ),
       )
     } catch (err) {
       console.error("[v0] Error updating supplier:", err)
@@ -68,7 +77,9 @@ export function useSuppliers(): UseSuppliersReturn {
     try {
       await SuppliersService.reject(id, reason)
       setSuppliers((prev) =>
-        prev.map((supplier) => (supplier.id === id ? { ...supplier, status: "REJECTED" } : supplier)),
+        updateCachedResource<Supplier[]>(SUPPLIERS_CACHE_KEY, () =>
+          prev.map((supplier) => (supplier.id === id ? { ...supplier, status: "REJECTED" } : supplier)),
+        ),
       )
     } catch (err) {
       console.error("[v0] Error rejecting supplier:", err)
@@ -97,7 +108,7 @@ export function useSuppliers(): UseSuppliersReturn {
   const deleteSupplier = async (id: string) => {
     try {
       await SuppliersService.delete(id)
-      setSuppliers((prev) => prev.filter((s) => s.id !== id))
+      setSuppliers((prev) => updateCachedResource<Supplier[]>(SUPPLIERS_CACHE_KEY, () => prev.filter((s) => s.id !== id)))
     } catch (err) {
       console.error("[v0] Error deleting supplier:", err)
       throw err

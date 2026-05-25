@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react"
 import { EventsService, type Event, type CreateEventData, type EventRegistration } from "@/lib/services/events"
 import { useAuth } from "./use-auth"
+import { getCachedResource, setCachedResource, updateCachedResource } from "@/lib/admin-resource-cache"
+
+const EVENTS_CACHE_KEY = "admin:events"
 
 interface UseEventsReturn {
   events: Event[]
@@ -19,18 +22,20 @@ interface UseEventsReturn {
 
 export function useEvents(): UseEventsReturn {
   const { isAuthenticated } = useAuth()
-  const [events, setEvents] = useState<Event[]>([])
-  const [loading, setLoading] = useState(true)
+  const cachedEvents = getCachedResource<Event[]>(EVENTS_CACHE_KEY)
+  const [events, setEvents] = useState<Event[]>(cachedEvents ?? [])
+  const [loading, setLoading] = useState(!cachedEvents)
   const [error, setError] = useState<string | null>(null)
 
   const fetchEvents = async () => {
     if (!isAuthenticated) return
 
     try {
-      setLoading(true)
+      setLoading(events.length === 0)
       setError(null)
 
       const eventsData = await EventsService.getAll()
+      setCachedResource(EVENTS_CACHE_KEY, eventsData)
       setEvents(eventsData)
     } catch (err) {
       console.error("[useEvents] Error fetching events:", err)
@@ -43,7 +48,7 @@ export function useEvents(): UseEventsReturn {
   const create = async (data: CreateEventData) => {
     try {
       const newEvent = await EventsService.create(data)
-      setEvents((prev) => [...prev, newEvent])
+      setEvents((prev) => updateCachedResource<Event[]>(EVENTS_CACHE_KEY, () => [...prev, newEvent]))
     } catch (err) {
       console.error("[useEvents] Error creating event:", err)
       throw err
@@ -54,7 +59,9 @@ export function useEvents(): UseEventsReturn {
     try {
       const updatedEvent = await EventsService.update(id, data)
       setEvents((prev) => 
-        prev.map((event) => (event.id === id ? updatedEvent : event))
+        updateCachedResource<Event[]>(EVENTS_CACHE_KEY, () =>
+          prev.map((event) => (event.id === id ? updatedEvent : event)),
+        )
       )
     } catch (err) {
       console.error("[useEvents] Error updating event:", err)
@@ -65,7 +72,7 @@ export function useEvents(): UseEventsReturn {
   const deleteEvent = async (id: string) => {
     try {
       await EventsService.delete(id)
-      setEvents((prev) => prev.filter((event) => event.id !== id))
+      setEvents((prev) => updateCachedResource<Event[]>(EVENTS_CACHE_KEY, () => prev.filter((event) => event.id !== id)))
     } catch (err) {
       console.error("[useEvents] Error deleting event:", err)
       throw err
@@ -76,7 +83,9 @@ export function useEvents(): UseEventsReturn {
     try {
       const updatedEvent = await EventsService.toggleEvent(id)
       setEvents((prev) => 
-        prev.map((event) => (event.id === id ? updatedEvent : event))
+        updateCachedResource<Event[]>(EVENTS_CACHE_KEY, () =>
+          prev.map((event) => (event.id === id ? updatedEvent : event)),
+        )
       )
     } catch (err) {
       console.error("[useEvents] Error toggling event:", err)

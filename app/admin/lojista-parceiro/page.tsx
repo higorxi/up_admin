@@ -10,14 +10,15 @@ import { GrantTrialDialog } from "@/components/grant-trial-dialog"
 import { DeleteSupplierDialog } from "@/components/delete-supplier-dialog"
 import { SupplierStoreManagerDialog } from "@/components/supplier-store-manager-dialog"
 import { CardSkeleton } from "@/components/card-skeleton"
+import { AdminDialog } from "@/components/admin-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CalendarDays, Package, Search, Store, UserCheck, AlertCircle, RefreshCw } from "lucide-react"
+import { CalendarDays, Package, Search, Store, UserCheck, AlertCircle, RefreshCw, Edit } from "lucide-react"
 import { useSuppliers } from "@/hooks/use-suppliers"
 import { toast } from "@/hooks/use-toast"
 import { getSupplierPlanType, type GrantTrialPayload, TrialDurationUnit, PlanType, type UpdateSupplierPayload } from "@/lib/services/suppliers"
@@ -449,15 +450,22 @@ export default function SuppliersPage() {
           onChanged={handleStoreManagerChanged}
         />
 
-        <Dialog open={!!supplierToEdit} onOpenChange={(open) => !open && setSupplierToEdit(null)}>
-          <DialogContent className="w-[min(920px,calc(100vw-32px))] max-w-none max-h-[90vh] overflow-y-auto p-0">
-            <DialogHeader>
-              <div className="border-b bg-muted/40 px-6 py-5">
-                <DialogTitle className="text-2xl">Editar Lojista Parceiro</DialogTitle>
-                <p className="mt-1 text-base text-muted-foreground">Atualize os dados cadastrais principais do parceiro.</p>
-              </div>
-            </DialogHeader>
-            <div className="grid gap-4 px-6 py-5 md:grid-cols-2">
+        <AdminDialog
+          open={!!supplierToEdit}
+          onOpenChange={(open) => !open && setSupplierToEdit(null)}
+          title="Editar Lojista Parceiro"
+          description="Atualize os dados cadastrais principais do parceiro."
+          icon={<Edit className="h-6 w-6 flex-shrink-0" />}
+          footer={
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setSupplierToEdit(null)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleEditConfirm}>Salvar alterações</Button>
+            </DialogFooter>
+          }
+        >
+            <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="supplier-trade-name">Nome comercial</Label>
                 <Input
@@ -516,14 +524,7 @@ export default function SuppliersPage() {
                 </Select>
               </div>
             </div>
-            <DialogFooter className="border-t bg-background px-6 py-4">
-              <Button variant="outline" onClick={() => setSupplierToEdit(null)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleEditConfirm}>Salvar alterações</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        </AdminDialog>
       </AdminPageLayout>
     </AdminLayout>
   )

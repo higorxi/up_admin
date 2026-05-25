@@ -2,18 +2,12 @@
 
 import type React from "react";
 import { useState, useEffect, useRef } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { AdminDialog } from "@/components/admin-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -205,21 +199,13 @@ export function ProfessionalFormModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[min(1040px,calc(100vw-32px))] max-w-none max-h-[92vh] p-0">
-        <DialogHeader>
-          <div className="border-b bg-muted/40 px-6 py-5">
-            <DialogTitle className="flex items-center gap-2 text-2xl">
-              <User className="h-6 w-6" />
-              {mode === "create" ? "Adicionar Profissional" : "Editar Profissional"}
-            </DialogTitle>
-            <p className="mt-1 text-base text-muted-foreground">
-              Cadastre dados, endereço, canais de contato e disponibilidade.
-            </p>
-          </div>
-        </DialogHeader>
-
-        <ScrollArea className="max-h-[calc(92vh-120px)] px-6 pb-6">
+    <AdminDialog
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+      title={mode === "create" ? "Adicionar Profissional" : "Editar Profissional"}
+      description="Cadastre dados, endereço, canais de contato e disponibilidade."
+      icon={<User className="h-6 w-6 flex-shrink-0" />}
+    >
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Informações Básicas */}
             <div className="bg-muted/30 p-4 rounded-lg space-y-4">
@@ -548,8 +534,6 @@ export function ProfessionalFormModal({
               </Button>
             </div>
           </form>
-        </ScrollArea>
-      </DialogContent>
-    </Dialog>
+    </AdminDialog>
   );
 }

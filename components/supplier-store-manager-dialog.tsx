@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from "react"
 import { Building2, Edit, PackagePlus, Plus, Save, Trash2 } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 import { SuppliersService, type Supplier, type SupplierProduct, type SupplierProductPayload, type SupplierStorePayload } from "@/lib/services/suppliers"
+import { AdminDialog } from "@/components/admin-dialog"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -223,27 +224,20 @@ export function SupplierStoreManagerDialog({ supplier, isOpen, onClose, onChange
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="w-[min(1180px,calc(100vw-32px))] max-w-none max-h-[92vh] overflow-y-auto p-0">
-          <DialogHeader>
-            <div className="border-b bg-muted/40 px-6 py-5">
-              <DialogTitle className="flex items-center gap-2 text-2xl">
-                <Building2 className="h-6 w-6" />
-                Loja e Produtos de {supplier.tradeName}
-              </DialogTitle>
-              <p className="mt-1 text-base text-muted-foreground">
-                Gerencie cadastro da loja, endereço e vitrine de produtos do lojista.
-              </p>
-            </div>
-          </DialogHeader>
-
-          <Tabs defaultValue="store" className="px-6 pb-6">
-            <TabsList className="grid w-full grid-cols-2">
+      <AdminDialog
+        open={isOpen}
+        onOpenChange={(open) => !open && onClose()}
+        title={`Loja e Produtos de ${supplier.tradeName}`}
+        description="Gerencie cadastro da loja, endereço e vitrine de produtos do lojista."
+        icon={<Building2 className="h-6 w-6 flex-shrink-0" />}
+      >
+          <Tabs defaultValue="store" className="space-y-5">
+            <TabsList className="grid h-12 w-full grid-cols-2">
               <TabsTrigger value="store">Loja</TabsTrigger>
               <TabsTrigger value="products">Produtos ({products.length})</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="store" className="space-y-5 pt-4">
+            <TabsContent value="store" className="space-y-5">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="store-name">Nome da loja</Label>
@@ -306,59 +300,73 @@ export function SupplierStoreManagerDialog({ supplier, isOpen, onClose, onChange
               </DialogFooter>
             </TabsContent>
 
-            <TabsContent value="products" className="space-y-5 pt-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="product-name">Nome do produto</Label>
-                  <Input id="product-name" value={productDraft.name} onChange={(event) => updateProductField("name", event.target.value)} disabled={!store?.id} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="product-price">Preço</Label>
-                  <Input id="product-price" type="number" step="0.01" value={productDraft.price} onChange={(event) => updateProductField("price", Number(event.target.value))} disabled={!store?.id} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="product-link">Link</Label>
-                  <Input id="product-link" value={productDraft.link ?? ""} onChange={(event) => updateProductField("link", event.target.value)} disabled={!store?.id} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="product-photo">Foto URL</Label>
-                  <Input id="product-photo" value={productDraft.photoUrl ?? ""} onChange={(event) => updateProductField("photoUrl", event.target.value)} disabled={!store?.id} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="product-duration">Duração</Label>
-                  <Input id="product-duration" value={productDraft.duration ?? ""} onChange={(event) => updateProductField("duration", event.target.value)} disabled={!store?.id} />
-                </div>
-                <div className="flex items-center gap-6 rounded-md border p-3">
-                  <div className="flex items-center gap-2">
-                    <Switch checked={productDraft.featured ?? false} onCheckedChange={(checked) => updateProductField("featured", checked)} disabled={!store?.id} />
-                    <Label>Destaque</Label>
+            <TabsContent value="products" className="space-y-5">
+              <div className="grid gap-5 xl:grid-cols-[420px_minmax(0,1fr)]">
+                <div className="space-y-4 rounded-md border bg-card p-4">
+                  <div>
+                    <h3 className="text-lg font-semibold">{productToEdit ? "Editar produto" : "Novo produto"}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Cadastre a vitrine que aparece para os usuários.
+                    </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Switch checked={productDraft.promotion ?? false} onCheckedChange={(checked) => updateProductField("promotion", checked)} disabled={!store?.id} />
-                    <Label>Promoção</Label>
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+                    <div className="space-y-2 sm:col-span-2 xl:col-span-1">
+                      <Label htmlFor="product-name">Nome do produto</Label>
+                      <Input id="product-name" value={productDraft.name} onChange={(event) => updateProductField("name", event.target.value)} disabled={!store?.id} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="product-price">Preço</Label>
+                      <Input id="product-price" type="number" step="0.01" value={productDraft.price} onChange={(event) => updateProductField("price", Number(event.target.value))} disabled={!store?.id} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="product-duration">Duração</Label>
+                      <Input id="product-duration" value={productDraft.duration ?? ""} onChange={(event) => updateProductField("duration", event.target.value)} disabled={!store?.id} />
+                    </div>
+                    <div className="space-y-2 sm:col-span-2 xl:col-span-1">
+                      <Label htmlFor="product-link">Link</Label>
+                      <Input id="product-link" value={productDraft.link ?? ""} onChange={(event) => updateProductField("link", event.target.value)} disabled={!store?.id} />
+                    </div>
+                    <div className="space-y-2 sm:col-span-2 xl:col-span-1">
+                      <Label htmlFor="product-photo">Foto URL</Label>
+                      <Input id="product-photo" value={productDraft.photoUrl ?? ""} onChange={(event) => updateProductField("photoUrl", event.target.value)} disabled={!store?.id} />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-4 rounded-md border bg-background p-3 sm:col-span-2 xl:col-span-1">
+                      <div className="flex items-center gap-2">
+                        <Switch checked={productDraft.featured ?? false} onCheckedChange={(checked) => updateProductField("featured", checked)} disabled={!store?.id} />
+                        <Label>Destaque</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch checked={productDraft.promotion ?? false} onCheckedChange={(checked) => updateProductField("promotion", checked)} disabled={!store?.id} />
+                        <Label>Promoção</Label>
+                      </div>
+                    </div>
+                    <div className="space-y-2 sm:col-span-2 xl:col-span-1">
+                      <Label htmlFor="product-description">Descrição</Label>
+                      <Textarea id="product-description" className="min-h-28" value={productDraft.description ?? ""} onChange={(event) => updateProductField("description", event.target.value)} disabled={!store?.id} />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end xl:flex-col-reverse">
+                    {productToEdit && (
+                      <Button variant="outline" onClick={resetProductForm}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Novo produto
+                      </Button>
+                    )}
+                    <Button onClick={handleSaveProduct} disabled={saving || !store?.id}>
+                      <PackagePlus className="h-4 w-4 mr-2" />
+                      {productToEdit ? "Salvar produto" : "Adicionar produto"}
+                    </Button>
                   </div>
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="product-description">Descrição</Label>
-                  <Textarea id="product-description" value={productDraft.description ?? ""} onChange={(event) => updateProductField("description", event.target.value)} disabled={!store?.id} />
-                </div>
-              </div>
 
-              <div className="flex justify-end gap-2">
-                {productToEdit && (
-                  <Button variant="outline" onClick={resetProductForm}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Novo produto
-                  </Button>
-                )}
-                <Button onClick={handleSaveProduct} disabled={saving || !store?.id}>
-                  <PackagePlus className="h-4 w-4 mr-2" />
-                  {productToEdit ? "Salvar produto" : "Adicionar produto"}
-                </Button>
-              </div>
-
-              <div className="rounded-md border overflow-hidden">
-                <Table>
+                <div className="overflow-hidden rounded-md border bg-card">
+                  <div className="border-b bg-muted/35 px-4 py-3">
+                    <h3 className="text-lg font-semibold">Produtos cadastrados</h3>
+                    <p className="text-sm text-muted-foreground">{products.length} item(ns) nesta loja.</p>
+                  </div>
+                <div className="admin-native-scroll overflow-x-auto">
+                  <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Produto</TableHead>
@@ -401,11 +409,12 @@ export function SupplierStoreManagerDialog({ supplier, isOpen, onClose, onChange
                     )}
                   </TableBody>
                 </Table>
+                </div>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
-        </DialogContent>
-      </Dialog>
+      </AdminDialog>
 
       <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
         <AlertDialogContent>

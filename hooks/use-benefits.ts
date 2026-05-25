@@ -10,6 +10,9 @@ import {
   type BenefitsStatistics
 } from "@/lib/services/benefits"
 import { useAuth } from "./use-auth"
+import { getCachedResource, setCachedResource, updateCachedResource } from "@/lib/admin-resource-cache"
+
+const BENEFITS_CACHE_KEY = "admin:benefits"
 
 interface UseBenefitsReturn {
   benefits: Benefit[]
@@ -35,8 +38,9 @@ interface UseBenefitsReturn {
 
 export function useBenefits(): UseBenefitsReturn {
   const { isAuthenticated } = useAuth()
-  const [benefits, setBenefits] = useState<Benefit[]>([])
-  const [loading, setLoading] = useState(true)
+  const cachedBenefits = getCachedResource<Benefit[]>(BENEFITS_CACHE_KEY)
+  const [benefits, setBenefits] = useState<Benefit[]>(cachedBenefits ?? [])
+  const [loading, setLoading] = useState(!cachedBenefits)
   const [error, setError] = useState<string | null>(null)
 
   const fetchBenefits = async () => {
@@ -46,10 +50,11 @@ export function useBenefits(): UseBenefitsReturn {
     }
 
     try {
-      setLoading(true)
+      setLoading(benefits.length === 0)
       setError(null)
 
       const benefitsData = await BenefitsService.getAll()
+      setCachedResource(BENEFITS_CACHE_KEY, benefitsData)
       setBenefits(benefitsData)
     } catch (err) {
       console.error("[useBenefits] Error fetching benefits:", err)
@@ -62,7 +67,7 @@ export function useBenefits(): UseBenefitsReturn {
   const create = async (data: CreateBenefitData): Promise<Benefit> => {
     try {
       const newBenefit = await BenefitsService.create(data)
-      setBenefits((prev) => [newBenefit, ...prev])
+      setBenefits((prev) => updateCachedResource<Benefit[]>(BENEFITS_CACHE_KEY, () => [newBenefit, ...prev]))
       return newBenefit
     } catch (err) {
       console.error("[useBenefits] Error creating benefit:", err)
@@ -74,7 +79,9 @@ export function useBenefits(): UseBenefitsReturn {
     try {
       const updatedBenefit = await BenefitsService.update(id, data)
       setBenefits((prev) => 
-        prev.map((benefit) => (benefit.id === id ? updatedBenefit : benefit))
+        updateCachedResource<Benefit[]>(BENEFITS_CACHE_KEY, () =>
+          prev.map((benefit) => (benefit.id === id ? updatedBenefit : benefit)),
+        )
       )
       return updatedBenefit
     } catch (err) {
@@ -90,13 +97,15 @@ export function useBenefits(): UseBenefitsReturn {
       if (result.softDeleted) {
         // Soft delete: atualiza o status para inativo
         setBenefits((prev) =>
-          prev.map((benefit) => 
-            benefit.id === id ? { ...benefit, isActive: false } : benefit
+          updateCachedResource<Benefit[]>(BENEFITS_CACHE_KEY, () =>
+            prev.map((benefit) => 
+              benefit.id === id ? { ...benefit, isActive: false } : benefit
+            ),
           )
         )
       } else {
         // Hard delete: remove da lista
-        setBenefits((prev) => prev.filter((b) => b.id !== id))
+        setBenefits((prev) => updateCachedResource<Benefit[]>(BENEFITS_CACHE_KEY, () => prev.filter((b) => b.id !== id)))
       }
       
       return result
@@ -110,7 +119,9 @@ export function useBenefits(): UseBenefitsReturn {
     try {
       const updatedBenefit = await BenefitsService.toggleStatus(id)
       setBenefits((prev) =>
-        prev.map((benefit) => (benefit.id === id ? updatedBenefit : benefit))
+        updateCachedResource<Benefit[]>(BENEFITS_CACHE_KEY, () =>
+          prev.map((benefit) => (benefit.id === id ? updatedBenefit : benefit)),
+        )
       )
       return updatedBenefit
     } catch (err) {
