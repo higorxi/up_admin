@@ -8,6 +8,12 @@ export interface DashboardStatistics {
   totalPosts: number;
   totalPhysicalSales: number;
   totalPointsAwardedPhysical: number;
+  totalProfessions: number;
+  totalCommunities: number;
+  totalReports: number;
+  pendingPartnerSuppliers: number;
+  pendingBenefitRedemptions: number;
+  postsThisMonth: number;
 }
 
 export interface RecentActivity {

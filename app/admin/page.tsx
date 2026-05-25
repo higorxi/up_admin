@@ -2,9 +2,10 @@ import { AdminLayout } from "@/components/admin-layout";
 import { PageTransition } from "@/components/page-transition";
 import { DashboardStats } from "@/components/dashboard-stats";
 import { RecentActivity } from "@/components/recent-activity";
+import { ImportantNotices } from "@/components/important-notices";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Users, Calendar, TicketCheck } from "lucide-react";
+import { BriefcaseBusiness, Calendar, Flag, MessageSquareText, Plus, Tags, TicketCheck, UserCheck, Users } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminDashboard() {
@@ -28,10 +29,12 @@ export default function AdminDashboard() {
         {/* Stats Grid */}
         <DashboardStats />
 
+        <ImportantNotices />
+
         {/* Content Grid */}
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
           {/* Recent Activity - Takes 2 columns */}
-          <div className="lg:col-span-2">
+          <div>
             <RecentActivity />
           </div>
 
@@ -43,7 +46,7 @@ export default function AdminDashboard() {
               </CardTitle>
             </CardHeader>
 
-            <CardContent className="space-y-2.5">
+            <CardContent className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
               <Button
                 asChild
                 variant="outline"
@@ -69,10 +72,10 @@ export default function AdminDashboard() {
               >
                 <Link href="/admin/lojista-parceiro">
                   <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Users className="h-5 w-5 text-primary" />
+                    <UserCheck className="h-5 w-5 text-primary" />
                   </div>
                   <div className="text-left flex-1">
-                    <div className="font-medium">Aprovar Lojista Parceiro</div>
+                    <div className="font-medium">Aprovar Lojista</div>
                     <div className="text-xs text-muted-foreground">
                       Ver solicitações
                     </div>
@@ -103,14 +106,14 @@ export default function AdminDashboard() {
                 variant="outline"
                 className="w-full justify-start gap-3 h-12 bg-transparent hover:bg-muted/50 transition-colors"
               >
-                <Link href="/admin/eventos">
+                <Link href="/admin/publicacoes">
                   <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Calendar className="h-5 w-5 text-primary" />
+                    <MessageSquareText className="h-5 w-5 text-primary" />
                   </div>
                   <div className="text-left flex-1">
-                    <div className="font-medium">Criar Evento</div>
+                    <div className="font-medium">Publicações</div>
                     <div className="text-xs text-muted-foreground">
-                      Novo evento
+                      Criar ou editar
                     </div>
                   </div>
                 </Link>
@@ -121,14 +124,68 @@ export default function AdminDashboard() {
                 variant="outline"
                 className="w-full justify-start gap-3 h-12 bg-transparent hover:bg-muted/50 transition-colors"
               >
-                <Link href="/admin/conexao-premiada">
+                <Link href="/admin/comunidades">
                   <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <TicketCheck className="h-5 w-5 text-primary" />
+                    <Tags className="h-5 w-5 text-primary" />
                   </div>
                   <div className="text-left flex-1">
-                    <div className="font-medium">Conexão Premiada</div>
+                    <div className="font-medium">Comunidades</div>
                     <div className="text-xs text-muted-foreground">
-                      Vendas e resgates
+                      Espaços de posts
+                    </div>
+                  </div>
+                </Link>
+              </Button>
+
+              <Button
+                asChild
+                variant="outline"
+                className="w-full justify-start gap-3 h-12 bg-transparent hover:bg-muted/50 transition-colors"
+              >
+                <Link href="/admin/profissoes">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <BriefcaseBusiness className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-medium">Profissões</div>
+                    <div className="text-xs text-muted-foreground">
+                      Cadastro base
+                    </div>
+                  </div>
+                </Link>
+              </Button>
+
+              <Button
+                asChild
+                variant="outline"
+                className="w-full justify-start gap-3 h-12 bg-transparent hover:bg-muted/50 transition-colors"
+              >
+                <Link href="/admin/denuncias">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Flag className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-medium">Denúncias</div>
+                    <div className="text-xs text-muted-foreground">
+                      Revisar relatos
+                    </div>
+                  </div>
+                </Link>
+              </Button>
+
+              <Button
+                asChild
+                variant="outline"
+                className="w-full justify-start gap-3 h-12 bg-transparent hover:bg-muted/50 transition-colors"
+              >
+                <Link href="/admin/eventos">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Calendar className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-medium">Eventos</div>
+                    <div className="text-xs text-muted-foreground">
+                      Criar evento
                     </div>
                   </div>
                 </Link>

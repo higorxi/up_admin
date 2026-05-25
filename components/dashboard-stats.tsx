@@ -1,8 +1,8 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import { useDashboardStatistics } from "@/hooks/use-dashboard"
-import { Users, UserCheck, Calendar, Gift, Clock, Briefcase, ArrowUpRight, Store, Coins } from "lucide-react"
+import { Users, UserCheck, Calendar, Gift, Clock, Briefcase, Store, Coins, Tags, Flag } from "lucide-react"
 
 export function DashboardStats() {
   const { stats, loading, error } = useDashboardStatistics()
@@ -15,7 +15,7 @@ export function DashboardStats() {
       gradient: "from-blue-500 to-blue-600",
       lightBg: "bg-blue-50",
       iconColor: "text-blue-600",
-      description: "Usuários cadastrados"
+      description: "Cadastrados"
     },
     {
       title: "Total de Profissionais",
@@ -24,7 +24,7 @@ export function DashboardStats() {
       gradient: "from-purple-500 to-purple-600",
       lightBg: "bg-purple-50",
       iconColor: "text-purple-600",
-      description: "Profissionais ativos"
+      description: "Ativos"
     },
     {
       title: "Lojista Parceiro Ativos",
@@ -33,7 +33,7 @@ export function DashboardStats() {
       gradient: "from-green-500 to-green-600",
       lightBg: "bg-green-50",
       iconColor: "text-green-600",
-      description: "Parceiros verificados"
+      description: "Parceiros"
     },
     {
       title: "Eventos Este Mês",
@@ -42,7 +42,7 @@ export function DashboardStats() {
       gradient: "from-amber-500 to-amber-600",
       lightBg: "bg-amber-50",
       iconColor: "text-amber-600",
-      description: "Eventos planejados"
+      description: "Neste mês"
     },
     {
       title: "Prestadores de Serviços",
@@ -51,16 +51,16 @@ export function DashboardStats() {
       gradient: "from-pink-500 to-pink-600",
       lightBg: "bg-pink-50",
       iconColor: "text-pink-600",
-      description: "Recomendações ativas"
+      description: "Recomendados"
     },
     {
-      title: "Posts Publicados",
+      title: "Publicações",
       value: stats ? stats.totalPosts.toLocaleString() : "...",
       icon: Clock,
       gradient: "from-slate-500 to-slate-600",
       lightBg: "bg-slate-50",
       iconColor: "text-slate-600",
-      description: "Conteúdo criado"
+      description: `${stats?.postsThisMonth ?? 0} neste mês`
     },
     {
       title: "Total de Vendas Físicas",
@@ -69,7 +69,7 @@ export function DashboardStats() {
       gradient: "from-indigo-500 to-indigo-600",
       lightBg: "bg-indigo-50",
       iconColor: "text-indigo-600",
-      description: "Códigos físicos gerados"
+      description: "Códigos gerados"
     },
     {
       title: "Pontos Distribuídos (Físico)",
@@ -78,7 +78,34 @@ export function DashboardStats() {
       gradient: "from-emerald-500 to-emerald-600",
       lightBg: "bg-emerald-50",
       iconColor: "text-emerald-600",
-      description: "Pontos já resgatados"
+      description: "Já resgatados"
+    },
+    {
+      title: "Profissões",
+      value: stats ? stats.totalProfessions.toLocaleString() : "...",
+      icon: Briefcase,
+      gradient: "from-cyan-500 to-cyan-600",
+      lightBg: "bg-cyan-50",
+      iconColor: "text-cyan-600",
+      description: "Categorias"
+    },
+    {
+      title: "Comunidades",
+      value: stats ? stats.totalCommunities.toLocaleString() : "...",
+      icon: Tags,
+      gradient: "from-violet-500 to-violet-600",
+      lightBg: "bg-violet-50",
+      iconColor: "text-violet-600",
+      description: "Espaços ativos"
+    },
+    {
+      title: "Denúncias",
+      value: stats ? stats.totalReports.toLocaleString() : "...",
+      icon: Flag,
+      gradient: "from-red-500 to-red-600",
+      lightBg: "bg-red-50",
+      iconColor: "text-red-600",
+      description: "Para revisar"
     },
   ]
 
@@ -93,54 +120,48 @@ export function DashboardStats() {
   }
 
   return (
-    <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
       {loading
-        ? Array.from({ length: 8 }).map((_, i) => (
+        ? Array.from({ length: 11 }).map((_, i) => (
             <Card
               key={i}
-              className="overflow-hidden border-0 shadow-sm"
+              className="overflow-hidden border shadow-sm"
             >
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-3">
                   <div className="space-y-2 flex-1">
-                    <div className="h-4 bg-slate-200 rounded animate-pulse w-32" />
-                    <div className="h-8 bg-slate-200 rounded animate-pulse w-20" />
+                    <div className="h-3 bg-slate-200 rounded animate-pulse w-24" />
+                    <div className="h-7 bg-slate-200 rounded animate-pulse w-16" />
                   </div>
-                  <div className="h-12 w-12 rounded-xl bg-slate-200 animate-pulse" />
+                  <div className="h-9 w-9 rounded-lg bg-slate-200 animate-pulse" />
                 </div>
-                <div className="h-3 bg-slate-100 rounded animate-pulse w-24" />
               </CardContent>
             </Card>
           ))
         : dashboardStats.map((stat, index) => (
             <Card
               key={stat.title}
-              className="group relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1"
+              className="group relative overflow-hidden border shadow-sm transition-all duration-200 hover:shadow-md"
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
               
-              <CardContent className="p-6 relative">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="space-y-1 flex-1">
-                    <CardTitle className="text-sm font-medium text-slate-600 group-hover:text-slate-900 transition-colors">
+              <CardContent className="relative p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <CardTitle className="truncate text-xs font-medium text-slate-600 transition-colors group-hover:text-slate-900 md:text-sm">
                       {stat.title}
                     </CardTitle>
-                    <div className="flex items-baseline gap-2">
-                      <div className="text-3xl font-bold text-slate-900 tracking-tight">
-                        {stat.value}
-                      </div>
+                    <div className="text-2xl font-bold tracking-tight text-slate-900">
+                      {stat.value}
                     </div>
+                    <p className="truncate text-xs text-slate-500">{stat.description}</p>
                   </div>
-                  <div className={`relative flex items-center justify-center h-12 w-12 rounded-xl ${stat.lightBg} group-hover:scale-110 transition-transform duration-300`}>
-                    <stat.icon className={`h-6 w-6 ${stat.iconColor}`} strokeWidth={2} />
+                  <div className={`relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg ${stat.lightBg}`}>
+                    <stat.icon className={`h-5 w-5 ${stat.iconColor}`} strokeWidth={2} />
                     <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-white/0 via-white/40 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 flex items-center gap-1">
-                  {stat.description}
-                  <ArrowUpRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </p>
               </CardContent>
             </Card>
           ))}

@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { LayoutDashboard, Users, UserCheck, Calendar, Gift, ChevronLeft, Bell, LogOut, Settings, TicketCheck } from "lucide-react"
+import { LayoutDashboard, Users, UserCheck, Calendar, Gift, ChevronLeft, Bell, LogOut, Settings, TicketCheck, BriefcaseBusiness, MessageSquareText, Tags, Flag } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 
 const navigation = [
@@ -42,6 +42,26 @@ const navigation = [
     name: "Eventos",
     href: "/admin/eventos",
     icon: Calendar,
+  },
+  {
+    name: "Profissões",
+    href: "/admin/profissoes",
+    icon: BriefcaseBusiness,
+  },
+  {
+    name: "Publicações",
+    href: "/admin/publicacoes",
+    icon: MessageSquareText,
+  },
+  {
+    name: "Comunidades",
+    href: "/admin/comunidades",
+    icon: Tags,
+  },
+  {
+    name: "Denúncias",
+    href: "/admin/denuncias",
+    icon: Flag,
   },
   {
     name: "Benefícios",
