@@ -1,19 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { AlertCircle, X } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AdminConfirmDialog } from "@/components/admin-confirm-dialog"
 
 interface RejectSupplierDialogProps {
   isOpen: boolean
@@ -56,22 +50,42 @@ export function RejectSupplierDialog({ isOpen, onClose, onConfirm, supplierName 
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2.5 text-destructive">
-            <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
-              <AlertCircle className="h-5 w-5" />
+    <AdminConfirmDialog
+      open={isOpen}
+      onOpenChange={(open) => !open && handleClose()}
+      title="Rejeitar Lojista Parceiro"
+      description={
+        <>
+          Você está prestes a rejeitar o cadastro de <strong className="text-foreground">{supplierName}</strong>. O lojista parceiro não poderá acessar o sistema e receberá uma mensagem orientando-o a entrar em contato com o suporte.
+        </>
+      }
+      icon={
+        <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+          <AlertCircle className="h-5 w-5 text-destructive" />
+        </div>
+      }
+      footer={
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="outline" onClick={handleClose} disabled={isLoading} className="transition-colors">
+            Cancelar
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleSubmit}
+            disabled={isLoading}
+            loading={isLoading}
+            loadingText="Rejeitando..."
+            className="transition-colors shadow-sm"
+          >
+            <div className="flex items-center gap-2">
+              <X className="h-4 w-4" />
+              Confirmar Rejeição
             </div>
-            <span>Rejeitar Lojista Parceiro</span>
-          </DialogTitle>
-          <DialogDescription className="pt-2 leading-relaxed">
-            Você está prestes a rejeitar o cadastro de <strong className="text-foreground">{supplierName}</strong>. O lojista parceiro não poderá acessar
-            o sistema e receberá uma mensagem orientando-o a entrar em contato com o suporte.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-4">
+          </Button>
+        </DialogFooter>
+      }
+    >
+        <div className="space-y-4">
           {error && (
             <Alert variant="destructive" className="border-destructive/50">
               <AlertCircle className="h-4 w-4" />
@@ -95,26 +109,6 @@ export function RejectSupplierDialog({ isOpen, onClose, onConfirm, supplierName 
             </p>
           </div>
         </div>
-
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={handleClose} disabled={isLoading} className="transition-colors">
-            Cancelar
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={handleSubmit}
-            disabled={isLoading}
-            loading={isLoading}
-            loadingText="Rejeitando..."
-            className="transition-colors shadow-sm"
-          >
-            <div className="flex items-center gap-2">
-              <X className="h-4 w-4" />
-              Confirmar Rejeição
-            </div>
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </AdminConfirmDialog>
   )
 }

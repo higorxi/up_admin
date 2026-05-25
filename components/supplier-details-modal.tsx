@@ -100,9 +100,9 @@ export function SupplierDetailsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[95vh]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
+      <DialogContent className="grid h-[min(90vh,900px)] max-h-[calc(100vh-32px)] w-[min(1240px,calc(100vw-32px))] max-w-none grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0">
+        <DialogHeader className="border-b bg-muted/45 px-6 py-5 pr-14">
+          <DialogTitle className="flex items-center gap-3 text-2xl leading-tight">
             <Avatar className="h-12 w-12">
               <AvatarFallback className="bg-primary text-primary-foreground text-lg">
                 {supplier.tradeName
@@ -121,8 +121,8 @@ export function SupplierDetailsModal({
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[70vh]">
-          <div className="space-y-6 pr-4">
+        <ScrollArea className="min-h-0">
+          <div className="space-y-6 px-6 py-5">
             {/* Contact Information */}
             <div className="bg-muted/30 p-5 rounded-xl border border-border/50">
               <h3 className="font-semibold mb-4 text-card-foreground flex items-center gap-2.5">
@@ -344,7 +344,7 @@ export function SupplierDetailsModal({
         </ScrollArea>
 
         {supplier.status === "PENDING" && (
-          <div className="flex gap-3 pt-4 border-t">
+          <div className="flex gap-3 border-t bg-background px-6 py-4">
             <Button
               onClick={handleApprove}
               disabled={isLoading}
@@ -371,7 +371,7 @@ export function SupplierDetailsModal({
         )}
 
         {supplier.status === "APPROVED" && ((canGrantTrial && onGrantTrial) || (hasTrial && onCancelTrial)) && (
-          <div className="flex gap-3 pt-4 border-t">
+          <div className="flex gap-3 border-t bg-background px-6 py-4">
             {canGrantTrial && onGrantTrial && (
               <Button
                 onClick={() => {

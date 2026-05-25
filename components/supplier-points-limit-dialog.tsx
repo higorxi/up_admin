@@ -2,19 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { AlertCircle, Coins } from "lucide-react"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
+import { AdminDialog } from "@/components/admin-dialog"
 
 interface SupplierPointsLimitDialogProps {
   isOpen: boolean
@@ -85,26 +79,34 @@ export function SupplierPointsLimitDialog({
   }
 
   return (
-    <Dialog
+    <AdminDialog
       open={isOpen}
       onOpenChange={(open) => {
         if (!open) handleClose()
       }}
+      title="Gerenciar Limite de Pontos"
+      description={
+        <>
+          Atualize o limite de distribuição para <strong className="text-foreground">{supplierName}</strong>.
+        </>
+      }
+      icon={
+        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+          <Coins className="h-5 w-5 text-primary" />
+        </div>
+      }
+      footer={
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSubmit} disabled={isLoading} loading={isLoading} loadingText="Salvando...">
+            Salvar Limite
+          </Button>
+        </DialogFooter>
+      }
     >
-      <DialogContent className="sm:max-w-[520px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Coins className="h-5 w-5 text-primary" />
-            </div>
-            <span>Gerenciar Limite de Pontos</span>
-          </DialogTitle>
-          <DialogDescription className="pt-2 leading-relaxed">
-            Atualize o limite de distribuição para <strong className="text-foreground">{supplierName}</strong>.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-4">
+        <div className="space-y-4">
           {error && (
             <Alert variant="destructive" className="border-destructive/50">
               <AlertCircle className="h-4 w-4" />
@@ -139,16 +141,6 @@ export function SupplierPointsLimitDialog({
             />
           </div>
         </div>
-
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
-            Cancelar
-          </Button>
-          <Button onClick={handleSubmit} disabled={isLoading} loading={isLoading} loadingText="Salvando...">
-            Salvar Limite
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </AdminDialog>
   )
 }

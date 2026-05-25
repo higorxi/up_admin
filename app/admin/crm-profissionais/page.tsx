@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { AdminLayout } from "@/components/admin-layout"
 import { AdminPageLayout } from "@/components/admin-page-layout"
 import { AdminDialog } from "@/components/admin-dialog"
+import { AdminConfirmDialog } from "@/components/admin-confirm-dialog"
 import { useProfessionals } from "@/hooks/use-professionals"
 import {
   ProfessionalLevel,
@@ -33,16 +34,6 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { DialogFooter } from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from "@/components/ui/alert-dialog"
 import {
   Pagination,
   PaginationContent,
@@ -672,26 +663,29 @@ export default function CRMProfessionalsPage() {
             </div>
         </AdminDialog>
 
-        <AlertDialog open={!!professionalToDelete} onOpenChange={(open) => !open && setProfessionalToDelete(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Desativar profissional?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Esta ação desativa o usuário vinculado a {professionalToDelete?.name} e remove o profissional da listagem do CRM.
-                O histórico de eventos, pontos e resgates permanece preservado.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction
+        <AdminConfirmDialog
+          open={!!professionalToDelete}
+          onOpenChange={(open) => !open && setProfessionalToDelete(null)}
+          title="Desativar profissional?"
+          description={`Esta ação desativa o usuário vinculado a ${professionalToDelete?.name ?? ""} e remove o profissional da listagem do CRM. O histórico de eventos, pontos e resgates permanece preservado.`}
+          icon={<Trash2 className="h-5 w-5 text-destructive" />}
+          footer={
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setProfessionalToDelete(null)} disabled={actionLoading}>
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
                 onClick={handleDeleteConfirm}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                disabled={actionLoading}
+                loading={actionLoading}
+                loadingText="Desativando..."
               >
                 Desativar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+              </Button>
+            </div>
+          }
+        />
       </AdminPageLayout>
     </AdminLayout>
   )

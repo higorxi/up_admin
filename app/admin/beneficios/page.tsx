@@ -5,6 +5,7 @@ import { AdminLayout } from "@/components/admin-layout"
 import { AdminPageLayout } from "@/components/admin-page-layout"
 import { BenefitFormModal } from "@/components/benefit-form-modal"
 import { RedemptionsModal } from "@/components/redemptions-modal"
+import { AdminConfirmDialog } from "@/components/admin-confirm-dialog"
 import { CardSkeleton } from "@/components/card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -32,6 +33,7 @@ export default function BenefitsPage() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
   const [isRedemptionsModalOpen, setIsRedemptionsModalOpen] = useState(false)
   const [formMode, setFormMode] = useState<"create" | "edit">("create")
+  const [benefitToDelete, setBenefitToDelete] = useState<Benefit | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [actionLoading, setActionLoading] = useState(false)
@@ -51,15 +53,19 @@ export default function BenefitsPage() {
     setActionError(null)
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir este benefício?")) {
-      return
-    }
+  const handleDelete = (id: string) => {
+    const benefit = benefits.find((item) => item.id === id) ?? null
+    setBenefitToDelete(benefit)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!benefitToDelete) return
 
     try {
       setActionLoading(true)
       setActionError(null)
-      await deleteBenefit(id)
+      await deleteBenefit(benefitToDelete.id)
+      setBenefitToDelete(null)
     } catch (err: any) {
       setActionError(err.message || "Erro ao excluir benefício")
       console.error("Error deleting benefit:", err)
@@ -308,6 +314,28 @@ export default function BenefitsPage() {
           benefit={selectedBenefit}
           isOpen={isRedemptionsModalOpen}
           onClose={() => setIsRedemptionsModalOpen(false)}
+        />
+
+        <AdminConfirmDialog
+          open={!!benefitToDelete}
+          onOpenChange={(open) => !open && setBenefitToDelete(null)}
+          title="Excluir benefício?"
+          description={
+            <>
+              Esta ação remove <strong className="text-foreground">{benefitToDelete?.name}</strong> e seus resgates pendentes.
+            </>
+          }
+          icon={<AlertCircle className="h-5 w-5 text-destructive" />}
+          footer={
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setBenefitToDelete(null)} disabled={actionLoading}>
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteConfirm} disabled={actionLoading} loading={actionLoading} loadingText="Excluindo...">
+                Excluir
+              </Button>
+            </div>
+          }
         />
       </AdminPageLayout>
     </AdminLayout>

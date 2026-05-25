@@ -1,14 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useEffect, useState } from "react"
+import { AdminDialog } from "@/components/admin-dialog"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Search, Check, X, Mail, Calendar, RefreshCw, Users } from "lucide-react"
+import { Calendar, Check, Mail, RefreshCw, Search, Users } from "lucide-react"
 import { Event, EventRegistration } from "@/lib/services/events"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -21,13 +21,7 @@ interface AttendeesModalProps {
   getParticipants: (eventId: string) => Promise<EventRegistration[]>
 }
 
-export function AttendeesModal({ 
-  event, 
-  isOpen, 
-  onClose, 
-  onCheckIn, 
-  getParticipants 
-}: AttendeesModalProps) {
+export function AttendeesModal({ event, isOpen, onClose, onCheckIn, getParticipants }: AttendeesModalProps) {
   const [participants, setParticipants] = useState<EventRegistration[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -38,7 +32,6 @@ export function AttendeesModal({
     if (isOpen && event?.id) {
       loadParticipants()
     } else {
-      // Reset state quando fechar modal
       setParticipants([])
       setSearchTerm("")
       setActiveTab("all")
@@ -67,7 +60,6 @@ export function AttendeesModal({
 
     try {
       await onCheckIn(event.id, professionalId)
-      // Recarregar participantes para mostrar o status atualizado
       await loadParticipants()
     } catch (err) {
       console.error("Error checking in:", err)
@@ -91,14 +83,13 @@ export function AttendeesModal({
     }
   }
 
-  const getInitials = (name: string) => {
-    return name
+  const getInitials = (name: string) =>
+    name
       .split(" ")
-      .map(word => word[0])
+      .map((word) => word[0])
       .join("")
       .toUpperCase()
       .slice(0, 2)
-  }
 
   if (!event) return null
 
@@ -119,194 +110,171 @@ export function AttendeesModal({
     return matchesSearch && matchesTab
   })
 
-  const checkedInCount = participants.filter(p => p.checkedIn).length
-  const notCheckedInCount = participants.filter(p => !p.checkedIn).length
+  const checkedInCount = participants.filter((participant) => participant.checkedIn).length
+  const notCheckedInCount = participants.filter((participant) => !participant.checkedIn).length
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl w-[95vw] h-[85vh] flex flex-col p-0">
-        <DialogHeader className="px-6 py-4 border-b">
-          <DialogTitle className="flex items-center gap-3">
-            <span className="text-lg">{event.name} - Participantes</span>
-            <Badge variant="outline" className="text-primary">
-              {participants.length} inscritos
-            </Badge>
-          </DialogTitle>
-        </DialogHeader>
+    <AdminDialog
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+      title="Visualizar Participantes"
+      description={`${event.name} • ${participants.length} inscrito(s)`}
+      icon={<Users className="h-6 w-6 flex-shrink-0" />}
+      footer={
+        <div className="flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <span>
+            Evento: {event.name} | {formatDate(event.date)}
+          </span>
+          <span>
+            Vagas: {event.filledSpots}/{event.totalSpots}
+          </span>
+        </div>
+      }
+    >
+      <div className="flex h-full flex-col space-y-4">
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-        <div className="flex-1 flex flex-col px-6 py-4 space-y-4 overflow-hidden">
-          {/* Error Alert */}
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-muted/50 rounded-lg p-3 text-center">
-              <div className="text-xl font-bold text-card-foreground">{participants.length}</div>
-              <div className="text-xs text-muted-foreground">Total Inscritos</div>
-            </div>
-            <div className="bg-green-50 rounded-lg p-3 text-center">
-              <div className="text-xl font-bold text-green-600">{checkedInCount}</div>
-              <div className="text-xs text-muted-foreground">Check-in Feito</div>
-            </div>
-            <div className="bg-yellow-50 rounded-lg p-3 text-center">
-              <div className="text-xl font-bold text-yellow-600">{notCheckedInCount}</div>
-              <div className="text-xs text-muted-foreground">Pendente</div>
-            </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded-lg bg-muted/50 p-3 text-center">
+            <div className="text-xl font-bold text-card-foreground">{participants.length}</div>
+            <div className="text-xs text-muted-foreground">Total Inscritos</div>
           </div>
-
-          {/* Search e Refresh */}
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nome ou telefone..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-                disabled={loading}
-              />
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={loadParticipants}
-              disabled={loading}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Atualizar
-            </Button>
+          <div className="rounded-lg bg-green-50 p-3 text-center">
+            <div className="text-xl font-bold text-green-600">{checkedInCount}</div>
+            <div className="text-xs text-muted-foreground">Check-in Feito</div>
           </div>
-
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-            <TabsList className="grid w-full grid-cols-3 mb-3">
-              <TabsTrigger value="all" className="text-xs">
-                Todos ({participants.length})
-              </TabsTrigger>
-              <TabsTrigger value="checked-in" className="text-xs">
-                Check-in Feito ({checkedInCount})
-              </TabsTrigger>
-              <TabsTrigger value="not-checked-in" className="text-xs">
-                Pendente ({notCheckedInCount})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value={activeTab} className="flex-1 overflow-hidden">
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <RefreshCw className="h-6 w-6 animate-spin text-primary" />
-                  <span className="ml-2 text-muted-foreground">Carregando participantes...</span>
-                </div>
-              ) : (
-                <div className="h-full overflow-y-auto pr-2">
-                  <div className="space-y-2">
-                    {filteredParticipants.map((participant) => {
-                      const professional = participant.professional
-                      if (!professional) return null
-
-                      return (
-                        <div
-                          key={participant.id}
-                          className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg hover:bg-muted/25 transition-colors"
-                        >
-                          <Avatar className="h-8 w-8 shrink-0">
-                            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                              {getInitials(professional.name)}
-                            </AvatarFallback>
-                          </Avatar>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="font-medium text-card-foreground text-sm truncate">
-                                {professional.name}
-                              </h4>
-                              {participant.checkedIn ? (
-                                <Badge variant="outline" className="text-green-600 border-green-600 text-xs">
-                                  Check-in Feito
-                                  {participant.checkedInAt && (
-                                    <span className="ml-1">
-                                      {formatDateTime(participant.checkedInAt)}
-                                    </span>
-                                  )}
-                                </Badge>
-                              ) : (
-                                <Badge variant="outline" className="text-yellow-600 border-yellow-600 text-xs">
-                                  Pendente
-                                </Badge>
-                              )}
-                            </div>
-                            
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-1 text-xs text-muted-foreground">
-                              <div className="flex items-center gap-1 truncate">
-                                <Mail className="h-3 w-3 shrink-0" />
-                                <span className="truncate">{professional.phone || professional.email}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3 shrink-0" />
-                                <span>Inscrito em {formatDate(participant.registeredAt)}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex gap-2 shrink-0">
-                            {!participant.checkedIn ? (
-                              <Button 
-                                size="sm" 
-                                onClick={() => handleCheckIn(professional.id)} 
-                                className="gap-1 text-xs px-3"
-                                disabled={loading}
-                              >
-                                <Check className="h-3 w-3" />
-                                Check-in
-                              </Button>
-                            ) : (
-                              <div className="flex items-center gap-1 text-xs text-green-600 px-3">
-                                <Check className="h-3 w-3" />
-                                Confirmado
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })}
-
-                    {filteredParticipants.length === 0 && !loading && (
-                      <div className="text-center py-8">
-                        <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-card-foreground mb-2">
-                          Nenhum participante encontrado
-                        </h3>
-                        <p className="text-muted-foreground">
-                          {participants.length === 0 
-                            ? "Este evento ainda não possui participantes inscritos."
-                            : "Tente ajustar os filtros ou termos de busca."
-                          }
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-
-          {/* Footer com informações do evento */}
-          <div className="border-t pt-4 text-xs text-muted-foreground">
-            <div className="flex items-center justify-between">
-              <span>
-                Evento: {event.name} | {formatDate(event.date)}
-              </span>
-              <span>
-                Vagas: {event.filledSpots}/{event.totalSpots}
-              </span>
-            </div>
+          <div className="rounded-lg bg-yellow-50 p-3 text-center">
+            <div className="text-xl font-bold text-yellow-600">{notCheckedInCount}</div>
+            <div className="text-xs text-muted-foreground">Pendente</div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        <div className="flex items-center gap-4">
+          <div className="relative max-w-md flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome ou telefone..."
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              className="pl-10"
+              disabled={loading}
+            />
+          </div>
+          <Button variant="outline" size="sm" onClick={loadParticipants} disabled={loading}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            Atualizar
+          </Button>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col">
+          <TabsList className="mb-3 grid w-full grid-cols-3">
+            <TabsTrigger value="all" className="text-xs">
+              Todos ({participants.length})
+            </TabsTrigger>
+            <TabsTrigger value="checked-in" className="text-xs">
+              Check-in Feito ({checkedInCount})
+            </TabsTrigger>
+            <TabsTrigger value="not-checked-in" className="text-xs">
+              Pendente ({notCheckedInCount})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value={activeTab} className="flex-1 overflow-hidden">
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+                <span className="ml-2 text-muted-foreground">Carregando participantes...</span>
+              </div>
+            ) : (
+              <div className="h-full overflow-y-auto pr-2">
+                <div className="space-y-2">
+                  {filteredParticipants.map((participant) => {
+                    const professional = participant.professional
+                    if (!professional) return null
+
+                    return (
+                      <div
+                        key={participant.id}
+                        className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/25"
+                      >
+                        <Avatar className="h-8 w-8 shrink-0">
+                          <AvatarFallback className="bg-primary text-xs text-primary-foreground">
+                            {getInitials(professional.name)}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex items-center gap-2">
+                            <h4 className="truncate text-sm font-medium text-card-foreground">{professional.name}</h4>
+                            {participant.checkedIn ? (
+                              <Badge variant="outline" className="border-green-600 text-xs text-green-600">
+                                Check-in Feito
+                                {participant.checkedInAt && (
+                                  <span className="ml-1">{formatDateTime(participant.checkedInAt)}</span>
+                                )}
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="border-yellow-600 text-xs text-yellow-600">
+                                Pendente
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-1 text-xs text-muted-foreground lg:grid-cols-2">
+                            <div className="flex items-center gap-1 truncate">
+                              <Mail className="h-3 w-3 shrink-0" />
+                              <span className="truncate">{professional.phone || professional.email}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3 shrink-0" />
+                              <span>Inscrito em {formatDate(participant.registeredAt)}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex shrink-0 gap-2">
+                          {!participant.checkedIn ? (
+                            <Button
+                              size="sm"
+                              onClick={() => handleCheckIn(professional.id)}
+                              className="gap-1 px-3 text-xs"
+                              disabled={loading}
+                            >
+                              <Check className="h-3 w-3" />
+                              Check-in
+                            </Button>
+                          ) : (
+                            <div className="flex items-center gap-1 px-3 text-xs text-green-600">
+                              <Check className="h-3 w-3" />
+                              Confirmado
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+
+                  {filteredParticipants.length === 0 && !loading && (
+                    <div className="py-8 text-center">
+                      <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                      <h3 className="mb-2 text-lg font-semibold text-card-foreground">Nenhum participante encontrado</h3>
+                      <p className="text-muted-foreground">
+                        {participants.length === 0
+                          ? "Este evento ainda não possui participantes inscritos."
+                          : "Tente ajustar os filtros ou termos de busca."}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </AdminDialog>
   )
 }
