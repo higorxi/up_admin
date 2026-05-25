@@ -7,22 +7,13 @@ import { AdminPageLayout } from "@/components/admin-page-layout"
 import { EventCard } from "@/components/event-card"
 import { EventFormModal } from "@/components/event-form-modal"
 import { AttendeesModal } from "@/components/attendees-modal"
+import { AdminConfirmDialog } from "@/components/admin-confirm-dialog"
 import { CardSkeleton } from "@/components/card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { Search, Plus, Calendar, RefreshCw } from "lucide-react"
 import { Event, CreateEventData } from "@/lib/services/events"
 import { toast } from "@/hooks/use-toast"
@@ -45,6 +36,7 @@ export default function EventsPage() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
   const [isAttendeesModalOpen, setIsAttendeesModalOpen] = useState(false)
   const [formMode, setFormMode] = useState<"create" | "edit">("create")
+  const [eventToToggle, setEventToToggle] = useState<Event | null>(null)
   const [eventToDelete, setEventToDelete] = useState<Event | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
@@ -64,15 +56,18 @@ export default function EventsPage() {
   }
 
   const handleToggleEvent = async (event: Event) => {
-    const action = event.isActive ? "desativar" : "ativar"
-    if (!window.confirm(`Tem certeza que deseja ${action} este evento?`)) return
+    setEventToToggle(event)
+  }
 
+  const handleToggleConfirm = async () => {
+    if (!eventToToggle) return
     try {
-      await toggleEvent(event.id)
+      await toggleEvent(eventToToggle.id)
       toast({
-        title: event.isActive ? "Evento desativado" : "Evento ativado",
+        title: eventToToggle.isActive ? "Evento desativado" : "Evento ativado",
         description: "O status do evento foi atualizado.",
       })
+      setEventToToggle(null)
     } catch (error) {
       console.error("Erro ao alternar status do evento:", error)
       toast({
@@ -346,27 +341,41 @@ export default function EventsPage() {
           getParticipants={getEventParticipants}
         />
 
-        <AlertDialog open={!!eventToDelete} onOpenChange={(open) => !open && setEventToDelete(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Excluir evento?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Esta ação remove o evento {eventToDelete?.name} e as inscrições vinculadas que ainda não tiveram check-in.
-                Eventos com presença confirmada serão bloqueados pelo sistema para preservar o histórico de pontos.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteConfirm}
-                disabled={actionLoading}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
+        <AdminConfirmDialog
+          open={!!eventToToggle}
+          onOpenChange={(open) => !open && setEventToToggle(null)}
+          title={eventToToggle?.isActive ? "Desativar evento?" : "Ativar evento?"}
+          description={`Confirma a ação para ${eventToToggle?.isActive ? "desativar" : "ativar"} o evento ${eventToToggle?.name ?? ""}?`}
+          icon={<Calendar className="h-5 w-5 text-primary" />}
+          footer={
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEventToToggle(null)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleToggleConfirm}>
+                Confirmar
+              </Button>
+            </div>
+          }
+        />
+
+        <AdminConfirmDialog
+          open={!!eventToDelete}
+          onOpenChange={(open) => !open && setEventToDelete(null)}
+          title="Excluir evento?"
+          description={`Esta ação remove o evento ${eventToDelete?.name ?? ""} e as inscrições vinculadas sem check-in. Eventos com presença confirmada serão preservados no histórico de pontos.`}
+          icon={<Calendar className="h-5 w-5 text-destructive" />}
+          footer={
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEventToDelete(null)} disabled={actionLoading}>
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteConfirm} disabled={actionLoading} loading={actionLoading} loadingText="Excluindo...">
                 Excluir
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+              </Button>
+            </div>
+          }
+        />
       </AdminPageLayout>
     </AdminLayout>
   )

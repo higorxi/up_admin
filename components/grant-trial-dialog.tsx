@@ -1,14 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, Sparkles } from "lucide-react"
 import type { GrantTrialPayload, PlanType, TrialDurationUnit } from "@/lib/services/suppliers"
+import { AdminDialog } from "@/components/admin-dialog"
 
 interface GrantTrialDialogProps {
   isOpen: boolean
@@ -83,27 +77,41 @@ export function GrantTrialDialog({ isOpen, onClose, onConfirm, supplierName }: G
   }
 
   return (
-    <Dialog
+    <AdminDialog
       open={isOpen}
       onOpenChange={(open) => {
         if (!open) handleClose()
       }}
+      title="Conceder Trial Manual"
+      description={
+        <>
+          Defina período e plano para liberar acesso temporário a{" "}
+          <strong className="text-foreground">{supplierName}</strong>.
+        </>
+      }
+      icon={
+        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+          <Sparkles className="h-5 w-5 text-primary" />
+        </div>
+      }
+      footer={
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            loading={isLoading}
+            loadingText="Concedendo..."
+            className="shadow-sm"
+          >
+            Conceder Trial
+          </Button>
+        </DialogFooter>
+      }
     >
-      <DialogContent className="sm:max-w-[520px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Sparkles className="h-5 w-5 text-primary" />
-            </div>
-            <span>Conceder Trial Manual</span>
-          </DialogTitle>
-          <DialogDescription className="pt-2 leading-relaxed">
-            Defina período e plano para liberar acesso temporário a{" "}
-            <strong className="text-foreground">{supplierName}</strong>.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-4">
+        <div className="space-y-4">
           {error && (
             <Alert variant="destructive" className="border-destructive/50">
               <AlertCircle className="h-4 w-4" />
@@ -160,22 +168,6 @@ export function GrantTrialDialog({ isOpen, onClose, onConfirm, supplierName }: G
             </Select>
           </div>
         </div>
-
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            loading={isLoading}
-            loadingText="Concedendo..."
-            className="shadow-sm"
-          >
-            Conceder Trial
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </AdminDialog>
   )
 }

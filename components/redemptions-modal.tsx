@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { AdminDialog } from "@/components/admin-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -135,19 +135,14 @@ export function RedemptionsModal({ benefit, isOpen, onClose }: RedemptionsModalP
   const canceledCount = redemptions.filter((r) => r.status === "CANCELED").length
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl w-[95vw] h-[85vh] flex flex-col p-0">
-        <DialogHeader className="px-6 py-4 border-b">
-          <DialogTitle className="flex items-center gap-3">
-            <Gift className="h-5 w-5" />
-            <span className="text-lg">{benefit.name} - Resgates</span>
-            <Badge variant="outline" className="text-primary">
-              {redemptions.length} resgates
-            </Badge>
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="flex-1 flex flex-col px-6 py-4 space-y-4 overflow-hidden">
+    <AdminDialog
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+      title="Visualizar Resgates"
+      description={`${benefit.name} • ${redemptions.length} resgate(s)`}
+      icon={<Gift className="h-6 w-6 flex-shrink-0" />}
+    >
+        <div className="flex h-full flex-col space-y-4">
           {/* Error Alert */}
           {error && (
             <Alert variant="destructive">
@@ -308,7 +303,6 @@ export function RedemptionsModal({ benefit, isOpen, onClose }: RedemptionsModalP
             </TabsContent>
           </Tabs>
         </div>
-      </DialogContent>
-    </Dialog>
+    </AdminDialog>
   )
 }

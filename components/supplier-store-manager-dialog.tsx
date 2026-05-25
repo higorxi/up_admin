@@ -13,16 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { AdminConfirmDialog } from "@/components/admin-confirm-dialog"
 
 interface SupplierStoreManagerDialogProps {
   supplier: Supplier | null
@@ -416,22 +407,23 @@ export function SupplierStoreManagerDialog({ supplier, isOpen, onClose, onChange
           </Tabs>
       </AdminDialog>
 
-      <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir produto?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação remove {productToDelete?.name} da loja. O produto deixa de aparecer para os usuários imediatamente.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteProduct} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+      <AdminConfirmDialog
+        open={!!productToDelete}
+        onOpenChange={(open) => !open && setProductToDelete(null)}
+        title="Excluir produto?"
+        description={`Esta ação remove ${productToDelete?.name ?? "o produto"} da loja. O item deixa de aparecer para os usuários imediatamente.`}
+        icon={<Trash2 className="h-5 w-5 text-destructive" />}
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setProductToDelete(null)} disabled={saving}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteProduct} disabled={saving} loading={saving} loadingText="Excluindo...">
               Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </div>
+        }
+      />
     </>
   )
 }

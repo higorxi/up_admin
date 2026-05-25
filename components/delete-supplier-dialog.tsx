@@ -1,17 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { AlertCircle, Trash2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AdminConfirmDialog } from "@/components/admin-confirm-dialog"
 
 interface DeleteSupplierDialogProps {
   isOpen: boolean
@@ -46,29 +40,21 @@ export function DeleteSupplierDialog({ isOpen, onClose, onConfirm, supplierName 
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2.5 text-destructive">
-            <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
-              <Trash2 className="h-5 w-5" />
-            </div>
-            <span>Desativar Lojista Parceiro</span>
-          </DialogTitle>
-          <DialogDescription className="pt-2 leading-relaxed">
-            Tem certeza que deseja desativar <strong className="text-foreground">{supplierName}</strong>? Esta ação impedirá o acesso dele à plataforma e removerá sua loja das buscas.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-4">
-          {error && (
-            <Alert variant="destructive" className="border-destructive/50">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+    <AdminConfirmDialog
+      open={isOpen}
+      onOpenChange={(open) => !open && handleClose()}
+      title="Desativar Lojista Parceiro"
+      description={
+        <>
+          Tem certeza que deseja desativar <strong className="text-foreground">{supplierName}</strong>? Esta ação impedirá o acesso dele à plataforma e removerá sua loja das buscas.
+        </>
+      }
+      icon={
+        <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+          <Trash2 className="h-5 w-5 text-destructive" />
         </div>
-
+      }
+      footer={
         <DialogFooter>
           <Button
             variant="outline"
@@ -92,7 +78,16 @@ export function DeleteSupplierDialog({ isOpen, onClose, onConfirm, supplierName 
             </div>
           </Button>
         </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      }
+    >
+        <div className="space-y-4">
+          {error && (
+            <Alert variant="destructive" className="border-destructive/50">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+        </div>
+    </AdminConfirmDialog>
   )
 }

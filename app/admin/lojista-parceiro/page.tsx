@@ -11,6 +11,7 @@ import { DeleteSupplierDialog } from "@/components/delete-supplier-dialog"
 import { SupplierStoreManagerDialog } from "@/components/supplier-store-manager-dialog"
 import { CardSkeleton } from "@/components/card-skeleton"
 import { AdminDialog } from "@/components/admin-dialog"
+import { AdminConfirmDialog } from "@/components/admin-confirm-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -36,6 +37,7 @@ export default function SuppliersPage() {
   const [supplierToReject, setSupplierToReject] = useState<{ id: string; name: string } | null>(null)
   const [isGrantTrialDialogOpen, setIsGrantTrialDialogOpen] = useState(false)
   const [supplierToGrantTrial, setSupplierToGrantTrial] = useState<{ id: string; name: string } | null>(null)
+  const [supplierToCancelTrial, setSupplierToCancelTrial] = useState<{ id: string; name: string } | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [supplierToDelete, setSupplierToDelete] = useState<{ id: string; name: string } | null>(null)
   const [isPointsLimitDialogOpen, setIsPointsLimitDialogOpen] = useState(false)
@@ -222,11 +224,18 @@ export default function SuppliersPage() {
   }
 
   const handleCancelTrial = async (id: string) => {
-    if (!confirm("Tem certeza que deseja cancelar o trial deste lojista parceiro?")) return
+    const supplier = suppliers.find((item) => item.id === id)
+    if (!supplier) return
+    setSupplierToCancelTrial({ id: supplier.id, name: supplier.tradeName })
+  }
+
+  const handleCancelTrialConfirm = async () => {
+    if (!supplierToCancelTrial) return
 
     try {
-      await cancelTrial(id)
+      await cancelTrial(supplierToCancelTrial.id)
       await refetch()
+      setSupplierToCancelTrial(null)
 
       toast({
         title: "Trial cancelado",
@@ -238,7 +247,6 @@ export default function SuppliersPage() {
         description: error instanceof Error ? error.message : "Não foi possível cancelar o período de trial. Tente novamente.",
         variant: "destructive",
       })
-      throw error
     }
   }
 
@@ -468,6 +476,28 @@ export default function SuppliersPage() {
           }}
           onConfirm={handleGrantTrialConfirm}
           supplierName={supplierToGrantTrial?.name || ""}
+        />
+
+        <AdminConfirmDialog
+          open={!!supplierToCancelTrial}
+          onOpenChange={(open) => !open && setSupplierToCancelTrial(null)}
+          title="Cancelar trial manual?"
+          description={
+            <>
+              Tem certeza que deseja cancelar o trial de <strong className="text-foreground">{supplierToCancelTrial?.name}</strong>?
+            </>
+          }
+          icon={<CalendarDays className="h-5 w-5 text-destructive" />}
+          footer={
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setSupplierToCancelTrial(null)}>
+                Voltar
+              </Button>
+              <Button variant="destructive" onClick={handleCancelTrialConfirm}>
+                Cancelar Trial
+              </Button>
+            </div>
+          }
         />
 
         <DeleteSupplierDialog

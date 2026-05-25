@@ -6,6 +6,7 @@ import { AdminPageLayout } from "@/components/admin-page-layout"
 import { ProfessionalCard } from "@/components/professional-card"
 import { ProfessionalFormModal } from "@/components/professional-form-modal"
 import { ProfessionalDetailsModal } from "@/components/professional-details-modal"
+import { AdminConfirmDialog } from "@/components/admin-confirm-dialog"
 import { CardSkeleton } from "@/components/card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,6 +34,7 @@ export default function ProfessionalsPage() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [formMode, setFormMode] = useState<"create" | "edit">("create")
+  const [professionalToDelete, setProfessionalToDelete] = useState<RecommendedProfessional | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [professionFilter, setProfessionFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -50,21 +52,27 @@ export default function ProfessionalsPage() {
     setIsFormModalOpen(true)
   }
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Tem certeza que deseja excluir este profissional?")) {
-      try {
-        await deleteProfessional(id)
-        toast({
-          title: "Profissional excluído",
-          description: "O profissional foi excluído com sucesso.",
-        })
-      } catch (error) {
-        toast({
-          title: "Erro ao excluir",
-          description: "Não foi possível excluir o profissional. Tente novamente.",
-          variant: "destructive",
-        })
-      }
+  const handleDelete = (id: string) => {
+    const professional = professionals.find((item) => item.id === id) ?? null
+    setProfessionalToDelete(professional)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!professionalToDelete) return
+
+    try {
+      await deleteProfessional(professionalToDelete.id)
+      toast({
+        title: "Profissional excluído",
+        description: "O profissional foi excluído com sucesso.",
+      })
+      setProfessionalToDelete(null)
+    } catch (error) {
+      toast({
+        title: "Erro ao excluir",
+        description: "Não foi possível excluir o profissional. Tente novamente.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -270,6 +278,28 @@ export default function ProfessionalsPage() {
           professional={selectedProfessional}
           isOpen={isDetailsModalOpen}
           onClose={() => setIsDetailsModalOpen(false)}
+        />
+
+        <AdminConfirmDialog
+          open={!!professionalToDelete}
+          onOpenChange={(open) => !open && setProfessionalToDelete(null)}
+          title="Excluir profissional?"
+          description={
+            <>
+              Esta ação remove <strong className="text-foreground">{professionalToDelete?.name}</strong> da listagem de profissionais recomendados.
+            </>
+          }
+          icon={<AlertCircle className="h-5 w-5 text-destructive" />}
+          footer={
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setProfessionalToDelete(null)}>
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteConfirm}>
+                Excluir
+              </Button>
+            </div>
+          }
         />
       </AdminPageLayout>
     </AdminLayout>
