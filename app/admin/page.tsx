@@ -51,7 +51,7 @@ export default function AdminDashboard() {
               >
                 <Link href="/admin/conexao-premiada">
                   <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Ticket className="h-5 w-5 text-primary" />
+                    <TicketCheck className="h-5 w-5 text-primary" />
                   </div>
                   <div className="text-left flex-1">
                     <div className="font-medium">Conexão Premiada</div>
