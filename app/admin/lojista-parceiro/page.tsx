@@ -38,6 +38,13 @@ export default function SuppliersPage() {
   const [supplierToGrantTrial, setSupplierToGrantTrial] = useState<{ id: string; name: string } | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [supplierToDelete, setSupplierToDelete] = useState<{ id: string; name: string } | null>(null)
+  const [isPointsLimitDialogOpen, setIsPointsLimitDialogOpen] = useState(false)
+  const [supplierToManagePoints, setSupplierToManagePoints] = useState<{
+    id: string
+    name: string
+    pointsLimit?: number | null
+    currentPointsAwarded?: number | null
+  } | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
 
@@ -133,6 +140,35 @@ export default function SuppliersPage() {
       toast({
         title: "Erro ao desativar",
         description: "Não foi possível desativar o lojista parceiro. Tente novamente.",
+        variant: "destructive",
+      })
+      throw error
+    }
+  }
+
+  const handleManagePointsLimitClick = (supplier: (typeof suppliers)[0]) => {
+    setSupplierToManagePoints({
+      id: supplier.id,
+      name: supplier.tradeName,
+      pointsLimit: supplier.pointsLimit,
+      currentPointsAwarded: supplier.currentPointsAwarded,
+    })
+    setIsPointsLimitDialogOpen(true)
+  }
+
+  const handlePointsLimitConfirm = async (pointsLimit: number) => {
+    if (!supplierToManagePoints) return
+
+    try {
+      await updatePointsLimit(supplierToManagePoints.id, pointsLimit)
+      toast({
+        title: "Limite atualizado",
+        description: "O limite de pontos do lojista parceiro foi atualizado com sucesso.",
+      })
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar limite",
+        description: "Não foi possível atualizar o limite de pontos. Tente novamente.",
         variant: "destructive",
       })
       throw error
@@ -384,6 +420,7 @@ export default function SuppliersPage() {
                 onEdit={handleEditClick}
                 onManageStore={setSupplierToManageStore}
                 onDelete={(id) => handleDeleteClick(id, supplier.tradeName)}
+                onManagePointsLimit={handleManagePointsLimitClick}
               />
             ))
           )}

@@ -48,6 +48,8 @@ export interface Supplier {
   trialEndDate?: string | null
   trialDuration?: number | null
   trialDurationUnit?: TrialDurationUnit | string | null
+  pointsLimit?: number | null
+  currentPointsAwarded?: number | null
   store: {
     id: string
     name: string
@@ -192,7 +194,7 @@ export interface PhysicalSale {
     email?: string | null
     user?: {
       email?: string | null
-    } | null
+    } | null 
   } | null
   redeemedProfessional?: {
     id: string
@@ -200,6 +202,7 @@ export interface PhysicalSale {
   } | null
   professionalEmail?: string | null
 }
+
 export class SuppliersService {
   static async getAll(): Promise<Supplier[]> {
     return ApiService.get<Supplier[]>("/partner-suppliers")

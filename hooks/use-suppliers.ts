@@ -18,6 +18,7 @@ interface UseSuppliersReturn {
   grantTrial: (id: string, payload: GrantTrialPayload) => Promise<void>
   cancelTrial: (id: string) => Promise<void>
   deleteSupplier: (id: string) => Promise<void>
+  updatePointsLimit: (id: string, pointsLimit: number) => Promise<void>
 }
 
 export function useSuppliers(): UseSuppliersReturn {
@@ -115,6 +116,27 @@ export function useSuppliers(): UseSuppliersReturn {
     }
   }
 
+  const updatePointsLimit = async (id: string, pointsLimit: number) => {
+    try {
+      const updatedSupplier = await SuppliersService.updatePointsLimit(id, { pointsLimit })
+      setSuppliers((prev) =>
+        prev.map((supplier) =>
+          supplier.id === id
+            ? {
+                ...supplier,
+                ...updatedSupplier,
+                pointsLimit: updatedSupplier.pointsLimit ?? pointsLimit,
+                currentPointsAwarded: updatedSupplier.currentPointsAwarded ?? supplier.currentPointsAwarded,
+              }
+            : supplier,
+        ),
+      )
+    } catch (err) {
+      console.error("[v0] Error updating supplier points limit:", err)
+      throw err
+    }
+  }
+
   useEffect(() => {
     fetchSuppliers()
   }, [isAuthenticated])
@@ -130,5 +152,6 @@ export function useSuppliers(): UseSuppliersReturn {
     grantTrial,
     cancelTrial,
     deleteSupplier,
+    updatePointsLimit,
   }
 }
