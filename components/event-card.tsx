@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Power, Eye, Calendar, MapPin, Users, Star } from "lucide-react"
+import { Edit, Power, Calendar, MapPin, Users, Star, Trash2 } from "lucide-react"
 import { Event } from "@/lib/services/events"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -14,6 +14,7 @@ interface EventCardProps {
   onToggle: (event: Event) => void
   onViewDetails: (event: Event) => void
   onManageAttendees: (event: Event) => void
+  onDelete?: (event: Event) => void
 }
 
 export function EventCard({ 
@@ -21,7 +22,8 @@ export function EventCard({
   onEdit, 
   onToggle, 
   onViewDetails, 
-  onManageAttendees 
+  onManageAttendees,
+  onDelete,
 }: EventCardProps) {
   const formatDate = (dateString: string) => {
     try {
@@ -135,9 +137,22 @@ export function EventCard({
             size="sm" 
             onClick={() => onManageAttendees(event)}
             className="hover:bg-muted/50 transition-colors"
+            title="Gerenciar participantes"
           >
             <Users className="h-4 w-4" />
           </Button>
+
+          {onDelete && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onDelete(event)}
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              title="Excluir evento"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

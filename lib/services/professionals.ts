@@ -16,20 +16,53 @@ export interface ProfessionalSocialMedia {
 export interface CRMProfessional {
   id: string
   name: string
-  email: string
-  document: string
+  document?: string | null
   phone: string
   level: ProfessionalLevel
   points: number
   verified: boolean
+  featured?: boolean
+  description?: string | null
+  experience?: string | null
+  officeName?: string | null
   createdAt: string
-  profession: Profession
-  socialMedia?: ProfessionalSocialMedia
+  updatedAt?: string
+  profession?: Profession | null
+  professionId?: string | null
+  social?: ProfessionalSocialMedia | null
+  user?: {
+    id: string
+    email: string
+    profileImage?: string | null
+    createdAt?: string
+    address?: {
+      state?: string | null
+      city?: string | null
+      district?: string | null
+      street?: string | null
+      complement?: string | null
+      number?: string | null
+      zipCode?: string | null
+    } | null
+  } | null
   _count: {
     eventRegistrations: number
     workshops: number
     redemptions: number
   }
+}
+
+export interface UpdateCRMProfessionalPayload {
+  name?: string
+  phone?: string
+  document?: string
+  professionId?: string
+  level?: ProfessionalLevel
+  verified?: boolean
+  featured?: boolean
+  description?: string
+  experience?: string
+  officeName?: string
 }
 
 export interface GetProfessionalsParams {
@@ -74,5 +107,17 @@ export class ProfessionalsService {
 
   static async getProfessions(): Promise<Profession[]> {
     return ApiService.get<Profession[]>("/professions")
+  }
+
+  static async update(id: string, payload: UpdateCRMProfessionalPayload): Promise<CRMProfessional> {
+    return ApiService.patch<CRMProfessional>(`/professionals/${id}`, payload)
+  }
+
+  static async toggleVerification(id: string): Promise<CRMProfessional> {
+    return ApiService.patch<CRMProfessional>(`/professionals/${id}/toggle-verification`, {})
+  }
+
+  static async delete(id: string): Promise<void> {
+    return ApiService.delete<void>(`/professionals/${id}`)
   }
 }

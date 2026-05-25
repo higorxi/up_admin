@@ -108,7 +108,8 @@ export function AttendeesModal({
 
     const matchesSearch =
       professional.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      professional.phone.toLowerCase().includes(searchTerm.toLowerCase())
+      (professional.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+      professional.email.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesTab =
       activeTab === "all" ||
@@ -242,7 +243,7 @@ export function AttendeesModal({
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-1 text-xs text-muted-foreground">
                               <div className="flex items-center gap-1 truncate">
                                 <Mail className="h-3 w-3 shrink-0" />
-                                <span className="truncate">{professional.phone}</span>
+                                <span className="truncate">{professional.phone || professional.email}</span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3 shrink-0" />

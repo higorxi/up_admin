@@ -34,6 +34,7 @@ export interface Supplier {
   document: string
   stateRegistration: string
   contact: string
+  type?: "SUPPLIER" | "WELLNESS"
   status: SupplierStatus
   storeId: string | null
   createdAt: string
@@ -54,6 +55,7 @@ export interface Supplier {
     website: string | null
     rating: number
     openingHours: string
+    logoUrl?: string | null
     phone?: string | null
     email?: string | null
     addressId: string
@@ -78,6 +80,15 @@ export interface Supplier {
       number: string | null
       zipCode: string
     }
+    products?: SupplierProduct[]
+    events?: Array<{
+      id: string
+      name: string
+      date: string
+      isActive: boolean
+      totalSpots: number
+      filledSpots: number
+    }>
   } | null
   user?: {
     email: string
@@ -95,6 +106,100 @@ export interface Supplier {
   } | null
 }
 
+export interface UpdateSupplierPayload {
+  tradeName?: string
+  companyName?: string
+  document?: string
+  stateRegistration?: string
+  contact?: string
+  type?: "SUPPLIER" | "WELLNESS"
+}
+
+export interface SupplierAddressPayload {
+  state: string
+  city: string
+  district: string
+  street?: string
+  complement?: string
+  number?: string
+  zipCode?: string
+}
+
+export interface SupplierStorePayload {
+  name: string
+  description?: string
+  website?: string
+  openingHours?: string
+  logoUrl?: string
+  partnerId?: string
+  address?: SupplierAddressPayload
+}
+
+export interface SupplierProduct {
+  id: string
+  name: string
+  description?: string | null
+  price: number
+  link?: string | null
+  featured: boolean
+  promotion: boolean
+  photoUrl?: string | null
+  duration?: string | null
+  storeId: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface SupplierProductPayload {
+  name: string
+  description?: string
+  price: number
+  link?: string
+  featured?: boolean
+  promotion?: boolean
+  photoUrl?: string
+  duration?: string
+}
+
+export interface PhysicalSale {
+  id: string
+  code?: string | null
+  pointsCode?: string | null
+  customerName?: string | null
+  clientName?: string | null
+  saleValue?: number | null
+  amount?: number | null
+  value?: number | null
+  points?: number | null
+  pointsAwarded?: number | null
+  isRedeemed?: boolean | null
+  status?: string | null
+  redeemedAt?: string | null
+  createdAt: string
+  partnerSupplier?: {
+    id: string
+    tradeName?: string | null
+    companyName?: string | null
+  } | null
+  partner?: {
+    id: string
+    tradeName?: string | null
+    companyName?: string | null
+    name?: string | null
+  } | null
+  professional?: {
+    id: string
+    email?: string | null
+    user?: {
+      email?: string | null
+    } | null
+  } | null
+  redeemedProfessional?: {
+    id: string
+    email?: string | null
+  } | null
+  professionalEmail?: string | null
+}
 export class SuppliersService {
   static async getAll(): Promise<Supplier[]> {
     return ApiService.get<Supplier[]>("/partner-suppliers")
@@ -102,6 +207,30 @@ export class SuppliersService {
 
   static async getById(id: string): Promise<Supplier> {
     return ApiService.get<Supplier>(`/partner-suppliers/${id}`)
+  }
+
+  static async update(id: string, payload: UpdateSupplierPayload): Promise<Supplier> {
+    return ApiService.patch<Supplier>(`/partner-suppliers/${id}`, payload)
+  }
+
+  static async createStore(payload: SupplierStorePayload): Promise<Supplier["store"]> {
+    return ApiService.post<Supplier["store"]>("/stores", payload)
+  }
+
+  static async updateStore(id: string, payload: SupplierStorePayload): Promise<Supplier["store"]> {
+    return ApiService.patch<Supplier["store"]>(`/stores/${id}`, payload)
+  }
+
+  static async createProduct(storeId: string, payload: SupplierProductPayload): Promise<SupplierProduct> {
+    return ApiService.post<SupplierProduct>(`/stores/${storeId}/products`, payload)
+  }
+
+  static async updateProduct(id: string, payload: SupplierProductPayload): Promise<SupplierProduct> {
+    return ApiService.patch<SupplierProduct>(`/products/${id}`, payload)
+  }
+
+  static async deleteProduct(id: string): Promise<void> {
+    return ApiService.delete<void>(`/products/${id}`)
   }
 
   static async approve(id: string): Promise<void> {
@@ -122,6 +251,10 @@ export class SuppliersService {
 
   static async delete(id: string): Promise<void> {
     return ApiService.delete(`/partner-supplier/${id}`)
+  }
+
+  static async getPhysicalSales(): Promise<PhysicalSale[]> {
+    return ApiService.get<PhysicalSale[]>("/physical-sales")
   }
 }
 

@@ -4,7 +4,7 @@ import { DashboardStats } from "@/components/dashboard-stats";
 import { RecentActivity } from "@/components/recent-activity";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, Users, Calendar } from "lucide-react";
+import { Plus, Users, Calendar, TicketCheck } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminDashboard() {
@@ -93,6 +93,24 @@ export default function AdminDashboard() {
                     <div className="font-medium">Criar Evento</div>
                     <div className="text-xs text-muted-foreground">
                       Novo evento
+                    </div>
+                  </div>
+                </Link>
+              </Button>
+
+              <Button
+                asChild
+                variant="outline"
+                className="w-full justify-start gap-3 h-12 bg-transparent hover:bg-muted/50 transition-colors"
+              >
+                <Link href="/admin/conexao-premiada">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <TicketCheck className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-medium">Conexão Premiada</div>
+                    <div className="text-xs text-muted-foreground">
+                      Vendas e resgates
                     </div>
                   </div>
                 </Link>

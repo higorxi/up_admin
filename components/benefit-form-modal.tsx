@@ -172,19 +172,21 @@ export function BenefitFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[min(1040px,calc(100vw-32px))] max-w-none max-h-[90vh] overflow-y-auto p-0">
         <DialogHeader>
-          <DialogTitle>
-            {mode === "create" ? "Criar Novo Benefício" : "Editar Benefício"}
-          </DialogTitle>
-          <DialogDescription>
-            {mode === "create"
-              ? "Preencha os dados do novo benefício que será disponibilizado aos profissionais."
-              : "Atualize as informações do benefício."}
-          </DialogDescription>
+          <div className="border-b bg-muted/40 px-6 py-5">
+            <DialogTitle className="text-2xl">
+              {mode === "create" ? "Criar Novo Benefício" : "Editar Benefício"}
+            </DialogTitle>
+            <DialogDescription className="mt-1 text-base">
+              {mode === "create"
+                ? "Preencha os dados do benefício que ficará disponível para os profissionais."
+                : "Atualize as informações do benefício com atenção antes de salvar."}
+            </DialogDescription>
+          </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 px-6 pb-6">
           {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
@@ -192,35 +194,68 @@ export function BenefitFormModal({
             </Alert>
           )}
 
-          {/* Nome */}
-          <div className="space-y-2">
-            <Label htmlFor="name">
-              Nome do Benefício <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => handleChange("name", e.target.value)}
-              placeholder="Ex: Vale Combustível R$ 100"
-              required
-              disabled={loading}
-            />
+          <div className="grid gap-5 lg:grid-cols-[1.35fr_0.65fr]">
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-base">
+                  Nome do Benefício <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleChange("name", e.target.value)}
+                  placeholder="Ex: Vale Combustível R$ 100"
+                  required
+                  disabled={loading}
+                  className="h-11"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description" className="text-base">Descrição</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => handleChange("description", e.target.value)}
+                  placeholder="Descreva os detalhes do benefício..."
+                  rows={6}
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div className="rounded-lg border bg-muted/25 p-4">
+              <Label htmlFor="imageUrl" className="text-base">Imagem do Benefício</Label>
+              <Input
+                id="imageUrl"
+                type="url"
+                value={formData.imageUrl}
+                onChange={(e) => handleChange("imageUrl", e.target.value)}
+                placeholder="https://exemplo.com/imagem.jpg"
+                disabled={loading}
+                className="mt-2 h-11"
+              />
+              <div className="mt-3 overflow-hidden rounded-lg border bg-background">
+                {formData.imageUrl ? (
+                  <img
+                    src={formData.imageUrl}
+                    alt="Preview"
+                    className="h-48 w-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src =
+                        "https://via.placeholder.com/600x360?text=Imagem+Invalida";
+                    }}
+                  />
+                ) : (
+                  <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
+                    Pré-visualização da imagem
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Descrição */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Descrição</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => handleChange("description", e.target.value)}
-              placeholder="Descreva os detalhes do benefício..."
-              rows={3}
-              disabled={loading}
-            />
-          </div>
-
-          {/* Custo em Pontos */}
+          <div className="grid gap-5 md:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="pointsCost">
               Custo em Pontos <span className="text-destructive">*</span>
@@ -234,13 +269,13 @@ export function BenefitFormModal({
               placeholder="Ex: 500"
               required
               disabled={loading}
+              className="h-11"
             />
             <p className="text-xs text-muted-foreground">
               Quantidade de pontos necessários para resgatar este benefício
             </p>
           </div>
 
-          {/* Quantidade Disponível */}
           <div className="space-y-2">
             <Label htmlFor="quantity">Quantidade Disponível (Opcional)</Label>
             <Input
@@ -251,39 +286,13 @@ export function BenefitFormModal({
               onChange={(e) => handleChange("quantity", e.target.value)}
               placeholder="Ex: 50"
               disabled={loading}
+              className="h-11"
             />
             <p className="text-xs text-muted-foreground">
               Deixe vazio para quantidade ilimitada
             </p>
           </div>
 
-          {/* URL da Imagem */}
-          <div className="space-y-2">
-            <Label htmlFor="imageUrl">URL da Imagem (Opcional)</Label>
-            <Input
-              id="imageUrl"
-              type="url"
-              value={formData.imageUrl}
-              onChange={(e) => handleChange("imageUrl", e.target.value)}
-              placeholder="https://exemplo.com/imagem.jpg"
-              disabled={loading}
-            />
-            {formData.imageUrl && (
-              <div className="mt-2 border rounded-lg p-2">
-                <img
-                  src={formData.imageUrl}
-                  alt="Preview"
-                  className="w-full h-32 object-cover rounded"
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      "https://via.placeholder.com/300x200?text=Imagem+Invalida";
-                  }}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Data de Expiração */}
           <div className="space-y-2">
             <Label htmlFor="expiresAt">Data de Expiração (Opcional)</Label>
             <Input
@@ -299,14 +308,15 @@ export function BenefitFormModal({
               }}
               min={format(new Date(), "yyyy-MM-dd")}
               disabled={loading}
+              className="h-11"
             />
             <p className="text-xs text-muted-foreground">
               Data limite para resgatar este benefício
             </p>
           </div>
+          </div>
 
-          {/* Status Ativo */}
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/25">
             <div className="space-y-0.5">
               <Label htmlFor="isActive" className="text-base">
                 Benefício Ativo
@@ -323,7 +333,7 @@ export function BenefitFormModal({
             />
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="sticky bottom-0 -mx-6 -mb-6 border-t bg-background px-6 py-4">
             <Button
               type="button"
               variant="outline"

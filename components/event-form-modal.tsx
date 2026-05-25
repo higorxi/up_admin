@@ -206,26 +206,30 @@ export function EventFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[min(1040px,calc(100vw-32px))] max-w-none max-h-[90vh] overflow-y-auto p-0">
         <DialogHeader>
-          <DialogTitle>
-            {mode === "create" ? "Criar Novo Evento" : "Editar Evento"}
-          </DialogTitle>
+          <div className="border-b bg-muted/40 px-6 py-5">
+            <DialogTitle className="text-2xl">
+              {mode === "create" ? "Criar Novo Evento" : "Editar Evento"}
+            </DialogTitle>
+            <p className="mt-1 text-base text-muted-foreground">
+              Configure dados, pontuação, loja vinculada e endereço do evento.
+            </p>
+          </div>
         </DialogHeader>
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+        <form onSubmit={handleSubmit} className="space-y-6 px-6 pb-6">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-        {storesError && (
-          <Alert variant="destructive">
-            <AlertDescription>Erro ao carregar lojas: {storesError}</AlertDescription>
-          </Alert>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
+          {storesError && (
+            <Alert variant="destructive">
+              <AlertDescription>Erro ao carregar lojas: {storesError}</AlertDescription>
+            </Alert>
+          )}
           {/* Informações básicas */}
           <div className="space-y-4">
             <div>
@@ -442,7 +446,7 @@ export function EventFormModal({
             )}
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="sticky bottom-0 -mx-6 -mb-6 flex justify-end gap-2 border-t bg-background px-6 py-4">
             <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
               Cancelar
             </Button>

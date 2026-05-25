@@ -8,22 +8,29 @@ import { SupplierDetailsModal } from "@/components/supplier-details-modal"
 import { RejectSupplierDialog } from "@/components/reject-supplier-dialog"
 import { GrantTrialDialog } from "@/components/grant-trial-dialog"
 import { DeleteSupplierDialog } from "@/components/delete-supplier-dialog"
+import { SupplierStoreManagerDialog } from "@/components/supplier-store-manager-dialog"
 import { CardSkeleton } from "@/components/card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Search, UserCheck, AlertCircle, RefreshCw } from "lucide-react"
+import { CalendarDays, Package, Search, Store, UserCheck, AlertCircle, RefreshCw } from "lucide-react"
 import { useSuppliers } from "@/hooks/use-suppliers"
 import { toast } from "@/hooks/use-toast"
-import { getSupplierPlanType, type GrantTrialPayload, TrialDurationUnit, PlanType } from "@/lib/services/suppliers"
+import { getSupplierPlanType, type GrantTrialPayload, TrialDurationUnit, PlanType, type UpdateSupplierPayload } from "@/lib/services/suppliers"
 
 export default function SuppliersPage() {
-  const { suppliers, loading, error, refetch, approve, reject, grantTrial, cancelTrial, deleteSupplier } = useSuppliers()
+  const { suppliers, loading, error, refetch, approve, updateSupplier, reject, grantTrial, cancelTrial, deleteSupplier } =
+    useSuppliers()
 
   const [selectedSupplier, setSelectedSupplier] = useState<(typeof suppliers)[0] | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [supplierToEdit, setSupplierToEdit] = useState<(typeof suppliers)[0] | null>(null)
+  const [supplierToManageStore, setSupplierToManageStore] = useState<(typeof suppliers)[0] | null>(null)
+  const [editPayload, setEditPayload] = useState<UpdateSupplierPayload>({})
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false)
   const [supplierToReject, setSupplierToReject] = useState<{ id: string; name: string } | null>(null)
   const [isGrantTrialDialogOpen, setIsGrantTrialDialogOpen] = useState(false)
@@ -46,6 +53,39 @@ export default function SuppliersPage() {
         description: "Não foi possível aprovar o lojista parceiro. Tente novamente.",
         variant: "destructive",
       })
+    }
+  }
+
+  const handleEditClick = (supplier: (typeof suppliers)[0]) => {
+    setSupplierToEdit(supplier)
+    setEditPayload({
+      tradeName: supplier.tradeName,
+      companyName: supplier.companyName,
+      document: supplier.document,
+      stateRegistration: supplier.stateRegistration ?? "",
+      contact: supplier.contact ?? "",
+      type: supplier.type as UpdateSupplierPayload["type"],
+    })
+  }
+
+  const handleEditConfirm = async () => {
+    if (!supplierToEdit) return
+
+    try {
+      await updateSupplier(supplierToEdit.id, editPayload)
+      toast({
+        title: "Lojista atualizado",
+        description: "Os dados cadastrais do lojista foram salvos com sucesso.",
+      })
+      setSupplierToEdit(null)
+      setEditPayload({})
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar",
+        description: error instanceof Error ? error.message : "Não foi possível atualizar o lojista parceiro.",
+        variant: "destructive",
+      })
+      throw error
     }
   }
 
@@ -170,6 +210,10 @@ export default function SuppliersPage() {
     setIsModalOpen(true)
   }
 
+  const handleStoreManagerChanged = async () => {
+    await refetch()
+  }
+
   const filteredSuppliers = suppliers
     .filter((supplier) => {
       const matchesSearch =
@@ -211,6 +255,12 @@ export default function SuppliersPage() {
       return a.tradeName.localeCompare(b.tradeName, 'pt-BR', { sensitivity: 'base' })
     })
 
+  const approvedCount = suppliers.filter((supplier) => supplier.status === "APPROVED").length
+  const pendingCount = suppliers.filter((supplier) => supplier.status === "PENDING").length
+  const storesCount = suppliers.filter((supplier) => supplier.store).length
+  const productsCount = suppliers.reduce((total, supplier) => total + (supplier.store?.products?.length ?? supplier.store?._count?.products ?? 0), 0)
+  const eventsCount = suppliers.reduce((total, supplier) => total + (supplier.store?.events?.length ?? supplier.store?._count?.events ?? 0), 0)
+
   return (
     <AdminLayout>
       <AdminPageLayout
@@ -229,6 +279,54 @@ export default function SuppliersPage() {
             </AlertDescription>
           </Alert>
         )}
+
+        <div className="grid gap-3 md:grid-cols-5">
+          <div className="rounded-lg border bg-card p-4">
+            <div className="flex items-center gap-3">
+              <UserCheck className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-xs text-muted-foreground">Aprovados</p>
+                <p className="text-2xl font-semibold">{approvedCount}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border bg-card p-4">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-amber-600" />
+              <div>
+                <p className="text-xs text-muted-foreground">Pendentes</p>
+                <p className="text-2xl font-semibold">{pendingCount}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border bg-card p-4">
+            <div className="flex items-center gap-3">
+              <Store className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-xs text-muted-foreground">Lojas</p>
+                <p className="text-2xl font-semibold">{storesCount}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border bg-card p-4">
+            <div className="flex items-center gap-3">
+              <Package className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-xs text-muted-foreground">Produtos</p>
+                <p className="text-2xl font-semibold">{productsCount}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border bg-card p-4">
+            <div className="flex items-center gap-3">
+              <CalendarDays className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-xs text-muted-foreground">Eventos</p>
+                <p className="text-2xl font-semibold">{eventsCount}</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
@@ -282,6 +380,8 @@ export default function SuppliersPage() {
                 onGrantTrial={handleGrantTrialClick}
                 onCancelTrial={handleCancelTrial}
                 onViewDetails={handleViewDetails}
+                onEdit={handleEditClick}
+                onManageStore={setSupplierToManageStore}
                 onDelete={(id) => handleDeleteClick(id, supplier.tradeName)}
               />
             ))
@@ -341,6 +441,89 @@ export default function SuppliersPage() {
           onConfirm={handleDeleteConfirm}
           supplierName={supplierToDelete?.name || ""}
         />
+
+        <SupplierStoreManagerDialog
+          supplier={supplierToManageStore}
+          isOpen={!!supplierToManageStore}
+          onClose={() => setSupplierToManageStore(null)}
+          onChanged={handleStoreManagerChanged}
+        />
+
+        <Dialog open={!!supplierToEdit} onOpenChange={(open) => !open && setSupplierToEdit(null)}>
+          <DialogContent className="w-[min(920px,calc(100vw-32px))] max-w-none max-h-[90vh] overflow-y-auto p-0">
+            <DialogHeader>
+              <div className="border-b bg-muted/40 px-6 py-5">
+                <DialogTitle className="text-2xl">Editar Lojista Parceiro</DialogTitle>
+                <p className="mt-1 text-base text-muted-foreground">Atualize os dados cadastrais principais do parceiro.</p>
+              </div>
+            </DialogHeader>
+            <div className="grid gap-4 px-6 py-5 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="supplier-trade-name">Nome comercial</Label>
+                <Input
+                  id="supplier-trade-name"
+                  value={editPayload.tradeName ?? ""}
+                  onChange={(event) => setEditPayload((prev) => ({ ...prev, tradeName: event.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="supplier-company-name">Razão social</Label>
+                <Input
+                  id="supplier-company-name"
+                  value={editPayload.companyName ?? ""}
+                  onChange={(event) => setEditPayload((prev) => ({ ...prev, companyName: event.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="supplier-document">Documento</Label>
+                <Input
+                  id="supplier-document"
+                  value={editPayload.document ?? ""}
+                  onChange={(event) => setEditPayload((prev) => ({ ...prev, document: event.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="supplier-state-registration">Inscrição estadual</Label>
+                <Input
+                  id="supplier-state-registration"
+                  value={editPayload.stateRegistration ?? ""}
+                  onChange={(event) => setEditPayload((prev) => ({ ...prev, stateRegistration: event.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="supplier-contact">Contato</Label>
+                <Input
+                  id="supplier-contact"
+                  value={editPayload.contact ?? ""}
+                  onChange={(event) => setEditPayload((prev) => ({ ...prev, contact: event.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Tipo</Label>
+                <Select
+                  value={editPayload.type ?? "SUPPLIER"}
+                  onValueChange={(value) =>
+                    setEditPayload((prev) => ({ ...prev, type: value as UpdateSupplierPayload["type"] }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="SUPPLIER">Fornecedor</SelectItem>
+                    <SelectItem value="WELLNESS">Wellness</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter className="border-t bg-background px-6 py-4">
+              <Button variant="outline" onClick={() => setSupplierToEdit(null)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleEditConfirm}>Salvar alterações</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </AdminPageLayout>
     </AdminLayout>
   )

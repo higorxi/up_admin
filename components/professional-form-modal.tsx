@@ -206,16 +206,21 @@ export function ProfessionalFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[95vh]">
+      <DialogContent className="w-[min(1040px,calc(100vw-32px))] max-w-none max-h-[92vh] p-0">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <User className="h-5 w-5" />
-            {mode === "create" ? "Adicionar Profissional" : "Editar Profissional"}
-          </DialogTitle>
+          <div className="border-b bg-muted/40 px-6 py-5">
+            <DialogTitle className="flex items-center gap-2 text-2xl">
+              <User className="h-6 w-6" />
+              {mode === "create" ? "Adicionar Profissional" : "Editar Profissional"}
+            </DialogTitle>
+            <p className="mt-1 text-base text-muted-foreground">
+              Cadastre dados, endereço, canais de contato e disponibilidade.
+            </p>
+          </div>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[75vh]">
-          <form onSubmit={handleSubmit} className="space-y-6 pr-4">
+        <ScrollArea className="max-h-[calc(92vh-120px)] px-6 pb-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Informações Básicas */}
             <div className="bg-muted/30 p-4 rounded-lg space-y-4">
               <h3 className="font-semibold text-card-foreground flex items-center gap-2">
@@ -529,7 +534,7 @@ export function ProfessionalFormModal({
             </div>
 
             {/* Botões de Ação */}
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="sticky bottom-0 -mx-6 -mb-6 flex justify-end gap-3 border-t bg-background px-6 py-4">
               <Button
                 type="button"
                 variant="outline"

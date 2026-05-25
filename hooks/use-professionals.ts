@@ -6,7 +6,8 @@ import {
   CRMProfessional,
   GetProfessionalsParams,
   ProfessionalsResponse,
-  Profession
+  Profession,
+  UpdateCRMProfessionalPayload
 } from "@/lib/services/professionals"
 import { useAuth } from "./use-auth"
 
@@ -18,6 +19,9 @@ interface UseProfessionalsReturn {
   error: string | null
   refetch: (params?: GetProfessionalsParams) => Promise<void>
   fetchProfessions: () => Promise<void>
+  update: (id: string, payload: UpdateCRMProfessionalPayload) => Promise<void>
+  toggleVerification: (id: string) => Promise<void>
+  deleteProfessional: (id: string) => Promise<void>
 }
 
 export function useProfessionals(params: GetProfessionalsParams = {}): UseProfessionalsReturn {
@@ -62,6 +66,33 @@ export function useProfessionals(params: GetProfessionalsParams = {}): UseProfes
     }
   }, [isAuthenticated])
 
+  const update = async (id: string, payload: UpdateCRMProfessionalPayload) => {
+    const updatedProfessional = await ProfessionalsService.update(id, payload)
+    setProfessionals((prev) =>
+      prev.map((professional) => (professional.id === id ? updatedProfessional : professional)),
+    )
+  }
+
+  const toggleVerification = async (id: string) => {
+    const updatedProfessional = await ProfessionalsService.toggleVerification(id)
+    setProfessionals((prev) =>
+      prev.map((professional) => (professional.id === id ? updatedProfessional : professional)),
+    )
+  }
+
+  const deleteProfessional = async (id: string) => {
+    await ProfessionalsService.delete(id)
+    setProfessionals((prev) => prev.filter((professional) => professional.id !== id))
+    setMeta((prev) =>
+      prev
+        ? {
+            ...prev,
+            total: Math.max(prev.total - 1, 0),
+          }
+        : prev,
+    )
+  }
+
   useEffect(() => {
     if (isAuthenticated) {
       const paramsKey = JSON.stringify(params)
@@ -85,5 +116,8 @@ export function useProfessionals(params: GetProfessionalsParams = {}): UseProfes
     error,
     refetch: fetchProfessionals,
     fetchProfessions,
+    update,
+    toggleVerification,
+    deleteProfessional,
   }
 }

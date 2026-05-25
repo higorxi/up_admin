@@ -11,6 +11,7 @@ interface UseEventsReturn {
   refetch: () => Promise<void>
   create: (data: CreateEventData) => Promise<void>
   update: (id: string, data: CreateEventData) => Promise<void>
+  deleteEvent: (id: string) => Promise<void>
   toggleEvent: (id: string) => Promise<void>
   checkInAttendee: (eventId: string, professionalId: string) => Promise<void>
   getEventParticipants: (eventId: string) => Promise<EventRegistration[]>
@@ -61,6 +62,16 @@ export function useEvents(): UseEventsReturn {
     }
   }
 
+  const deleteEvent = async (id: string) => {
+    try {
+      await EventsService.delete(id)
+      setEvents((prev) => prev.filter((event) => event.id !== id))
+    } catch (err) {
+      console.error("[useEvents] Error deleting event:", err)
+      throw err
+    }
+  }
+
   const toggleEvent = async (id: string) => {
     try {
       const updatedEvent = await EventsService.toggleEvent(id)
@@ -104,6 +115,7 @@ export function useEvents(): UseEventsReturn {
     refetch: fetchEvents,
     create,
     update,
+    deleteEvent,
     toggleEvent,
     checkInAttendee,
     getEventParticipants,

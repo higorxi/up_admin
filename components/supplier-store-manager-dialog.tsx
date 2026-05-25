@@ -1,0 +1,428 @@
+"use client"
+
+import { useEffect, useMemo, useState } from "react"
+import { Building2, Edit, PackagePlus, Plus, Save, Trash2 } from "lucide-react"
+import { toast } from "@/hooks/use-toast"
+import { SuppliersService, type Supplier, type SupplierProduct, type SupplierProductPayload, type SupplierStorePayload } from "@/lib/services/suppliers"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+
+interface SupplierStoreManagerDialogProps {
+  supplier: Supplier | null
+  isOpen: boolean
+  onClose: () => void
+  onChanged: () => Promise<void>
+}
+
+const emptyStoreDraft = (supplierId?: string): SupplierStorePayload => ({
+  partnerId: supplierId,
+  name: "",
+  description: "",
+  website: "",
+  openingHours: "",
+  logoUrl: "",
+  address: {
+    state: "",
+    city: "",
+    district: "",
+    street: "",
+    complement: "",
+    number: "",
+    zipCode: "",
+  },
+})
+
+const emptyProductDraft = (): SupplierProductPayload => ({
+  name: "",
+  description: "",
+  price: 0,
+  link: "",
+  featured: false,
+  promotion: false,
+  photoUrl: "",
+  duration: "",
+})
+
+export function SupplierStoreManagerDialog({ supplier, isOpen, onClose, onChanged }: SupplierStoreManagerDialogProps) {
+  const [storeDraft, setStoreDraft] = useState<SupplierStorePayload>(emptyStoreDraft())
+  const [productDraft, setProductDraft] = useState<SupplierProductPayload>(emptyProductDraft())
+  const [productToEdit, setProductToEdit] = useState<SupplierProduct | null>(null)
+  const [productToDelete, setProductToDelete] = useState<SupplierProduct | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  const store = supplier?.store ?? null
+  const products = useMemo(() => store?.products ?? [], [store?.products])
+
+  useEffect(() => {
+    if (!supplier || !isOpen) return
+
+    setStoreDraft({
+      partnerId: supplier.id,
+      name: store?.name ?? "",
+      description: store?.description ?? "",
+      website: store?.website ?? "",
+      openingHours: store?.openingHours ?? "",
+      logoUrl: store?.logoUrl ?? "",
+      address: {
+        state: store?.address?.state ?? "",
+        city: store?.address?.city ?? "",
+        district: store?.address?.district ?? "",
+        street: store?.address?.street ?? "",
+        complement: store?.address?.complement ?? "",
+        number: store?.address?.number ?? "",
+        zipCode: store?.address?.zipCode ?? "",
+      },
+    })
+    setProductDraft(emptyProductDraft())
+    setProductToEdit(null)
+    setProductToDelete(null)
+  }, [supplier, isOpen, store])
+
+  if (!supplier) return null
+
+  const updateStoreField = (field: keyof SupplierStorePayload, value: string) => {
+    setStoreDraft((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const updateAddressField = (field: keyof NonNullable<SupplierStorePayload["address"]>, value: string) => {
+    setStoreDraft((prev) => ({
+      ...prev,
+      address: {
+        ...prev.address!,
+        [field]: value,
+      },
+    }))
+  }
+
+  const updateProductField = (field: keyof SupplierProductPayload, value: string | number | boolean) => {
+    setProductDraft((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleSaveStore = async () => {
+    setSaving(true)
+    try {
+      if (store?.id) {
+        await SuppliersService.updateStore(store.id, storeDraft)
+      } else {
+        await SuppliersService.createStore({ ...storeDraft, partnerId: supplier.id })
+      }
+
+      await onChanged()
+      toast({
+        title: store?.id ? "Loja atualizada" : "Loja criada",
+        description: "Os dados da loja foram salvos com sucesso.",
+      })
+    } catch (error) {
+      toast({
+        title: "Erro ao salvar loja",
+        description: error instanceof Error ? error.message : "Não foi possível salvar os dados da loja.",
+        variant: "destructive",
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const startProductEdit = (product: SupplierProduct) => {
+    setProductToEdit(product)
+    setProductDraft({
+      name: product.name,
+      description: product.description ?? "",
+      price: product.price,
+      link: product.link ?? "",
+      featured: product.featured,
+      promotion: product.promotion,
+      photoUrl: product.photoUrl ?? "",
+      duration: product.duration ?? "",
+    })
+  }
+
+  const resetProductForm = () => {
+    setProductToEdit(null)
+    setProductDraft(emptyProductDraft())
+  }
+
+  const handleSaveProduct = async () => {
+    if (!store?.id) {
+      toast({
+        title: "Crie a loja primeiro",
+        description: "Produtos precisam estar vinculados a uma loja.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setSaving(true)
+    try {
+      const payload = {
+        ...productDraft,
+        price: Number(productDraft.price) || 0,
+      }
+
+      if (productToEdit) {
+        await SuppliersService.updateProduct(productToEdit.id, payload)
+      } else {
+        await SuppliersService.createProduct(store.id, payload)
+      }
+
+      await onChanged()
+      resetProductForm()
+      toast({
+        title: productToEdit ? "Produto atualizado" : "Produto criado",
+        description: "A vitrine da loja foi atualizada.",
+      })
+    } catch (error) {
+      toast({
+        title: "Erro ao salvar produto",
+        description: error instanceof Error ? error.message : "Não foi possível salvar o produto.",
+        variant: "destructive",
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeleteProduct = async () => {
+    if (!productToDelete) return
+
+    setSaving(true)
+    try {
+      await SuppliersService.deleteProduct(productToDelete.id)
+      await onChanged()
+      setProductToDelete(null)
+      toast({
+        title: "Produto excluído",
+        description: "O produto foi removido da loja.",
+      })
+    } catch (error) {
+      toast({
+        title: "Erro ao excluir produto",
+        description: error instanceof Error ? error.message : "Não foi possível excluir o produto.",
+        variant: "destructive",
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <>
+      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="w-[min(1180px,calc(100vw-32px))] max-w-none max-h-[92vh] overflow-y-auto p-0">
+          <DialogHeader>
+            <div className="border-b bg-muted/40 px-6 py-5">
+              <DialogTitle className="flex items-center gap-2 text-2xl">
+                <Building2 className="h-6 w-6" />
+                Loja e Produtos de {supplier.tradeName}
+              </DialogTitle>
+              <p className="mt-1 text-base text-muted-foreground">
+                Gerencie cadastro da loja, endereço e vitrine de produtos do lojista.
+              </p>
+            </div>
+          </DialogHeader>
+
+          <Tabs defaultValue="store" className="px-6 pb-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="store">Loja</TabsTrigger>
+              <TabsTrigger value="products">Produtos ({products.length})</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="store" className="space-y-5 pt-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="store-name">Nome da loja</Label>
+                  <Input id="store-name" value={storeDraft.name ?? ""} onChange={(event) => updateStoreField("name", event.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="store-website">Site</Label>
+                  <Input id="store-website" value={storeDraft.website ?? ""} onChange={(event) => updateStoreField("website", event.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="store-hours">Horário de funcionamento</Label>
+                  <Input id="store-hours" value={storeDraft.openingHours ?? ""} onChange={(event) => updateStoreField("openingHours", event.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="store-logo">Logo URL</Label>
+                  <Input id="store-logo" value={storeDraft.logoUrl ?? ""} onChange={(event) => updateStoreField("logoUrl", event.target.value)} />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="store-description">Descrição</Label>
+                  <Textarea id="store-description" value={storeDraft.description ?? ""} onChange={(event) => updateStoreField("description", event.target.value)} />
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="store-zip">CEP</Label>
+                  <Input id="store-zip" value={storeDraft.address?.zipCode ?? ""} onChange={(event) => updateAddressField("zipCode", event.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="store-state">Estado</Label>
+                  <Input id="store-state" value={storeDraft.address?.state ?? ""} onChange={(event) => updateAddressField("state", event.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="store-city">Cidade</Label>
+                  <Input id="store-city" value={storeDraft.address?.city ?? ""} onChange={(event) => updateAddressField("city", event.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="store-district">Bairro</Label>
+                  <Input id="store-district" value={storeDraft.address?.district ?? ""} onChange={(event) => updateAddressField("district", event.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="store-street">Rua</Label>
+                  <Input id="store-street" value={storeDraft.address?.street ?? ""} onChange={(event) => updateAddressField("street", event.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="store-number">Número</Label>
+                  <Input id="store-number" value={storeDraft.address?.number ?? ""} onChange={(event) => updateAddressField("number", event.target.value)} />
+                </div>
+                <div className="space-y-2 md:col-span-3">
+                  <Label htmlFor="store-complement">Complemento</Label>
+                  <Input id="store-complement" value={storeDraft.address?.complement ?? ""} onChange={(event) => updateAddressField("complement", event.target.value)} />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button onClick={handleSaveStore} disabled={saving}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {store?.id ? "Salvar loja" : "Criar loja"}
+                </Button>
+              </DialogFooter>
+            </TabsContent>
+
+            <TabsContent value="products" className="space-y-5 pt-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="product-name">Nome do produto</Label>
+                  <Input id="product-name" value={productDraft.name} onChange={(event) => updateProductField("name", event.target.value)} disabled={!store?.id} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-price">Preço</Label>
+                  <Input id="product-price" type="number" step="0.01" value={productDraft.price} onChange={(event) => updateProductField("price", Number(event.target.value))} disabled={!store?.id} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-link">Link</Label>
+                  <Input id="product-link" value={productDraft.link ?? ""} onChange={(event) => updateProductField("link", event.target.value)} disabled={!store?.id} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-photo">Foto URL</Label>
+                  <Input id="product-photo" value={productDraft.photoUrl ?? ""} onChange={(event) => updateProductField("photoUrl", event.target.value)} disabled={!store?.id} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-duration">Duração</Label>
+                  <Input id="product-duration" value={productDraft.duration ?? ""} onChange={(event) => updateProductField("duration", event.target.value)} disabled={!store?.id} />
+                </div>
+                <div className="flex items-center gap-6 rounded-md border p-3">
+                  <div className="flex items-center gap-2">
+                    <Switch checked={productDraft.featured ?? false} onCheckedChange={(checked) => updateProductField("featured", checked)} disabled={!store?.id} />
+                    <Label>Destaque</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch checked={productDraft.promotion ?? false} onCheckedChange={(checked) => updateProductField("promotion", checked)} disabled={!store?.id} />
+                    <Label>Promoção</Label>
+                  </div>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="product-description">Descrição</Label>
+                  <Textarea id="product-description" value={productDraft.description ?? ""} onChange={(event) => updateProductField("description", event.target.value)} disabled={!store?.id} />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                {productToEdit && (
+                  <Button variant="outline" onClick={resetProductForm}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Novo produto
+                  </Button>
+                )}
+                <Button onClick={handleSaveProduct} disabled={saving || !store?.id}>
+                  <PackagePlus className="h-4 w-4 mr-2" />
+                  {productToEdit ? "Salvar produto" : "Adicionar produto"}
+                </Button>
+              </div>
+
+              <div className="rounded-md border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Produto</TableHead>
+                      <TableHead>Preço</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {products.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="h-20 text-center text-muted-foreground">
+                          {store?.id ? "Nenhum produto cadastrado." : "Crie a loja antes de cadastrar produtos."}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      products.map((product) => (
+                        <TableRow key={product.id}>
+                          <TableCell>
+                            <div className="font-medium">{product.name}</div>
+                            <div className="text-xs text-muted-foreground line-clamp-1">{product.description || "Sem descrição"}</div>
+                          </TableCell>
+                          <TableCell>{Number(product.price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</TableCell>
+                          <TableCell className="text-xs">
+                            {product.featured ? "Destaque" : "Normal"}
+                            {product.promotion ? " / Promoção" : ""}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex justify-end gap-2">
+                              <Button variant="outline" size="icon" onClick={() => startProductEdit(product)} title="Editar produto">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="outline" size="icon" onClick={() => setProductToDelete(product)} className="text-destructive hover:bg-destructive/10 hover:text-destructive" title="Excluir produto">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir produto?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação remove {productToDelete?.name} da loja. O produto deixa de aparecer para os usuários imediatamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteProduct} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  )
+}

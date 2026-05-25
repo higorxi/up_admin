@@ -4,40 +4,39 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated color palette to match UPConnection branding */
-  --background: #f5f5f0; /* beige background */
-  --foreground: #4b5563; /* dark gray text */
-  --card: #ffffff; /* white cards */
-  --card-foreground: #4b5563; /* dark gray text on cards */
+  --background: #fff8ea;
+  --foreground: #2f1022;
+  --card: #ffffff;
+  --card-foreground: #2f1022;
   --popover: #ffffff;
-  --popover-foreground: #4b5563;
-  --primary: #8b1538; /* wine primary color */
-  --primary-foreground: #ffffff;
-  --secondary: #ec4899; /* pink accent */
+  --popover-foreground: #2f1022;
+  --primary: #f4b64f;
+  --primary-foreground: #4b142e;
+  --secondary: #9d452b;
   --secondary-foreground: #ffffff;
-  --muted: #f5f5f0; /* beige muted */
-  --muted-foreground: #6b7280;
-  --accent: #ec4899; /* pink accent */
+  --muted: #fff0cf;
+  --muted-foreground: #744a35;
+  --accent: #8f1732;
   --accent-foreground: #ffffff;
-  --destructive: #be123c;
+  --destructive: #b42318;
   --destructive-foreground: #ffffff;
-  --border: #d1d5db;
+  --border: #ead6b6;
   --input: #ffffff;
-  --ring: rgba(139, 21, 56, 0.5);
-  --chart-1: #8b1538;
-  --chart-2: #ec4899;
-  --chart-3: #4b5563;
-  --chart-4: #f5f5f0;
-  --chart-5: #ffffff;
+  --ring: rgba(244, 182, 79, 0.55);
+  --chart-1: #f4b64f;
+  --chart-2: #8f1732;
+  --chart-3: #9d452b;
+  --chart-4: #4b142e;
+  --chart-5: #fff0cf;
   --radius: 0.5rem;
-  --sidebar: #8b1538; /* wine sidebar */
+  --sidebar: #4b142e;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #4b5563;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ec4899;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #d1d5db;
-  --sidebar-ring: rgba(139, 21, 56, 0.5);
+  --sidebar-primary: #f4b64f;
+  --sidebar-primary-foreground: #4b142e;
+  --sidebar-accent: #f4b64f;
+  --sidebar-accent-foreground: #4b142e;
+  --sidebar-border: #6c2444;
+  --sidebar-ring: rgba(244, 182, 79, 0.55);
 }
 
 .dark {
@@ -122,6 +121,18 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-size: 16px;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font-size: 0.98rem;
+  }
+
+  label {
+    font-weight: 600;
   }
   
   /* Smooth transitions for page changes */

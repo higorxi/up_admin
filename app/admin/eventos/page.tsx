@@ -13,8 +13,19 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Search, Plus, Calendar, RefreshCw } from "lucide-react"
 import { Event, CreateEventData } from "@/lib/services/events"
+import { toast } from "@/hooks/use-toast"
 
 export default function EventsPage() {
   const { 
@@ -24,6 +35,7 @@ export default function EventsPage() {
     refetch, 
     create, 
     update,
+    deleteEvent,
     toggleEvent,
     checkInAttendee,
     getEventParticipants 
@@ -33,6 +45,8 @@ export default function EventsPage() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
   const [isAttendeesModalOpen, setIsAttendeesModalOpen] = useState(false)
   const [formMode, setFormMode] = useState<"create" | "edit">("create")
+  const [eventToDelete, setEventToDelete] = useState<Event | null>(null)
+  const [actionLoading, setActionLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [typeFilter, setTypeFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -50,10 +64,22 @@ export default function EventsPage() {
   }
 
   const handleToggleEvent = async (event: Event) => {
+    const action = event.isActive ? "desativar" : "ativar"
+    if (!window.confirm(`Tem certeza que deseja ${action} este evento?`)) return
+
     try {
       await toggleEvent(event.id)
+      toast({
+        title: event.isActive ? "Evento desativado" : "Evento ativado",
+        description: "O status do evento foi atualizado.",
+      })
     } catch (error) {
       console.error("Erro ao alternar status do evento:", error)
+      toast({
+        title: "Erro ao alterar evento",
+        description: error instanceof Error ? error.message : "Não foi possível alterar o status.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -77,6 +103,28 @@ export default function EventsPage() {
       setIsFormModalOpen(false)
     } catch (error) {
       console.error("Erro ao salvar evento:", error)
+    }
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!eventToDelete) return
+
+    setActionLoading(true)
+    try {
+      await deleteEvent(eventToDelete.id)
+      toast({
+        title: "Evento excluído",
+        description: "O evento e inscrições sem check-in foram removidos.",
+      })
+      setEventToDelete(null)
+    } catch (error) {
+      toast({
+        title: "Erro ao excluir evento",
+        description: error instanceof Error ? error.message : "Não foi possível excluir o evento.",
+        variant: "destructive",
+      })
+    } finally {
+      setActionLoading(false)
     }
   }
 
@@ -262,6 +310,7 @@ export default function EventsPage() {
                 onToggle={handleToggleEvent}
                 onViewDetails={handleViewDetails}
                 onManageAttendees={handleManageAttendees}
+                onDelete={setEventToDelete}
               />
             ))
           )}
@@ -296,6 +345,28 @@ export default function EventsPage() {
           onCheckIn={handleCheckIn}
           getParticipants={getEventParticipants}
         />
+
+        <AlertDialog open={!!eventToDelete} onOpenChange={(open) => !open && setEventToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir evento?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta ação remove o evento {eventToDelete?.name} e as inscrições vinculadas que ainda não tiveram check-in.
+                Eventos com presença confirmada serão bloqueados pelo sistema para preservar o histórico de pontos.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteConfirm}
+                disabled={actionLoading}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </AdminPageLayout>
     </AdminLayout>
   )

@@ -1,12 +1,14 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { AdminLayout } from "@/components/admin-layout"
 import { AdminPageLayout } from "@/components/admin-page-layout"
 import { useProfessionals } from "@/hooks/use-professionals"
 import {
   ProfessionalLevel,
-  GetProfessionalsParams
+  GetProfessionalsParams,
+  CRMProfessional,
+  UpdateCRMProfessionalPayload
 } from "@/lib/services/professionals"
 import {
   Table,
@@ -26,6 +28,26 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog"
 import {
   Pagination,
   PaginationContent,
@@ -42,10 +64,15 @@ import {
   Linkedin,
   Phone,
   ArrowUpDown,
-  FilterX
+  FilterX,
+  Edit,
+  ShieldCheck,
+  ShieldX,
+  Trash2
 } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { toast } from "@/hooks/use-toast"
 
 export default function CRMProfessionalsPage() {
   const [params, setParams] = useState<GetProfessionalsParams>({
@@ -56,8 +83,21 @@ export default function CRMProfessionalsPage() {
   })
 
   const [searchTerm, setSearchTerm] = useState("")
+  const [professionalToEdit, setProfessionalToEdit] = useState<CRMProfessional | null>(null)
+  const [professionalToDelete, setProfessionalToDelete] = useState<CRMProfessional | null>(null)
+  const [editPayload, setEditPayload] = useState<UpdateCRMProfessionalPayload>({})
+  const [actionLoading, setActionLoading] = useState(false)
 
-  const { professionals, professions, meta, loading, error } = useProfessionals(params)
+  const {
+    professionals,
+    professions,
+    meta,
+    loading,
+    error,
+    update,
+    toggleVerification,
+    deleteProfessional
+  } = useProfessionals(params)
 
   // Debounced search
   useEffect(() => {
@@ -108,6 +148,86 @@ export default function CRMProfessionalsPage() {
       orderBy: "createdAt",
       order: "desc"
     })
+  }
+
+  const openEditDialog = (professional: CRMProfessional) => {
+    setProfessionalToEdit(professional)
+    setEditPayload({
+      name: professional.name,
+      phone: professional.phone,
+      document: professional.document ?? "",
+      professionId: professional.profession?.id ?? professional.professionId ?? undefined,
+      level: professional.level,
+      verified: professional.verified,
+      featured: professional.featured ?? false,
+      description: professional.description ?? "",
+      experience: professional.experience ?? "",
+      officeName: professional.officeName ?? "",
+    })
+  }
+
+  const handleEditSave = async () => {
+    if (!professionalToEdit) return
+
+    setActionLoading(true)
+    try {
+      await update(professionalToEdit.id, editPayload)
+      toast({
+        title: "Profissional atualizado",
+        description: "Os dados administrativos foram salvos com sucesso.",
+      })
+      setProfessionalToEdit(null)
+      setEditPayload({})
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar",
+        description: error instanceof Error ? error.message : "Não foi possível atualizar o profissional.",
+        variant: "destructive",
+      })
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleToggleVerification = async (professional: CRMProfessional) => {
+    setActionLoading(true)
+    try {
+      await toggleVerification(professional.id)
+      toast({
+        title: professional.verified ? "Verificação removida" : "Profissional verificado",
+        description: "O status de verificação foi atualizado.",
+      })
+    } catch (error) {
+      toast({
+        title: "Erro ao alterar verificação",
+        description: error instanceof Error ? error.message : "Não foi possível alterar o status.",
+        variant: "destructive",
+      })
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!professionalToDelete) return
+
+    setActionLoading(true)
+    try {
+      await deleteProfessional(professionalToDelete.id)
+      toast({
+        title: "Profissional desativado",
+        description: "O usuário vinculado foi desativado e saiu da listagem do CRM.",
+      })
+      setProfessionalToDelete(null)
+    } catch (error) {
+      toast({
+        title: "Erro ao desativar",
+        description: error instanceof Error ? error.message : "Não foi possível desativar o profissional.",
+        variant: "destructive",
+      })
+    } finally {
+      setActionLoading(false)
+    }
   }
 
   const getLevelBadge = (level: ProfessionalLevel) => {
@@ -289,18 +409,19 @@ export default function CRMProfessionalsPage() {
                       Cadastro <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center">
+                    <TableCell colSpan={9} className="h-24 text-center">
                       Carregando profissionais...
                     </TableCell>
                   </TableRow>
                 ) : professionals.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center">
+                    <TableCell colSpan={9} className="h-24 text-center">
                       Nenhum profissional encontrado.
                     </TableCell>
                   </TableRow>
@@ -310,32 +431,32 @@ export default function CRMProfessionalsPage() {
                       <TableCell className="font-medium whitespace-nowrap">
                         <div className="flex flex-col">
                           <span>{professional.name}</span>
-                          <span className="text-xs text-muted-foreground">{professional.document}</span>
+                          <span className="text-xs text-muted-foreground">{professional.document || "Documento não informado"}</span>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1 text-sm">
-                          <span className="flex items-center gap-1 truncate max-w-[150px]" title={professional.email}>
-                            {professional.email}
+                          <span className="flex items-center gap-1 truncate max-w-[150px]" title={professional.user?.email}>
+                            {professional.user?.email || "Email não informado"}
                           </span>
                           <span className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
                             <Phone className="h-3 w-3" /> {professional.phone}
                           </span>
                           <div className="flex gap-2 mt-1">
-                            {professional.socialMedia?.instagram && (
-                              <a href={professional.socialMedia.instagram} target="_blank" rel="noopener noreferrer">
+                            {professional.social?.instagram && (
+                              <a href={professional.social.instagram} target="_blank" rel="noopener noreferrer">
                                 <Instagram className="h-3.5 w-3.5 text-muted-foreground hover:text-pink-600 transition-colors" />
                               </a>
                             )}
-                            {professional.socialMedia?.linkedin && (
-                              <a href={professional.socialMedia.linkedin} target="_blank" rel="noopener noreferrer">
+                            {professional.social?.linkedin && (
+                              <a href={professional.social.linkedin} target="_blank" rel="noopener noreferrer">
                                 <Linkedin className="h-3.5 w-3.5 text-muted-foreground hover:text-blue-600 transition-colors" />
                               </a>
                             )}
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">{professional.profession.name}</TableCell>
+                      <TableCell className="whitespace-nowrap">{professional.profession?.name || "Sem profissão"}</TableCell>
                       <TableCell>{getLevelBadge(professional.level)}</TableCell>
                       <TableCell>{professional.points}</TableCell>
                       <TableCell>
@@ -369,6 +490,36 @@ export default function CRMProfessionalsPage() {
                       </TableCell>
                       <TableCell className="text-sm whitespace-nowrap">
                         {format(new Date(professional.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => openEditDialog(professional)}
+                            title="Editar dados"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleToggleVerification(professional)}
+                            disabled={actionLoading}
+                            title={professional.verified ? "Remover verificação" : "Verificar profissional"}
+                          >
+                            {professional.verified ? <ShieldX className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setProfessionalToDelete(professional)}
+                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            title="Desativar profissional"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -405,6 +556,147 @@ export default function CRMProfessionalsPage() {
             </Pagination>
           </div>
         )}
+
+        <Dialog open={!!professionalToEdit} onOpenChange={(open) => !open && setProfessionalToEdit(null)}>
+          <DialogContent className="w-[min(1040px,calc(100vw-32px))] max-w-none max-h-[90vh] overflow-y-auto p-0">
+            <DialogHeader>
+              <div className="border-b bg-muted/40 px-6 py-5">
+                <DialogTitle className="text-2xl">Editar Profissional</DialogTitle>
+                <p className="mt-1 text-base text-muted-foreground">Ajuste dados administrativos, verificação, nível e destaque.</p>
+              </div>
+            </DialogHeader>
+            <div className="grid gap-4 px-6 py-5 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="professional-name">Nome</Label>
+                <Input
+                  id="professional-name"
+                  value={editPayload.name ?? ""}
+                  onChange={(event) => setEditPayload((prev) => ({ ...prev, name: event.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="professional-phone">Telefone</Label>
+                <Input
+                  id="professional-phone"
+                  value={editPayload.phone ?? ""}
+                  onChange={(event) => setEditPayload((prev) => ({ ...prev, phone: event.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="professional-document">Documento</Label>
+                <Input
+                  id="professional-document"
+                  value={editPayload.document ?? ""}
+                  onChange={(event) => setEditPayload((prev) => ({ ...prev, document: event.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Profissão</Label>
+                <Select
+                  value={editPayload.professionId ?? ""}
+                  onValueChange={(value) => setEditPayload((prev) => ({ ...prev, professionId: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma profissão" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {professions.map((profession) => (
+                      <SelectItem key={profession.id} value={profession.id}>
+                        {profession.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Nível</Label>
+                <Select
+                  value={editPayload.level}
+                  onValueChange={(value) => setEditPayload((prev) => ({ ...prev, level: value as ProfessionalLevel }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Nível" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="BRONZE">Bronze</SelectItem>
+                    <SelectItem value="SILVER">Silver</SelectItem>
+                    <SelectItem value="GOLD">Gold</SelectItem>
+                    <SelectItem value="PLATINUM">Platinum</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center justify-between rounded-md border p-3">
+                <Label htmlFor="professional-verified">Verificado</Label>
+                <Switch
+                  id="professional-verified"
+                  checked={editPayload.verified ?? false}
+                  onCheckedChange={(checked) => setEditPayload((prev) => ({ ...prev, verified: checked }))}
+                />
+              </div>
+              <div className="flex items-center justify-between rounded-md border p-3">
+                <Label htmlFor="professional-featured">Destaque</Label>
+                <Switch
+                  id="professional-featured"
+                  checked={editPayload.featured ?? false}
+                  onCheckedChange={(checked) => setEditPayload((prev) => ({ ...prev, featured: checked }))}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="professional-office">Nome do escritório</Label>
+                <Input
+                  id="professional-office"
+                  value={editPayload.officeName ?? ""}
+                  onChange={(event) => setEditPayload((prev) => ({ ...prev, officeName: event.target.value }))}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="professional-description">Descrição</Label>
+                <Textarea
+                  id="professional-description"
+                  value={editPayload.description ?? ""}
+                  onChange={(event) => setEditPayload((prev) => ({ ...prev, description: event.target.value }))}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="professional-experience">Experiência</Label>
+                <Textarea
+                  id="professional-experience"
+                  value={editPayload.experience ?? ""}
+                  onChange={(event) => setEditPayload((prev) => ({ ...prev, experience: event.target.value }))}
+                />
+              </div>
+            </div>
+            <DialogFooter className="border-t bg-background px-6 py-4">
+              <Button variant="outline" onClick={() => setProfessionalToEdit(null)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleEditSave} disabled={actionLoading}>
+                Salvar alterações
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <AlertDialog open={!!professionalToDelete} onOpenChange={(open) => !open && setProfessionalToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Desativar profissional?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta ação desativa o usuário vinculado a {professionalToDelete?.name} e remove o profissional da listagem do CRM.
+                O histórico de eventos, pontos e resgates permanece preservado.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteConfirm}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Desativar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </AdminPageLayout>
     </AdminLayout>
   )

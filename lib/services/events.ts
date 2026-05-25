@@ -40,6 +40,7 @@ export interface EventRegistration {
     id: string
     name: string
     email: string
+    phone?: string | null
     avatar?: string
   }
 }
@@ -87,6 +88,10 @@ export class EventsService {
 
   static async toggleEvent(eventId: string): Promise<Event> {
     return ApiService.patch<Event>(`/events/${eventId}/toggle`, {})
+  }
+
+  static async delete(eventId: string): Promise<void> {
+    return ApiService.delete<void>(`/events/${eventId}`)
   }
 
   static async checkInAttendee(eventId: string, professionalId: string): Promise<EventRegistration> {

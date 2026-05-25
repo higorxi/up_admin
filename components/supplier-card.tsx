@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Check, Eye, Phone, MapPin, Building, FileText, X, Sparkles, Calendar, Ban, Trash2 } from "lucide-react"
+import { Check, Eye, Phone, MapPin, Building, FileText, X, Sparkles, Calendar, Ban, Trash2, Edit } from "lucide-react"
 import {
   canSupplierReceiveTrial,
   getSupplierHasActivePlan,
@@ -22,6 +22,8 @@ interface SupplierCardProps {
   onGrantTrial?: (supplier: Supplier) => void
   onCancelTrial?: (id: string) => void | Promise<void>
   onViewDetails: (supplier: Supplier) => void
+  onEdit?: (supplier: Supplier) => void
+  onManageStore?: (supplier: Supplier) => void
   onDelete?: (id: string) => void
 }
 
@@ -32,6 +34,8 @@ export function SupplierCard({
   onGrantTrial,
   onCancelTrial,
   onViewDetails,
+  onEdit,
+  onManageStore,
   onDelete,
 }: SupplierCardProps) {
   const hasTrial = getSupplierHasTrial(supplier)
@@ -193,6 +197,28 @@ export function SupplierCard({
             <Eye className="h-4 w-4 mr-2" />
             Detalhes
           </Button>
+          {onEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onEdit(supplier)}
+              className="px-2.5 hover:bg-muted/50 transition-colors"
+              title="Editar lojista"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          )}
+          {onManageStore && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onManageStore(supplier)}
+              className="px-2.5 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+              title="Gerenciar loja e produtos"
+            >
+              <Building className="h-4 w-4" />
+            </Button>
+          )}
           {supplier.status === "PENDING" && (
             <>
               <Button

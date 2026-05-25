@@ -4,46 +4,18 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Edit, Trash2, Eye, Mail, Phone, MapPin, MessageCircle, Instagram, Linkedin, Calendar } from "lucide-react"
-
-interface Professional {
-  id: string
-  name: string
-  profession: string
-  description: string
-  phone: string
-  email: string | null
-  profileImage: string | null
-  isActive: boolean
-  address: {
-    id: string
-    state: string
-    city: string
-    district: string
-    street: string
-    complement: string | null
-    number: string | null
-    zipCode: string
-  } | null
-  socialMedia: {
-    id: string
-    linkedin: string | null
-    instagram: string | null
-    whatsapp: string | null
-  } | null
-  availableDays: any[]
-  createdAt: string
-  updatedAt: string
-}
+import { Edit, Trash2, Eye, Mail, Phone, MapPin, MessageCircle, Instagram, Linkedin, Power } from "lucide-react"
+import type { RecommendedProfessional } from "@/lib/services/recommended-professional"
 
 interface ProfessionalCardProps {
-  professional: Professional
-  onEdit: (professional: Professional) => void
+  professional: RecommendedProfessional
+  onEdit: (professional: RecommendedProfessional) => void
   onDelete: (id: string) => void
-  onViewDetails: (professional: Professional) => void
+  onToggleStatus?: (id: string) => void
+  onViewDetails: (professional: RecommendedProfessional) => void
 }
 
-export function ProfessionalCard({ professional, onEdit, onDelete, onViewDetails }: ProfessionalCardProps) {
+export function ProfessionalCard({ professional, onEdit, onDelete, onToggleStatus, onViewDetails }: ProfessionalCardProps) {
   const formatPhone = (phone: string) => {
     const cleanPhone = phone.replace(/\D/g, '')
     if (cleanPhone.length === 11) {
@@ -193,6 +165,16 @@ export function ProfessionalCard({ professional, onEdit, onDelete, onViewDetails
             >
               <Edit className="h-4 w-4" />
             </Button>
+            {onToggleStatus && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onToggleStatus(professional.id)}
+                className={professional.isActive ? "hover:bg-destructive/10 hover:text-destructive" : "hover:bg-green-50 hover:text-green-700"}
+              >
+                <Power className="h-4 w-4" />
+              </Button>
+            )}
             <Button 
               variant="outline" 
               size="sm" 
