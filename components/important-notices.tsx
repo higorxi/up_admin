@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { useDashboardStatistics } from "@/hooks/use-dashboard"
-import { AlertTriangle, CheckCircle2, Flag, Gift, UserCheck } from "lucide-react"
+import { CheckCircle2, Flag, Gift, Sparkles, UserCheck } from "lucide-react"
 
 export function ImportantNotices() {
   const { stats, loading, error } = useDashboardStatistics()
@@ -40,6 +40,15 @@ export function ImportantNotices() {
       href: "/admin/lojista-parceiro",
       action: "Ver lojistas",
       icon: UserCheck,
+      tone: "border-amber-200 bg-amber-50 text-amber-900",
+    },
+    {
+      show: stats.pendingWellnessPartners > 0,
+      title: `${stats.pendingWellnessPartners} wellness pendente${stats.pendingWellnessPartners === 1 ? "" : "s"}`,
+      description: "Aprove ou rejeite solicitações de parceiros wellness.",
+      href: "/admin/wellness",
+      action: "Ver wellness",
+      icon: Sparkles,
       tone: "border-amber-200 bg-amber-50 text-amber-900",
     },
     {

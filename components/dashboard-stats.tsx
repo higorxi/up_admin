@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import { useDashboardStatistics } from "@/hooks/use-dashboard"
-import { Users, UserCheck, Calendar, Gift, Clock, Briefcase, Store, Coins, Tags, Flag } from "lucide-react"
+import { Users, Calendar, Gift, Clock, Briefcase, Store, Coins, Tags, Flag, Sparkles } from "lucide-react"
 
 export function DashboardStats() {
   const { stats, loading, error } = useDashboardStatistics()
@@ -27,21 +27,30 @@ export function DashboardStats() {
       description: "Ativos"
     },
     {
-      title: "Lojista Parceiro Ativos",
+      title: "Lojistas Parceiros",
       value: stats ? stats.totalPartnerSuppliers.toLocaleString() : "...",
-      icon: UserCheck,
+      icon: Store,
       gradient: "from-green-500 to-green-600",
       lightBg: "bg-green-50",
       iconColor: "text-green-600",
-      description: "Parceiros"
+      description: `${stats?.pendingPartnerSuppliers ?? 0} pendente(s)`
+    },
+    {
+      title: "Parceiros Wellness",
+      value: stats ? stats.totalWellnessPartners.toLocaleString() : "...",
+      icon: Sparkles,
+      gradient: "from-amber-500 to-amber-600",
+      lightBg: "bg-amber-50",
+      iconColor: "text-amber-700",
+      description: `${stats?.pendingWellnessPartners ?? 0} pendente(s)`
     },
     {
       title: "Eventos Este Mês",
       value: stats ? stats.totalEventsThisMonth.toString() : "...",
       icon: Calendar,
-      gradient: "from-amber-500 to-amber-600",
-      lightBg: "bg-amber-50",
-      iconColor: "text-amber-600",
+      gradient: "from-orange-500 to-orange-600",
+      lightBg: "bg-orange-50",
+      iconColor: "text-orange-600",
       description: "Neste mês"
     },
     {
@@ -122,7 +131,7 @@ export function DashboardStats() {
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
       {loading
-        ? Array.from({ length: 11 }).map((_, i) => (
+        ? Array.from({ length: 12 }).map((_, i) => (
             <Card
               key={i}
               className="overflow-hidden border shadow-sm"

@@ -5,7 +5,7 @@ import { RecentActivity } from "@/components/recent-activity";
 import { ImportantNotices } from "@/components/important-notices";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BriefcaseBusiness, Calendar, Flag, MessageSquareText, Plus, Tags, TicketCheck, UserCheck, Users } from "lucide-react";
+import { BriefcaseBusiness, Calendar, Flag, MessageSquareText, Plus, Sparkles, Tags, TicketCheck, UserCheck, Users } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminDashboard() {
@@ -76,6 +76,24 @@ export default function AdminDashboard() {
                   </div>
                   <div className="text-left flex-1">
                     <div className="font-medium">Aprovar Lojista</div>
+                    <div className="text-xs text-muted-foreground">
+                      Ver solicitações
+                    </div>
+                  </div>
+                </Link>
+              </Button>
+
+              <Button
+                asChild
+                variant="outline"
+                className="w-full justify-start gap-3 h-12 bg-transparent hover:bg-muted/50 transition-colors"
+              >
+                <Link href="/admin/wellness">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-medium">Aprovar Wellness</div>
                     <div className="text-xs text-muted-foreground">
                       Ver solicitações
                     </div>

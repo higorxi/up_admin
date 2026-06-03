@@ -252,6 +252,10 @@ export class SuppliersService {
     return ApiService.patch(`/cancel-trial/${id}`, {})
   }
 
+  static async updatePointsLimit(id: string, payload: { pointsLimit: number }): Promise<Supplier> {
+    return ApiService.patch<Supplier>(`/partner-suppliers/${id}/points-limit`, payload)
+  }
+
   static async delete(id: string): Promise<void> {
     return ApiService.delete(`/partner-supplier/${id}`)
   }

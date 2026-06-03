@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { LayoutDashboard, Users, UserCheck, Calendar, Gift, ChevronLeft, Bell, LogOut, Settings, TicketCheck, BriefcaseBusiness, MessageSquareText, Tags, Flag } from "lucide-react"
+import { LayoutDashboard, Users, UserCheck, Calendar, Gift, ChevronLeft, Bell, LogOut, Settings, TicketCheck, BriefcaseBusiness, MessageSquareText, Tags, Flag, Sparkles } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 
 const navigation = [
@@ -27,6 +27,11 @@ const navigation = [
     name: "Lojista Parceiro",
     href: "/admin/lojista-parceiro",
     icon: UserCheck,
+  },
+  {
+    name: "Parceiros Wellness",
+    href: "/admin/wellness",
+    icon: Sparkles,
   },
   {
     name: "Prestadores de Serviços",
