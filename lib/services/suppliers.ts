@@ -32,6 +32,7 @@ export interface Supplier {
   tradeName: string
   companyName: string
   document: string
+  documentType?: "CPF" | "CNPJ"
   stateRegistration: string
   contact: string
   type?: "SUPPLIER" | "WELLNESS"

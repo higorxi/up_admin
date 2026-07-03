@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Check, Mail, Phone, MapPin, Calendar, Building, FileText, Store, Globe, Clock, X, User, Sparkles, Ban } from "lucide-react"
 import { useState } from "react"
 import { canSupplierReceiveTrial, getSupplierHasTrial, getSupplierTrialEndsAt, type Supplier } from "@/lib/services/suppliers"
+import { documentLabel } from "@/lib/document"
 
 interface SupplierDetailsModalProps {
   supplier: Supplier | null
@@ -138,7 +139,7 @@ export function SupplierDetailsModal({
                 </div>
                 <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
                   <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <span className="truncate">CNPJ: {supplier.document}</span>
+                  <span className="truncate">{documentLabel(supplier.documentType)}: {supplier.document}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm p-3 bg-background rounded-lg border border-border/50">
                   <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />

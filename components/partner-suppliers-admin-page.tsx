@@ -23,6 +23,7 @@ import { CalendarDays, Package, Search, Store, UserCheck, AlertCircle, RefreshCw
 import { useSuppliers } from "@/hooks/use-suppliers"
 import { toast } from "@/hooks/use-toast"
 import { getSupplierPlanType, type GrantTrialPayload, TrialDurationUnit, PlanType, type UpdateSupplierPayload } from "@/lib/services/suppliers"
+import { documentLabel, nameLabel } from "@/lib/document"
 
 type PartnerTypeFilter = "SUPPLIER" | "WELLNESS"
 
@@ -469,7 +470,7 @@ export function SuppliersPageContent({ partnerType = "SUPPLIER" }: SuppliersPage
                 onEdit={handleEditClick}
                 onManageStore={setSupplierToManageStore}
                 onDelete={(id) => handleDeleteClick(id, supplier.tradeName)}
-                onManagePointsLimit={handleManagePointsLimitClick}
+                onManagePointsLimit={partnerType === "SUPPLIER" ? handleManagePointsLimitClick : undefined}
               />
             ))
           )}
@@ -583,7 +584,7 @@ export function SuppliersPageContent({ partnerType = "SUPPLIER" }: SuppliersPage
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="supplier-company-name">Razão social</Label>
+                <Label htmlFor="supplier-company-name">{nameLabel(supplierToEdit?.documentType)}</Label>
                 <Input
                   id="supplier-company-name"
                   value={editPayload.companyName ?? ""}
@@ -591,21 +592,23 @@ export function SuppliersPageContent({ partnerType = "SUPPLIER" }: SuppliersPage
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="supplier-document">Documento</Label>
+                <Label htmlFor="supplier-document">{documentLabel(supplierToEdit?.documentType)}</Label>
                 <Input
                   id="supplier-document"
                   value={editPayload.document ?? ""}
                   onChange={(event) => setEditPayload((prev) => ({ ...prev, document: event.target.value }))}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="supplier-state-registration">Inscrição estadual</Label>
-                <Input
-                  id="supplier-state-registration"
-                  value={editPayload.stateRegistration ?? ""}
-                  onChange={(event) => setEditPayload((prev) => ({ ...prev, stateRegistration: event.target.value }))}
-                />
-              </div>
+              {supplierToEdit?.documentType !== "CPF" && (
+                <div className="space-y-2">
+                  <Label htmlFor="supplier-state-registration">Inscrição estadual</Label>
+                  <Input
+                    id="supplier-state-registration"
+                    value={editPayload.stateRegistration ?? ""}
+                    onChange={(event) => setEditPayload((prev) => ({ ...prev, stateRegistration: event.target.value }))}
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="supplier-contact">Contato</Label>
                 <Input
