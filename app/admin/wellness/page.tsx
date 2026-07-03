@@ -1,7 +1,7 @@
 "use client"
 
-import { SuppliersPageContent } from "@/components/partner-suppliers-admin-page"
+import { WellnessAdminPage } from "@/components/wellness-admin-page"
 
 export default function WellnessPartnersAdminPage() {
-  return <SuppliersPageContent partnerType="WELLNESS" />
+  return <WellnessAdminPage />
 }
