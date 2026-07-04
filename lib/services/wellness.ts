@@ -39,9 +39,21 @@ export interface Wellness {
   } | null
 }
 
+export interface UpdateWellnessPayload {
+  name?: string
+  document?: string
+  contact?: string
+  description?: string
+  whatsappMessage?: string
+}
+
 export class WellnessService {
   static async getAll(): Promise<Wellness[]> {
     return ApiService.get<Wellness[]>("/wellness")
+  }
+
+  static async update(id: string, payload: UpdateWellnessPayload): Promise<Wellness> {
+    return ApiService.patch<Wellness>(`/wellness/${id}`, payload)
   }
 
   static async approve(id: string): Promise<void> {

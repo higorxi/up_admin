@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { WellnessService, type Wellness } from "@/lib/services/wellness"
+import { WellnessService, type Wellness, type UpdateWellnessPayload } from "@/lib/services/wellness"
 import { useAuth } from "./use-auth"
 
 interface UseWellnessReturn {
@@ -12,6 +12,7 @@ interface UseWellnessReturn {
   approve: (id: string) => Promise<void>
   reject: (id: string, reason: string) => Promise<void>
   deleteWellness: (id: string) => Promise<void>
+  updateWellness: (id: string, payload: UpdateWellnessPayload) => Promise<void>
 }
 
 export function useWellness(): UseWellnessReturn {
@@ -53,6 +54,11 @@ export function useWellness(): UseWellnessReturn {
     setWellnessList((prev) => prev.filter((w) => w.id !== id))
   }
 
+  const updateWellness = async (id: string, payload: UpdateWellnessPayload) => {
+    const updated = await WellnessService.update(id, payload)
+    setWellnessList((prev) => prev.map((w) => (w.id === id ? { ...w, ...updated } : w)))
+  }
+
   useEffect(() => {
     fetchWellness()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -66,5 +72,6 @@ export function useWellness(): UseWellnessReturn {
     approve,
     reject,
     deleteWellness,
+    updateWellness,
   }
 }

@@ -6,7 +6,11 @@ import { AdminPageLayout } from "@/components/admin-page-layout"
 import { RejectSupplierDialog } from "@/components/reject-supplier-dialog"
 import { DeleteSupplierDialog } from "@/components/delete-supplier-dialog"
 import { CardSkeleton } from "@/components/card-skeleton"
+import { AdminDialog } from "@/components/admin-dialog"
 import { Button } from "@/components/ui/button"
+import { DialogFooter } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -17,6 +21,7 @@ import {
   AlertCircle,
   Check,
   Clock,
+  Edit,
   Fingerprint,
   Mail,
   MapPin,
@@ -30,7 +35,7 @@ import {
 } from "lucide-react"
 import { useWellness } from "@/hooks/use-wellness"
 import { toast } from "@/hooks/use-toast"
-import type { Wellness } from "@/lib/services/wellness"
+import type { UpdateWellnessPayload, Wellness } from "@/lib/services/wellness"
 
 const formatPrice = (price?: number | null) =>
   price != null
@@ -61,12 +66,14 @@ function statusBadge(status: Wellness["status"]) {
 }
 
 export function WellnessAdminPage() {
-  const { wellnessList, loading, error, refetch, approve, reject, deleteWellness } = useWellness()
+  const { wellnessList, loading, error, refetch, approve, reject, deleteWellness, updateWellness } = useWellness()
 
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [toReject, setToReject] = useState<{ id: string; name: string } | null>(null)
   const [toDelete, setToDelete] = useState<{ id: string; name: string } | null>(null)
+  const [toEdit, setToEdit] = useState<Wellness | null>(null)
+  const [editPayload, setEditPayload] = useState<UpdateWellnessPayload>({})
 
   const filtered = wellnessList.filter((w) => {
     const term = searchTerm.toLowerCase()
@@ -113,6 +120,36 @@ export function WellnessAdminPage() {
         variant: "destructive",
       })
       throw error
+    }
+  }
+
+  const handleEditClick = (wellness: Wellness) => {
+    setToEdit(wellness)
+    setEditPayload({
+      name: wellness.name,
+      document: wellness.document,
+      contact: wellness.contact ?? "",
+      description: wellness.description ?? "",
+      whatsappMessage: wellness.whatsappMessage ?? "",
+    })
+  }
+
+  const handleEditConfirm = async () => {
+    if (!toEdit) return
+    try {
+      await updateWellness(toEdit.id, editPayload)
+      toast({
+        title: "Wellness atualizado",
+        description: "Os dados cadastrais do parceiro wellness foram salvos com sucesso.",
+      })
+      setToEdit(null)
+      setEditPayload({})
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar",
+        description: error instanceof Error ? error.message : "Não foi possível atualizar o parceiro wellness.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -297,6 +334,9 @@ export function WellnessAdminPage() {
                         </Button>
                       </>
                     )}
+                    <Button size="sm" variant="outline" onClick={() => handleEditClick(wellness)}>
+                      <Edit className="h-3.5 w-3.5" />
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
@@ -310,6 +350,65 @@ export function WellnessAdminPage() {
             ))
           )}
         </div>
+
+        <AdminDialog
+          open={!!toEdit}
+          onOpenChange={(open) => !open && setToEdit(null)}
+          title="Editar Parceiro Wellness"
+          description="Atualize os dados do negócio."
+          icon={<Edit className="h-6 w-6 flex-shrink-0" />}
+          footer={
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setToEdit(null)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleEditConfirm}>Salvar alterações</Button>
+            </DialogFooter>
+          }
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="wellness-name">Nome do negócio</Label>
+              <Input
+                id="wellness-name"
+                value={editPayload.name ?? ""}
+                onChange={(event) => setEditPayload((prev) => ({ ...prev, name: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="wellness-document">CPF (do responsável/MEI)</Label>
+              <Input
+                id="wellness-document"
+                value={editPayload.document ?? ""}
+                onChange={(event) => setEditPayload((prev) => ({ ...prev, document: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="wellness-contact">Contato (WhatsApp)</Label>
+              <Input
+                id="wellness-contact"
+                value={editPayload.contact ?? ""}
+                onChange={(event) => setEditPayload((prev) => ({ ...prev, contact: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="wellness-wa-message">Mensagem do WhatsApp</Label>
+              <Input
+                id="wellness-wa-message"
+                value={editPayload.whatsappMessage ?? ""}
+                onChange={(event) => setEditPayload((prev) => ({ ...prev, whatsappMessage: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="wellness-description">Descrição do negócio</Label>
+              <Textarea
+                id="wellness-description"
+                value={editPayload.description ?? ""}
+                onChange={(event) => setEditPayload((prev) => ({ ...prev, description: event.target.value }))}
+              />
+            </div>
+          </div>
+        </AdminDialog>
 
         <RejectSupplierDialog
           isOpen={!!toReject}
