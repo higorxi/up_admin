@@ -128,6 +128,7 @@ export function WellnessAdminPage() {
     setEditPayload({
       name: wellness.name,
       document: wellness.document,
+      documentType: wellness.documentType ?? "CPF",
       contact: wellness.contact ?? "",
       description: wellness.description ?? "",
       whatsappMessage: wellness.whatsappMessage ?? "",
@@ -176,7 +177,7 @@ export function WellnessAdminPage() {
     <AdminLayout>
       <AdminPageLayout
         title="Parceiros Wellness"
-        description="Gerencie aprovações e cadastros de parceiros wellness (perfil simples: nome, CPF e serviços — sem plano)"
+        description="Gerencie aprovações e cadastros de parceiros wellness (perfil simples: nome, documento e serviços — sem plano)"
       >
         {error && (
           <Alert variant="destructive" className="border-destructive/50">
@@ -278,7 +279,7 @@ export function WellnessAdminPage() {
                   <div className="space-y-1.5 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Fingerprint className="h-3.5 w-3.5 flex-shrink-0" />
-                      <span>CPF: {wellness.document}</span>
+                      <span>{wellness.documentType ?? "CPF"}: {wellness.document}</span>
                     </div>
                     {wellness.contact && (
                       <div className="flex items-center gap-2">
@@ -377,7 +378,26 @@ export function WellnessAdminPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="wellness-document">CPF do responsável</Label>
+              <Label>Tipo de documento</Label>
+              <Select
+                value={editPayload.documentType ?? "CPF"}
+                onValueChange={(value) =>
+                  setEditPayload((prev) => ({ ...prev, documentType: value as "CPF" | "CNPJ" }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CPF">CPF (pessoa física)</SelectItem>
+                  <SelectItem value="CNPJ">CNPJ (empresa)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="wellness-document">
+                {editPayload.documentType === "CNPJ" ? "CNPJ" : "CPF do responsável"}
+              </Label>
               <Input
                 id="wellness-document"
                 value={editPayload.document ?? ""}

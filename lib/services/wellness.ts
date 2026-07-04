@@ -1,6 +1,7 @@
 import { ApiService } from "./api"
 
 export type WellnessStatus = "PENDING" | "APPROVED" | "REJECTED"
+export type DocumentType = "CPF" | "CNPJ"
 
 export interface WellnessOffering {
   id: string
@@ -14,7 +15,8 @@ export interface WellnessOffering {
 export interface Wellness {
   id: string
   name: string
-  document: string // CPF
+  document: string // CPF ou CNPJ conforme documentType
+  documentType: DocumentType
   contact?: string | null
   description?: string | null
   whatsappMessage?: string | null
@@ -44,6 +46,7 @@ export interface Wellness {
 export interface UpdateWellnessPayload {
   name?: string
   document?: string
+  documentType?: DocumentType
   contact?: string
   description?: string
   whatsappMessage?: string
