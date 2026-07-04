@@ -377,7 +377,7 @@ export function WellnessAdminPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="wellness-document">CPF (do responsável/MEI)</Label>
+              <Label htmlFor="wellness-document">CPF do responsável</Label>
               <Input
                 id="wellness-document"
                 value={editPayload.document ?? ""}
