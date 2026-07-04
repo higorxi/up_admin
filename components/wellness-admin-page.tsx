@@ -131,6 +131,7 @@ export function WellnessAdminPage() {
       contact: wellness.contact ?? "",
       description: wellness.description ?? "",
       whatsappMessage: wellness.whatsappMessage ?? "",
+      openingHours: wellness.openingHours ?? "",
     })
   }
 
@@ -397,6 +398,15 @@ export function WellnessAdminPage() {
                 id="wellness-wa-message"
                 value={editPayload.whatsappMessage ?? ""}
                 onChange={(event) => setEditPayload((prev) => ({ ...prev, whatsappMessage: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="wellness-opening-hours">Horário de atendimento</Label>
+              <Input
+                id="wellness-opening-hours"
+                placeholder="Ex: Segunda a sexta: 08:00 - 18:00 | Sábado: 08:00 - 12:00"
+                value={editPayload.openingHours ?? ""}
+                onChange={(event) => setEditPayload((prev) => ({ ...prev, openingHours: event.target.value }))}
               />
             </div>
             <div className="space-y-2 md:col-span-2">

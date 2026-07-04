@@ -18,6 +18,8 @@ export interface Wellness {
   contact?: string | null
   description?: string | null
   whatsappMessage?: string | null
+  logoUrl?: string | null
+  openingHours?: string | null
   status: WellnessStatus
   isDeleted: boolean
   createdAt: string
@@ -45,6 +47,7 @@ export interface UpdateWellnessPayload {
   contact?: string
   description?: string
   whatsappMessage?: string
+  openingHours?: string
 }
 
 export class WellnessService {
