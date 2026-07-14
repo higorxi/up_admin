@@ -415,11 +415,13 @@ export function getPlanInfo(sub: PlanSubscriptionLike | null | undefined): PlanI
   }
 
   const expirable = status === "TRIALING" || (status === "ACTIVE" && isManual)
-  if (expirable && periodEnd && periodEnd.getTime() < Date.now()) {
+  if (status === "EXPIRED" || (expirable && periodEnd && periodEnd.getTime() < Date.now())) {
     return {
       planLabel,
       statusLabel: "Expirado",
-      detail: `Terminou em ${fmt(periodEnd)}. Entre em contato com o parceiro ou inative o acesso.`,
+      detail: periodEnd
+        ? `Terminou em ${fmt(periodEnd)}. Entre em contato com o parceiro ou inative o acesso.`
+        : "Período encerrado. Entre em contato com o parceiro ou inative o acesso.",
       tone: "expired",
       isManual,
     }
