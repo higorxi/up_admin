@@ -25,22 +25,23 @@ const UNIT_OPTIONS: Array<{ value: TrialDurationUnit; label: string }> = [
 ]
 
 const PLAN_OPTIONS: Array<{ value: PlanType; label: string }> = [
+  { value: "TRIAL", label: "Período gratuito (padrão)" },
   { value: "SILVER", label: "Silver" },
   { value: "GOLD", label: "Gold" },
   { value: "PREMIUM", label: "Premium" },
 ]
 
 export function GrantTrialDialog({ isOpen, onClose, onConfirm, supplierName }: GrantTrialDialogProps) {
-  const [duration, setDuration] = useState("7")
-  const [unit, setUnit] = useState<TrialDurationUnit>("days")
-  const [planType, setPlanType] = useState<PlanType>("SILVER")
+  const [duration, setDuration] = useState("3")
+  const [unit, setUnit] = useState<TrialDurationUnit>("months")
+  const [planType, setPlanType] = useState<PlanType>("TRIAL")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
   const resetFields = () => {
-    setDuration("7")
-    setUnit("days")
-    setPlanType("SILVER")
+    setDuration("3")
+    setUnit("months")
+    setPlanType("TRIAL")
     setError("")
   }
 
@@ -82,10 +83,10 @@ export function GrantTrialDialog({ isOpen, onClose, onConfirm, supplierName }: G
       onOpenChange={(open) => {
         if (!open) handleClose()
       }}
-      title="Conceder Trial Manual"
+      title="Conceder Plano"
       description={
         <>
-          Defina período e plano para liberar acesso temporário a{" "}
+          Defina o plano e o período de vigência para{" "}
           <strong className="text-foreground">{supplierName}</strong>.
         </>
       }
@@ -106,7 +107,7 @@ export function GrantTrialDialog({ isOpen, onClose, onConfirm, supplierName }: G
             loadingText="Concedendo..."
             className="shadow-sm"
           >
-            Conceder Trial
+            Conceder Plano
           </Button>
         </DialogFooter>
       }

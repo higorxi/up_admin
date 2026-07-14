@@ -19,6 +19,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   AlertCircle,
+  Ban,
+  Calendar,
   Check,
   Clock,
   Edit,
@@ -28,6 +30,7 @@ import {
   Phone,
   RefreshCw,
   Search,
+  Settings2,
   Sparkles,
   Trash2,
   UserCheck,
@@ -35,7 +38,33 @@ import {
 } from "lucide-react"
 import { useWellness } from "@/hooks/use-wellness"
 import { toast } from "@/hooks/use-toast"
+import { GrantTrialDialog } from "@/components/grant-trial-dialog"
+import { SubscriptionManagerDialog } from "@/components/subscription-manager-dialog"
+import { getPlanInfo, type GrantTrialPayload } from "@/lib/services/suppliers"
 import type { UpdateWellnessPayload, Wellness } from "@/lib/services/wellness"
+
+const PLAN_BOX_STYLES = {
+  active: {
+    box: "rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-1",
+    title: "flex items-center gap-2 text-sm font-medium text-primary",
+    text: "text-xs text-muted-foreground",
+  },
+  expired: {
+    box: "rounded-lg border border-red-300 bg-red-50 p-3 space-y-1",
+    title: "flex items-center gap-2 text-sm font-medium text-red-700",
+    text: "text-xs text-red-600",
+  },
+  canceled: {
+    box: "rounded-lg border border-border/60 bg-muted/30 p-3 space-y-1",
+    title: "flex items-center gap-2 text-sm font-medium text-muted-foreground",
+    text: "text-xs text-muted-foreground",
+  },
+  warning: {
+    box: "rounded-lg border border-amber-300 bg-amber-50 p-3 space-y-1",
+    title: "flex items-center gap-2 text-sm font-medium text-amber-700",
+    text: "text-xs text-amber-700",
+  },
+} as const
 
 const formatPrice = (price?: number | null) =>
   price != null
@@ -66,10 +95,12 @@ function statusBadge(status: Wellness["status"]) {
 }
 
 export function WellnessAdminPage() {
-  const { wellnessList, loading, error, refetch, approve, reject, deleteWellness, updateWellness } = useWellness()
+  const { wellnessList, loading, error, refetch, approve, reject, deleteWellness, updateWellness, grantTrial, cancelTrial } = useWellness()
 
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [toGrantTrial, setToGrantTrial] = useState<{ id: string; name: string } | null>(null)
+  const [toManageSub, setToManageSub] = useState<Wellness | null>(null)
   const [toReject, setToReject] = useState<{ id: string; name: string } | null>(null)
   const [toDelete, setToDelete] = useState<{ id: string; name: string } | null>(null)
   const [toEdit, setToEdit] = useState<Wellness | null>(null)
@@ -82,7 +113,12 @@ export function WellnessAdminPage() {
       w.name.toLowerCase().includes(term) ||
       w.document.includes(term) ||
       (w.user?.email ?? "").toLowerCase().includes(term)
-    const matchesStatus = statusFilter === "all" || w.status === statusFilter
+    const matchesStatus =
+      statusFilter === "all" ||
+      w.status === statusFilter ||
+      (statusFilter === "TRIAL_EXPIRED" &&
+        w.status === "APPROVED" &&
+        getPlanInfo(w.subscription)?.tone === "expired")
     return matchesSearch && matchesStatus
   })
 
@@ -155,6 +191,40 @@ export function WellnessAdminPage() {
     }
   }
 
+  const handleGrantTrialConfirm = async (payload: GrantTrialPayload) => {
+    if (!toGrantTrial) return
+    try {
+      await grantTrial(toGrantTrial.id, payload)
+      toast({
+        title: "Plano concedido",
+        description: `Plano concedido para ${toGrantTrial.name}.`,
+      })
+    } catch (error) {
+      toast({
+        title: "Erro ao conceder plano",
+        description: error instanceof Error ? error.message : "Não foi possível conceder o plano.",
+        variant: "destructive",
+      })
+      throw error
+    }
+  }
+
+  const handleCancelTrial = async (wellness: Wellness) => {
+    try {
+      await cancelTrial(wellness.id)
+      toast({
+        title: "Plano cancelado",
+        description: `O plano de ${wellness.name} foi cancelado.`,
+      })
+    } catch (error) {
+      toast({
+        title: "Erro ao cancelar plano",
+        description: error instanceof Error ? error.message : "Não foi possível cancelar o plano.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const handleDeleteConfirm = async () => {
     if (!toDelete) return
     try {
@@ -177,7 +247,7 @@ export function WellnessAdminPage() {
     <AdminLayout>
       <AdminPageLayout
         title="Parceiros Wellness"
-        description="Gerencie aprovações e cadastros de parceiros wellness (perfil simples: nome, documento e serviços — sem plano)"
+        description="Gerencie aprovações, cadastros e planos dos parceiros wellness"
       >
         {error && (
           <Alert variant="destructive" className="border-destructive/50">
@@ -241,6 +311,7 @@ export function WellnessAdminPage() {
               <SelectItem value="PENDING">Pendentes</SelectItem>
               <SelectItem value="APPROVED">Aprovados</SelectItem>
               <SelectItem value="REJECTED">Rejeitados</SelectItem>
+              <SelectItem value="TRIAL_EXPIRED">Plano expirado</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -303,6 +374,35 @@ export function WellnessAdminPage() {
                     )}
                   </div>
 
+                  {wellness.status === "APPROVED" && (() => {
+                    const planInfo = getPlanInfo(wellness.subscription)
+                    if (!planInfo) return null
+                    const styles = PLAN_BOX_STYLES[planInfo.tone]
+                    return (
+                      <div className={styles.box}>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className={styles.title}>
+                            <Calendar className="h-4 w-4" />
+                            Plano: {planInfo.planLabel} · {planInfo.statusLabel}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 gap-1 px-2.5 text-xs font-medium border-primary/40 text-primary bg-background hover:bg-primary hover:text-primary-foreground shadow-sm"
+                            onClick={() => setToManageSub(wellness)}
+                          >
+                            <Settings2 className="h-3.5 w-3.5" />
+                            Gerenciar
+                          </Button>
+                        </div>
+                        {planInfo.detail && <p className={styles.text}>{planInfo.detail}</p>}
+                        <p className={styles.text}>
+                          Origem: {planInfo.isManual ? "concedido pelo admin" : "assinatura Stripe"}
+                        </p>
+                      </div>
+                    )
+                  })()}
+
                   {wellness.services.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                       {wellness.services.slice(0, 3).map((service) => (
@@ -336,6 +436,37 @@ export function WellnessAdminPage() {
                         </Button>
                       </>
                     )}
+                    {wellness.status === "APPROVED" &&
+                      (() => {
+                        const planInfo = getPlanInfo(wellness.subscription)
+                        const canGrant = !planInfo || planInfo.tone === "expired" || planInfo.tone === "canceled"
+                        const canCancel = !!planInfo && planInfo.tone === "active" && planInfo.isManual
+                        return (
+                          <>
+                            {canGrant && (
+                              <Button
+                                size="sm"
+                                className="flex-1"
+                                onClick={() => setToGrantTrial({ id: wellness.id, name: wellness.name })}
+                              >
+                                <Sparkles className="h-3.5 w-3.5 mr-1" />
+                                Conceder Plano
+                              </Button>
+                            )}
+                            {canCancel && (
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="flex-1"
+                                onClick={() => handleCancelTrial(wellness)}
+                              >
+                                <Ban className="h-3.5 w-3.5 mr-1" />
+                                Cancelar Plano
+                              </Button>
+                            )}
+                          </>
+                        )
+                      })()}
                     <Button size="sm" variant="outline" onClick={() => handleEditClick(wellness)}>
                       <Edit className="h-3.5 w-3.5" />
                     </Button>
@@ -439,6 +570,22 @@ export function WellnessAdminPage() {
             </div>
           </div>
         </AdminDialog>
+
+        <GrantTrialDialog
+          isOpen={!!toGrantTrial}
+          onClose={() => setToGrantTrial(null)}
+          onConfirm={handleGrantTrialConfirm}
+          supplierName={toGrantTrial?.name ?? ""}
+        />
+
+        <SubscriptionManagerDialog
+          isOpen={!!toManageSub}
+          onClose={() => setToManageSub(null)}
+          partnerId={toManageSub?.id ?? ""}
+          partnerName={toManageSub?.name ?? ""}
+          subscription={toManageSub?.subscription ?? null}
+          onChanged={refetch}
+        />
 
         <RejectSupplierDialog
           isOpen={!!toReject}

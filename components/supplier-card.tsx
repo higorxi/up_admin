@@ -4,17 +4,37 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Check, Eye, Phone, MapPin, Building, FileText, X, Sparkles, Calendar, Ban, Trash2, Edit, Coins } from "lucide-react"
+import { Check, Eye, Phone, MapPin, Building, FileText, X, Sparkles, Calendar, Ban, Trash2, Edit, Coins, Settings2 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import {
-  canSupplierReceiveTrial,
-  getSupplierHasActivePlan,
-  getSupplierHasTrial,
-  getSupplierTrialEndsAt,
+  getSupplierPlanInfo,
   getSupplierPlanType,
   type Supplier,
   type PlanType,
 } from "@/lib/services/suppliers"
+
+const PLAN_BOX_STYLES = {
+  active: {
+    box: "rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-1.5",
+    title: "flex items-center gap-2 text-sm font-medium text-primary",
+    text: "text-xs text-muted-foreground",
+  },
+  expired: {
+    box: "rounded-lg border border-red-300 bg-red-50 p-3 space-y-1.5",
+    title: "flex items-center gap-2 text-sm font-medium text-red-700",
+    text: "text-xs text-red-600",
+  },
+  canceled: {
+    box: "rounded-lg border border-border/60 bg-muted/30 p-3 space-y-1.5",
+    title: "flex items-center gap-2 text-sm font-medium text-muted-foreground",
+    text: "text-xs text-muted-foreground",
+  },
+  warning: {
+    box: "rounded-lg border border-amber-300 bg-amber-50 p-3 space-y-1.5",
+    title: "flex items-center gap-2 text-sm font-medium text-amber-700",
+    text: "text-xs text-amber-700",
+  },
+} as const
 
 interface SupplierCardProps {
   supplier: Supplier
@@ -27,6 +47,7 @@ interface SupplierCardProps {
   onManageStore?: (supplier: Supplier) => void
   onDelete?: (id: string) => void
   onManagePointsLimit?: (supplier: Supplier) => void
+  onManageSubscription?: (supplier: Supplier) => void
 }
 
 export function SupplierCard({
@@ -40,24 +61,15 @@ export function SupplierCard({
   onManageStore,
   onDelete,
   onManagePointsLimit,
+  onManageSubscription,
 }: SupplierCardProps) {
-  const hasTrial = getSupplierHasTrial(supplier)
-  const hasActivePlan = getSupplierHasActivePlan(supplier)
-  const canGrantTrial = canSupplierReceiveTrial(supplier)
-  const trialEndsAt = getSupplierTrialEndsAt(supplier)
+  const planInfo = getSupplierPlanInfo(supplier)
+  const canGrantPlan = !planInfo || planInfo.tone === "expired" || planInfo.tone === "canceled"
+  const canCancelPlan = !!planInfo && planInfo.tone === "active" && planInfo.isManual
   const planType = getSupplierPlanType(supplier)
   const currentPointsAwarded = supplier.currentPointsAwarded ?? 0
   const pointsLimit = supplier.pointsLimit ?? 0
   const pointsUsagePercentage = pointsLimit > 0 ? Math.min((currentPointsAwarded / pointsLimit) * 100, 100) : 0
-
-  const formatTrialDate = (dateString: string | null) => {
-    if (!dateString) return "Data não informada"
-
-    const parsedDate = new Date(dateString)
-    if (Number.isNaN(parsedDate.getTime())) return "Data não informada"
-
-    return parsedDate.toLocaleDateString("pt-BR")
-  }
 
   const getStatusBadge = () => {
     switch (supplier.status) {
@@ -88,6 +100,12 @@ export function SupplierCard({
     if (!planType) return null
 
     switch (planType) {
+      case "TRIAL":
+        return (
+          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-semibold">
+            GRATUITO
+          </Badge>
+        )
       case "PREMIUM":
         return (
           <Badge className="bg-primary text-primary-foreground font-semibold border-primary/20">
@@ -177,19 +195,35 @@ export function SupplierCard({
           </div>
         )}
 
-        {supplier.status === "APPROVED" && hasTrial && (
-          <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-1.5">
-            <div className="flex items-center gap-2 text-sm font-medium text-primary">
-              <Calendar className="h-4 w-4" />
-              Trial ativo
+        {supplier.status === "APPROVED" && planInfo && (
+          <div className={PLAN_BOX_STYLES[planInfo.tone].box}>
+            <div className="flex items-center justify-between gap-2">
+              <div className={PLAN_BOX_STYLES[planInfo.tone].title}>
+                <Calendar className="h-4 w-4" />
+                Plano: {planInfo.planLabel} · {planInfo.statusLabel}
+              </div>
+              {onManageSubscription && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 gap-1 px-2.5 text-xs font-medium border-primary/40 text-primary bg-background hover:bg-primary hover:text-primary-foreground shadow-sm"
+                  onClick={() => onManageSubscription(supplier)}
+                >
+                  <Settings2 className="h-3.5 w-3.5" />
+                  Gerenciar
+                </Button>
+              )}
             </div>
-            <p className="text-xs text-muted-foreground">Término: {formatTrialDate(trialEndsAt)}</p>
+            {planInfo.detail && <p className={PLAN_BOX_STYLES[planInfo.tone].text}>{planInfo.detail}</p>}
+            <p className={PLAN_BOX_STYLES[planInfo.tone].text}>
+              Origem: {planInfo.isManual ? "concedido pelo admin" : "assinatura Stripe"}
+            </p>
           </div>
         )}
 
-        {supplier.status === "APPROVED" && hasActivePlan && !hasTrial && (
+        {supplier.status === "APPROVED" && !planInfo && (
           <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
-            <p className="text-xs text-muted-foreground">Lojista Parceiro com plano ativo. Trial manual indisponível.</p>
+            <p className="text-xs text-muted-foreground">Sem plano vinculado.</p>
           </div>
         )}
 
@@ -258,16 +292,16 @@ export function SupplierCard({
               </Button>
             </>
           )}
-          {supplier.status === "APPROVED" && canGrantTrial && onGrantTrial && (
+          {supplier.status === "APPROVED" && canGrantPlan && onGrantTrial && (
             <Button size="sm" onClick={() => onGrantTrial(supplier)} className="flex-1 shadow-sm">
               <Sparkles className="h-4 w-4 mr-1.5" />
-              Conceder Trial
+              Conceder Plano
             </Button>
           )}
-          {supplier.status === "APPROVED" && hasTrial && onCancelTrial && (
+          {supplier.status === "APPROVED" && canCancelPlan && onCancelTrial && (
             <Button size="sm" variant="destructive" onClick={() => onCancelTrial(supplier.id)} className="flex-1 shadow-sm">
               <Ban className="h-4 w-4 mr-1.5" />
-              Cancelar Trial
+              Cancelar Plano
             </Button>
           )}
 

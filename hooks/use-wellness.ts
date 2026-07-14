@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { WellnessService, type Wellness, type UpdateWellnessPayload } from "@/lib/services/wellness"
+import type { GrantTrialPayload } from "@/lib/services/suppliers"
 import { useAuth } from "./use-auth"
 
 interface UseWellnessReturn {
@@ -13,6 +14,8 @@ interface UseWellnessReturn {
   reject: (id: string, reason: string) => Promise<void>
   deleteWellness: (id: string) => Promise<void>
   updateWellness: (id: string, payload: UpdateWellnessPayload) => Promise<void>
+  grantTrial: (id: string, payload: GrantTrialPayload) => Promise<void>
+  cancelTrial: (id: string) => Promise<void>
 }
 
 export function useWellness(): UseWellnessReturn {
@@ -59,6 +62,16 @@ export function useWellness(): UseWellnessReturn {
     setWellnessList((prev) => prev.map((w) => (w.id === id ? { ...w, ...updated } : w)))
   }
 
+  const grantTrial = async (id: string, payload: GrantTrialPayload) => {
+    await WellnessService.grantTrial(id, payload)
+    await fetchWellness()
+  }
+
+  const cancelTrial = async (id: string) => {
+    await WellnessService.cancelTrial(id)
+    await fetchWellness()
+  }
+
   useEffect(() => {
     fetchWellness()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -73,5 +86,7 @@ export function useWellness(): UseWellnessReturn {
     reject,
     deleteWellness,
     updateWellness,
+    grantTrial,
+    cancelTrial,
   }
 }

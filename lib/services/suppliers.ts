@@ -2,13 +2,24 @@ import { ApiService } from "./api"
 
 export type SupplierStatus = "PENDING" | "APPROVED" | "REJECTED"
 export type TrialDurationUnit = "days" | "weeks" | "months"
-export type PlanType = "SILVER" | "GOLD" | "PREMIUM"
+export type PlanType = "TRIAL" | "SILVER" | "GOLD" | "PREMIUM"
 export type SubscriptionStatus = "ACTIVE" | "TRIALING" | "CANCELED" | "INACTIVE" | "PAST_DUE" | "UNPAID" | "EXPIRED"
 
 export interface GrantTrialPayload {
   duration: number
   unit: TrialDurationUnit
   planType: PlanType
+}
+
+export interface SubscriptionEvent {
+  id: string
+  eventType: "GRANTED" | "EDITED" | "EXTENDED" | "CANCELED" | "STRIPE_UPDATE" | string
+  status: string
+  planType: string
+  currentPeriodEnd: string
+  source: "admin" | "stripe" | "system" | string
+  note?: string | null
+  createdAt: string
 }
 
 export interface SupplierSubscription {
@@ -252,6 +263,21 @@ export class SuppliersService {
     return ApiService.patch(`/cancel-trial/${id}`, {})
   }
 
+  static async editSubscription(
+    id: string,
+    payload: { planType?: string; currentPeriodEnd?: string },
+  ): Promise<void> {
+    return ApiService.patch(`/subscription/${id}/edit`, payload)
+  }
+
+  static async extendSubscription(id: string, months: number): Promise<void> {
+    return ApiService.patch(`/subscription/${id}/extend`, { months })
+  }
+
+  static async getSubscriptionHistory(id: string): Promise<SubscriptionEvent[]> {
+    return ApiService.get<SubscriptionEvent[]>(`/subscription/${id}/history`)
+  }
+
   static async updatePointsLimit(id: string, payload: { pointsLimit: number }): Promise<Supplier> {
     return ApiService.patch<Supplier>(`/partner-suppliers/${id}/points-limit`, payload)
   }
@@ -267,7 +293,7 @@ export class SuppliersService {
 
 const normalizeSubscriptionStatus = (status: string | null | undefined) => status?.toUpperCase().trim() ?? null
 
-const getSupplierSubscription = (supplier: Supplier): SupplierSubscription | null =>
+export const getSupplierSubscription = (supplier: Supplier): SupplierSubscription | null =>
   supplier.subscription ?? supplier.store?.subscription ?? null
 
 const getSupplierIsManual = (supplier: Supplier): boolean | null => {
@@ -330,6 +356,99 @@ export const getSupplierHasActivePlan = (supplier: Supplier): boolean => {
   if (getSupplierIsManual(supplier)) return false
 
   return !getSupplierHasTrial(supplier)
+}
+
+// ── Painel de plano (lojista e wellness) ──────────────────────────────
+export interface PlanSubscriptionLike {
+  subscriptionStatus?: string | null
+  status?: string | null
+  planType?: string | null
+  currentPeriodEnd?: string | null
+  isManual?: boolean | null
+}
+
+export interface PlanInfo {
+  planLabel: string
+  statusLabel: string
+  detail: string | null
+  tone: "active" | "expired" | "canceled" | "warning"
+  isManual: boolean
+}
+
+const PLAN_LABELS: Record<string, string> = {
+  TRIAL: "Período gratuito",
+  SILVER: "Silver",
+  GOLD: "Gold",
+  PREMIUM: "Premium",
+}
+
+export function getPlanInfo(sub: PlanSubscriptionLike | null | undefined): PlanInfo | null {
+  if (!sub) return null
+
+  const status = (sub.subscriptionStatus ?? sub.status ?? "").toUpperCase().trim()
+  if (!status) return null
+
+  const planLabel = PLAN_LABELS[(sub.planType ?? "").toUpperCase()] ?? (sub.planType || "—")
+  const isManual = !!sub.isManual
+  const parsed = sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd) : null
+  const periodEnd = parsed && !Number.isNaN(parsed.getTime()) ? parsed : null
+  const fmt = (d: Date) => d.toLocaleDateString("pt-BR")
+
+  if (status === "CANCELED") {
+    return {
+      planLabel,
+      statusLabel: "Cancelado",
+      detail: periodEnd ? `Encerrado em ${fmt(periodEnd)}` : null,
+      tone: "canceled",
+      isManual,
+    }
+  }
+
+  if (["PAST_DUE", "UNPAID", "INCOMPLETE", "INCOMPLETE_EXPIRED"].includes(status)) {
+    return {
+      planLabel,
+      statusLabel: "Pagamento pendente",
+      detail: periodEnd ? `Vigência até ${fmt(periodEnd)}` : null,
+      tone: "warning",
+      isManual,
+    }
+  }
+
+  const expirable = status === "TRIALING" || (status === "ACTIVE" && isManual)
+  if (expirable && periodEnd && periodEnd.getTime() < Date.now()) {
+    return {
+      planLabel,
+      statusLabel: "Expirado",
+      detail: `Terminou em ${fmt(periodEnd)}. Entre em contato com o parceiro ou inative o acesso.`,
+      tone: "expired",
+      isManual,
+    }
+  }
+
+  if (status === "TRIALING" || status === "ACTIVE") {
+    return {
+      planLabel,
+      statusLabel: "Ativo",
+      detail: periodEnd ? `Vigente até ${fmt(periodEnd)}` : null,
+      tone: "active",
+      isManual,
+    }
+  }
+
+  return { planLabel, statusLabel: status, detail: null, tone: "warning", isManual }
+}
+
+export const getSupplierPlanInfo = (supplier: Supplier): PlanInfo | null =>
+  getPlanInfo(getSupplierSubscription(supplier))
+
+export const isSupplierTrialExpired = (supplier: Supplier): boolean => {
+  if (!getSupplierHasTrial(supplier)) return false
+
+  const endsAt = getSupplierTrialEndsAt(supplier)
+  if (!endsAt) return false
+
+  const parsed = new Date(endsAt)
+  return !Number.isNaN(parsed.getTime()) && parsed.getTime() < Date.now()
 }
 
 export const canSupplierReceiveTrial = (supplier: Supplier): boolean => {

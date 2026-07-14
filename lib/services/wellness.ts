@@ -1,4 +1,5 @@
 import { ApiService } from "./api"
+import type { GrantTrialPayload } from "./suppliers"
 
 export type WellnessStatus = "PENDING" | "APPROVED" | "REJECTED"
 export type DocumentType = "CPF" | "CNPJ"
@@ -10,6 +11,17 @@ export interface WellnessOffering {
   price?: number | null // null = "sob consulta"
   duration?: string | null
   photoUrl?: string | null
+}
+
+export interface WellnessSubscription {
+  id: string
+  wellnessId?: string | null
+  subscriptionStatus?: string | null
+  planType?: string | null
+  currentPeriodEnd?: string | null
+  isManual?: boolean | null
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface Wellness {
@@ -26,6 +38,7 @@ export interface Wellness {
   isDeleted: boolean
   createdAt: string
   updatedAt: string
+  subscription?: WellnessSubscription | null
   services: WellnessOffering[]
   user?: {
     id: string
@@ -72,5 +85,13 @@ export class WellnessService {
 
   static async delete(id: string): Promise<void> {
     await ApiService.delete(`/wellness/${id}`)
+  }
+
+  static async grantTrial(id: string, payload: GrantTrialPayload): Promise<void> {
+    return ApiService.patch(`/grant-trial/${id}`, payload)
+  }
+
+  static async cancelTrial(id: string): Promise<void> {
+    return ApiService.patch(`/cancel-trial/${id}`, {})
   }
 }

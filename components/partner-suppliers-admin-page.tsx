@@ -7,6 +7,7 @@ import { SupplierCard } from "@/components/supplier-card"
 import { SupplierDetailsModal } from "@/components/supplier-details-modal"
 import { RejectSupplierDialog } from "@/components/reject-supplier-dialog"
 import { GrantTrialDialog } from "@/components/grant-trial-dialog"
+import { SubscriptionManagerDialog } from "@/components/subscription-manager-dialog"
 import { DeleteSupplierDialog } from "@/components/delete-supplier-dialog"
 import { SupplierStoreManagerDialog } from "@/components/supplier-store-manager-dialog"
 import { CardSkeleton } from "@/components/card-skeleton"
@@ -22,7 +23,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CalendarDays, Package, Search, Store, UserCheck, AlertCircle, RefreshCw, Edit } from "lucide-react"
 import { useSuppliers } from "@/hooks/use-suppliers"
 import { toast } from "@/hooks/use-toast"
-import { getSupplierPlanType, type GrantTrialPayload, TrialDurationUnit, PlanType, type UpdateSupplierPayload } from "@/lib/services/suppliers"
+import { getSupplierPlanType, getSupplierPlanInfo, getSupplierSubscription, type GrantTrialPayload, TrialDurationUnit, PlanType, type UpdateSupplierPayload } from "@/lib/services/suppliers"
 
 type PartnerTypeFilter = "SUPPLIER" | "WELLNESS"
 
@@ -77,6 +78,7 @@ export function SuppliersPageContent({ partnerType = "SUPPLIER" }: SuppliersPage
   const [isGrantTrialDialogOpen, setIsGrantTrialDialogOpen] = useState(false)
   const [supplierToGrantTrial, setSupplierToGrantTrial] = useState<{ id: string; name: string } | null>(null)
   const [supplierToCancelTrial, setSupplierToCancelTrial] = useState<{ id: string; name: string } | null>(null)
+  const [supplierToManageSub, setSupplierToManageSub] = useState<(typeof suppliers)[0] | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [supplierToDelete, setSupplierToDelete] = useState<{ id: string; name: string } | null>(null)
   const [isPointsLimitDialogOpen, setIsPointsLimitDialogOpen] = useState(false)
@@ -233,6 +235,7 @@ export function SuppliersPageContent({ partnerType = "SUPPLIER" }: SuppliersPage
 
   const formatPlanLabel = (planType: PlanType) => {
     const planLabels: Record<PlanType, string> = {
+      TRIAL: "Período gratuito",
       SILVER: "Silver",
       GOLD: "Gold",
       PREMIUM: "Premium",
@@ -249,13 +252,13 @@ export function SuppliersPageContent({ partnerType = "SUPPLIER" }: SuppliersPage
       await refetch()
 
       toast({
-        title: "Trial concedido",
+        title: "Plano concedido",
         description: `${payload.duration} ${formatTrialUnitLabel(payload.unit)} no plano ${formatPlanLabel(payload.planType)}.`,
       })
     } catch (error) {
       toast({
-        title: "Erro ao conceder trial",
-        description: error instanceof Error ? error.message : "Não foi possível conceder o período de trial. Tente novamente.",
+        title: "Erro ao conceder plano",
+        description: error instanceof Error ? error.message : "Não foi possível conceder o plano. Tente novamente.",
         variant: "destructive",
       })
       throw error
@@ -277,12 +280,12 @@ export function SuppliersPageContent({ partnerType = "SUPPLIER" }: SuppliersPage
       setSupplierToCancelTrial(null)
 
       toast({
-        title: "Trial cancelado",
-        description: "O trial manual foi cancelado com sucesso.",
+        title: "Plano cancelado",
+        description: "O plano manual foi cancelado com sucesso.",
       })
     } catch (error) {
       toast({
-        title: "Erro ao cancelar trial",
+        title: "Erro ao cancelar plano",
         description: error instanceof Error ? error.message : "Não foi possível cancelar o período de trial. Tente novamente.",
         variant: "destructive",
       })
@@ -312,7 +315,8 @@ export function SuppliersPageContent({ partnerType = "SUPPLIER" }: SuppliersPage
         statusFilter === "all" ||
         (statusFilter === "pending" && supplier.status === "PENDING") ||
         (statusFilter === "approved" && supplier.status === "APPROVED") ||
-        (statusFilter === "rejected" && supplier.status === "REJECTED")
+        (statusFilter === "rejected" && supplier.status === "REJECTED") ||
+        (statusFilter === "trial-expired" && supplier.status === "APPROVED" && getSupplierPlanInfo(supplier)?.tone === "expired")
 
       return matchesSearch && matchesStatus
     })
@@ -434,6 +438,7 @@ export function SuppliersPageContent({ partnerType = "SUPPLIER" }: SuppliersPage
               <SelectItem value="pending">Pendente</SelectItem>
               <SelectItem value="approved">Aprovado</SelectItem>
               <SelectItem value="rejected">Rejeitado</SelectItem>
+              <SelectItem value="trial-expired">Plano expirado</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -447,7 +452,13 @@ export function SuppliersPageContent({ partnerType = "SUPPLIER" }: SuppliersPage
           {statusFilter !== "all" && (
             <Badge variant="outline" className="border-primary/50 bg-primary/5 text-primary font-medium">
               Status:{" "}
-              {statusFilter === "pending" ? "Pendente" : statusFilter === "approved" ? "Aprovado" : "Rejeitado"}
+              {statusFilter === "pending"
+                ? "Pendente"
+                : statusFilter === "approved"
+                  ? "Aprovado"
+                  : statusFilter === "trial-expired"
+                    ? "Plano expirado"
+                    : "Rejeitado"}
             </Badge>
           )}
         </div>
@@ -470,6 +481,7 @@ export function SuppliersPageContent({ partnerType = "SUPPLIER" }: SuppliersPage
                 onManageStore={setSupplierToManageStore}
                 onDelete={(id) => handleDeleteClick(id, supplier.tradeName)}
                 onManagePointsLimit={handleManagePointsLimitClick}
+                onManageSubscription={setSupplierToManageSub}
               />
             ))
           )}
@@ -517,6 +529,15 @@ export function SuppliersPageContent({ partnerType = "SUPPLIER" }: SuppliersPage
           }}
           onConfirm={handleGrantTrialConfirm}
           supplierName={supplierToGrantTrial?.name || ""}
+        />
+
+        <SubscriptionManagerDialog
+          isOpen={!!supplierToManageSub}
+          onClose={() => setSupplierToManageSub(null)}
+          partnerId={supplierToManageSub?.id ?? ""}
+          partnerName={supplierToManageSub?.tradeName ?? ""}
+          subscription={supplierToManageSub ? getSupplierSubscription(supplierToManageSub) : null}
+          onChanged={refetch}
         />
 
         <AdminConfirmDialog
