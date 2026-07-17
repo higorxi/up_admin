@@ -69,6 +69,7 @@ export interface Supplier {
     rating: number
     openingHours: string
     logoUrl?: string | null
+    categoryId?: string | null
     phone?: string | null
     email?: string | null
     addressId: string
@@ -144,6 +145,7 @@ export interface SupplierStorePayload {
   website?: string
   openingHours?: string
   logoUrl?: string
+  categoryId?: string
   partnerId?: string
   address?: SupplierAddressPayload
 }

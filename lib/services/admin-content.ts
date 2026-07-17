@@ -5,9 +5,19 @@ export interface CountData {
   posts?: number
   likes?: number
   comments?: number
+  stores?: number
 }
 
 export interface AdminProfession {
+  id: string
+  name: string
+  description?: string | null
+  createdAt: string
+  updatedAt: string
+  _count?: CountData
+}
+
+export interface AdminStoreCategory {
   id: string
   name: string
   description?: string | null
@@ -66,6 +76,11 @@ export interface ProfessionPayload {
   description?: string
 }
 
+export interface StoreCategoryPayload {
+  name: string
+  description?: string
+}
+
 export interface CommunityPayload {
   name: string
   description?: string
@@ -106,6 +121,22 @@ export class AdminContentService {
 
   static deleteProfession(id: string) {
     return ApiService.delete<AdminProfession>(`/professions/${id}`)
+  }
+
+  static getStoreCategories() {
+    return ApiService.get<AdminStoreCategory[]>("/store-categories")
+  }
+
+  static createStoreCategory(data: StoreCategoryPayload) {
+    return ApiService.post<AdminStoreCategory>("/store-categories", data)
+  }
+
+  static updateStoreCategory(id: string, data: Partial<StoreCategoryPayload>) {
+    return ApiService.patch<AdminStoreCategory>(`/store-categories/${id}`, data)
+  }
+
+  static deleteStoreCategory(id: string) {
+    return ApiService.delete<AdminStoreCategory>(`/store-categories/${id}`)
   }
 
   static getCommunities() {

@@ -10,6 +10,8 @@ import { DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { AdminContentService, type AdminStoreCategory } from "@/lib/services/admin-content"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -29,6 +31,7 @@ const emptyStoreDraft = (supplierId?: string): SupplierStorePayload => ({
   website: "",
   openingHours: "",
   logoUrl: "",
+  categoryId: "",
   address: {
     state: "",
     city: "",
@@ -57,6 +60,13 @@ export function SupplierStoreManagerDialog({ supplier, isOpen, onClose, onChange
   const [productToEdit, setProductToEdit] = useState<SupplierProduct | null>(null)
   const [productToDelete, setProductToDelete] = useState<SupplierProduct | null>(null)
   const [saving, setSaving] = useState(false)
+  const [categories, setCategories] = useState<AdminStoreCategory[]>([])
+
+  useEffect(() => {
+    AdminContentService.getStoreCategories()
+      .then(setCategories)
+      .catch(() => setCategories([]))
+  }, [])
 
   const store = supplier?.store ?? null
   const products = useMemo(() => store?.products ?? [], [store?.products])
@@ -71,6 +81,7 @@ export function SupplierStoreManagerDialog({ supplier, isOpen, onClose, onChange
       website: store?.website ?? "",
       openingHours: store?.openingHours ?? "",
       logoUrl: store?.logoUrl ?? "",
+      categoryId: store?.categoryId ?? "",
       address: {
         state: store?.address?.state ?? "",
         city: store?.address?.city ?? "",
