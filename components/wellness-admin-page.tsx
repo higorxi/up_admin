@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { AdminLayout } from "@/components/admin-layout"
 import { AdminPageLayout } from "@/components/admin-page-layout"
 import { RejectSupplierDialog } from "@/components/reject-supplier-dialog"
@@ -42,6 +42,7 @@ import { GrantTrialDialog } from "@/components/grant-trial-dialog"
 import { SubscriptionManagerDialog } from "@/components/subscription-manager-dialog"
 import { getPlanInfo, type GrantTrialPayload } from "@/lib/services/suppliers"
 import type { UpdateWellnessPayload, Wellness } from "@/lib/services/wellness"
+import { AdminContentService, type AdminWellnessCategory } from "@/lib/services/admin-content"
 
 const PLAN_BOX_STYLES = {
   active: {
@@ -105,6 +106,13 @@ export function WellnessAdminPage() {
   const [toDelete, setToDelete] = useState<{ id: string; name: string } | null>(null)
   const [toEdit, setToEdit] = useState<Wellness | null>(null)
   const [editPayload, setEditPayload] = useState<UpdateWellnessPayload>({})
+  const [categories, setCategories] = useState<AdminWellnessCategory[]>([])
+
+  useEffect(() => {
+    AdminContentService.getWellnessCategories()
+      .then(setCategories)
+      .catch(() => setCategories([]))
+  }, [])
 
   const filtered = wellnessList.filter((w) => {
     const term = searchTerm.toLowerCase()
@@ -169,6 +177,7 @@ export function WellnessAdminPage() {
       description: wellness.description ?? "",
       whatsappMessage: wellness.whatsappMessage ?? "",
       openingHours: wellness.openingHours ?? "",
+      categoryId: wellness.categoryId ?? "",
     })
   }
 
@@ -559,6 +568,24 @@ export function WellnessAdminPage() {
                 value={editPayload.openingHours ?? ""}
                 onChange={(event) => setEditPayload((prev) => ({ ...prev, openingHours: event.target.value }))}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="wellness-category">Categoria</Label>
+              <Select
+                value={editPayload.categoryId || undefined}
+                onValueChange={(value) => setEditPayload((prev) => ({ ...prev, categoryId: value }))}
+              >
+                <SelectTrigger id="wellness-category">
+                  <SelectValue placeholder="Selecione a categoria (massagem, yoga...)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="wellness-description">Descrição do negócio</Label>

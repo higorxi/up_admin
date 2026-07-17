@@ -59,6 +59,11 @@ const navigation = [
     icon: Store,
   },
   {
+    name: "Categorias de Wellness",
+    href: "/admin/categorias-wellness",
+    icon: Sparkles,
+  },
+  {
     name: "Publicações",
     href: "/admin/publicacoes",
     icon: MessageSquareText,

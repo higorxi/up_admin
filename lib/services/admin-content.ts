@@ -6,6 +6,7 @@ export interface CountData {
   likes?: number
   comments?: number
   stores?: number
+  wellnesses?: number
 }
 
 export interface AdminProfession {
@@ -18,6 +19,15 @@ export interface AdminProfession {
 }
 
 export interface AdminStoreCategory {
+  id: string
+  name: string
+  description?: string | null
+  createdAt: string
+  updatedAt: string
+  _count?: CountData
+}
+
+export interface AdminWellnessCategory {
   id: string
   name: string
   description?: string | null
@@ -81,6 +91,11 @@ export interface StoreCategoryPayload {
   description?: string
 }
 
+export interface WellnessCategoryPayload {
+  name: string
+  description?: string
+}
+
 export interface CommunityPayload {
   name: string
   description?: string
@@ -137,6 +152,22 @@ export class AdminContentService {
 
   static deleteStoreCategory(id: string) {
     return ApiService.delete<AdminStoreCategory>(`/store-categories/${id}`)
+  }
+
+  static getWellnessCategories() {
+    return ApiService.get<AdminWellnessCategory[]>("/wellness-categories")
+  }
+
+  static createWellnessCategory(data: WellnessCategoryPayload) {
+    return ApiService.post<AdminWellnessCategory>("/wellness-categories", data)
+  }
+
+  static updateWellnessCategory(id: string, data: Partial<WellnessCategoryPayload>) {
+    return ApiService.patch<AdminWellnessCategory>(`/wellness-categories/${id}`, data)
+  }
+
+  static deleteWellnessCategory(id: string) {
+    return ApiService.delete<AdminWellnessCategory>(`/wellness-categories/${id}`)
   }
 
   static getCommunities() {
