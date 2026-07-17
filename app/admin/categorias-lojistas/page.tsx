@@ -42,7 +42,7 @@ export default function StoreCategoriesPage() {
       setError(null)
       setCategories(await AdminContentService.getStoreCategories())
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar ramos")
+      setError(err instanceof Error ? err.message : "Erro ao carregar categorias")
     } finally {
       setLoading(false)
     }
@@ -76,7 +76,7 @@ export default function StoreCategoriesPage() {
   const handleSave = async (event: React.FormEvent) => {
     event.preventDefault()
     if (!formData.name.trim()) {
-      setError("Informe o nome do ramo.")
+      setError("Informe o nome da categoria.")
       return
     }
 
@@ -98,7 +98,7 @@ export default function StoreCategoriesPage() {
 
       setModalOpen(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao salvar ramo")
+      setError(err instanceof Error ? err.message : "Erro ao salvar categoria")
     } finally {
       setSaving(false)
     }
@@ -114,7 +114,7 @@ export default function StoreCategoriesPage() {
       setCategories((current) => current.filter((item) => item.id !== categoryToDelete.id))
       setCategoryToDelete(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao excluir ramo")
+      setError(err instanceof Error ? err.message : "Erro ao excluir categoria")
     } finally {
       setSaving(false)
     }
@@ -123,12 +123,12 @@ export default function StoreCategoriesPage() {
   return (
     <AdminLayout>
       <AdminPageLayout
-        title="Ramos de Lojistas"
-        description="Cadastre e organize os ramos (móveis, tapetes, iluminação...) usados no cadastro e no filtro das lojas."
+        title="Categorias de Lojistas"
+        description="Cadastre e organize as categorias (móveis, tapetes, iluminação...) usadas no cadastro e no filtro das lojas."
         actions={
           <Button size="sm" onClick={openCreateModal}>
             <Plus className="mr-2 h-4 w-4" />
-            Criar ramo
+            Criar categoria
           </Button>
         }
       >
@@ -141,7 +141,7 @@ export default function StoreCategoriesPage() {
 
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-lg border bg-card p-4">
-            <p className="text-sm text-muted-foreground">Total de ramos</p>
+            <p className="text-sm text-muted-foreground">Total de categorias</p>
             <p className="text-3xl font-bold">{categories.length}</p>
           </div>
           <div className="rounded-lg border bg-card p-4">
@@ -151,7 +151,7 @@ export default function StoreCategoriesPage() {
             </p>
           </div>
           <div className="rounded-lg border bg-card p-4">
-            <p className="text-sm text-muted-foreground">Encontrados na busca</p>
+            <p className="text-sm text-muted-foreground">Encontradas na busca</p>
             <p className="text-3xl font-bold">{filteredCategories.length}</p>
           </div>
         </div>
@@ -170,7 +170,7 @@ export default function StoreCategoriesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="px-4 text-base">Ramo</TableHead>
+                <TableHead className="px-4 text-base">Categoria</TableHead>
                 <TableHead className="px-4 text-base">Descrição</TableHead>
                 <TableHead className="px-4 text-base">Uso</TableHead>
                 <TableHead className="px-4 text-right text-base">Ações</TableHead>
@@ -181,13 +181,13 @@ export default function StoreCategoriesPage() {
                 <TableRow>
                   <TableCell colSpan={4} className="h-32 text-center text-base text-muted-foreground">
                     <Loader2 className="mx-auto mb-2 h-6 w-6 animate-spin" />
-                    Carregando ramos...
+                    Carregando categorias...
                   </TableCell>
                 </TableRow>
               ) : filteredCategories.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="h-32 text-center text-base text-muted-foreground">
-                    Nenhum ramo encontrado.
+                    Nenhuma categoria encontrada.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -222,14 +222,14 @@ export default function StoreCategoriesPage() {
         <AdminDialog
           open={modalOpen}
           onOpenChange={setModalOpen}
-          title={selectedCategory ? "Editar ramo" : "Criar ramo"}
+          title={selectedCategory ? "Editar categoria" : "Criar categoria"}
           description="Use nomes curtos e fáceis de reconhecer no cadastro e no filtro das lojas."
           icon={<Store className="h-6 w-6" />}
           className="h-auto w-[min(720px,calc(100vw-32px))]"
         >
           <form onSubmit={handleSave} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-base">Nome do ramo</Label>
+              <Label htmlFor="name" className="text-base">Nome da categoria</Label>
               <Input
                 id="name"
                 value={formData.name}
@@ -245,7 +245,7 @@ export default function StoreCategoriesPage() {
                 id="description"
                 value={formData.description}
                 onChange={(event) => setFormData((current) => ({ ...current, description: event.target.value }))}
-                placeholder="Explique quando este ramo deve ser usado."
+                placeholder="Explique quando esta categoria deve ser usada."
                 rows={5}
                 className="text-base"
                 disabled={saving}
@@ -266,9 +266,9 @@ export default function StoreCategoriesPage() {
         <AlertDialog open={!!categoryToDelete} onOpenChange={(open) => !open && setCategoryToDelete(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Excluir ramo?</AlertDialogTitle>
+              <AlertDialogTitle>Excluir categoria?</AlertDialogTitle>
               <AlertDialogDescription className="text-base">
-                Esta ação remove o ramo "{categoryToDelete?.name}". Se ele estiver em uso por alguma loja, o sistema vai impedir a exclusão.
+                Esta ação remove a categoria "{categoryToDelete?.name}". Se ela estiver em uso por alguma loja, o sistema vai impedir a exclusão.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

@@ -54,8 +54,8 @@ const navigation = [
     icon: BriefcaseBusiness,
   },
   {
-    name: "Ramos de Lojistas",
-    href: "/admin/ramos-lojistas",
+    name: "Categorias de Lojistas",
+    href: "/admin/categorias-lojistas",
     icon: Store,
   },
   {

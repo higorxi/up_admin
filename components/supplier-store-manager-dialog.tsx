@@ -257,6 +257,24 @@ export function SupplierStoreManagerDialog({ supplier, isOpen, onClose, onChange
                   <Label htmlFor="store-logo">Logo URL</Label>
                   <Input id="store-logo" value={storeDraft.logoUrl ?? ""} onChange={(event) => updateStoreField("logoUrl", event.target.value)} />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="store-category">Categoria</Label>
+                  <Select
+                    value={storeDraft.categoryId || undefined}
+                    onValueChange={(value) => updateStoreField("categoryId", value)}
+                  >
+                    <SelectTrigger id="store-category">
+                      <SelectValue placeholder="Selecione a categoria (móveis, tapetes...)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="store-description">Descrição</Label>
                   <Textarea id="store-description" value={storeDraft.description ?? ""} onChange={(event) => updateStoreField("description", event.target.value)} />
