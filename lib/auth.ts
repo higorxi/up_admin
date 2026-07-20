@@ -24,7 +24,6 @@ export class AuthService {
 
   static async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      console.log('oi 1.1');
       const response = await ApiService.login(credentials.email, credentials.password)
       
       // Store in localStorage and cookies
