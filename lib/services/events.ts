@@ -10,7 +10,7 @@ export interface Event {
   totalSpots: number
   filledSpots: number
   isActive: boolean
-  storeId: string
+  storeId?: string | null
   addressId: string
   address?: {
     id: string
@@ -52,7 +52,7 @@ export interface CreateEventData {
   type: string
   points: number
   totalSpots: number
-  storeId: string
+  storeId?: string
   address?: {
     street: string
     district: string

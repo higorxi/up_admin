@@ -76,7 +76,7 @@ export function EventFormModal({
           type: event.type,
           points: event.points,
           totalSpots: event.totalSpots,
-          storeId: event.storeId,
+          storeId: event.storeId ?? "",
           address: event.address ? {
             street: event.address.street,
             district: event.address.district,
@@ -127,11 +127,12 @@ export function EventFormModal({
       if (!formData.type) {
         throw new Error("Tipo é obrigatório")
       }
-      if (!formData.storeId) {
-        throw new Error("Loja é obrigatória")
-      }
       if (formData.totalSpots < 1) {
         throw new Error("Total de vagas deve ser maior que 0")
+      }
+      // Sem loja associada (evento configurado pelo admin), o endereço é obrigatório
+      if (!formData.storeId && !includeAddress) {
+        throw new Error("Sem loja associada: informe o endereço do evento")
       }
 
       // Preparar dados para envio
@@ -142,7 +143,7 @@ export function EventFormModal({
         type: formData.type,
         points: Number(formData.points),
         totalSpots: Number(formData.totalSpots),
-        storeId: formData.storeId,
+        ...(formData.storeId ? { storeId: formData.storeId } : {}),
       }
 
       // Adicionar endereço se incluído
@@ -304,10 +305,12 @@ export function EventFormModal({
             </div>
 
             <div>
-              <Label htmlFor="storeId">Loja *</Label>
+              <Label htmlFor="storeId">Loja</Label>
               <Select
-                value={formData.storeId}
-                onValueChange={(value) => updateFormData("storeId", value)}
+                value={formData.storeId || "none"}
+                onValueChange={(value) =>
+                  updateFormData("storeId", value === "none" ? "" : value)
+                }
                 disabled={loading || storesLoading}
               >
                 <SelectTrigger>
@@ -316,6 +319,7 @@ export function EventFormModal({
                   } />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">Sem loja (evento do admin)</SelectItem>
                   {stores.map((store) => (
                     <SelectItem key={store.id} value={store.id}>
                       {store.name}
@@ -327,6 +331,11 @@ export function EventFormModal({
                 <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                   <RefreshCw className="h-3 w-3 animate-spin" />
                   Carregando lojas...
+                </p>
+              )}
+              {!formData.storeId && !storesLoading && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Sem loja associada — adicione o endereço do evento abaixo.
                 </p>
               )}
             </div>
