@@ -190,6 +190,9 @@ export interface PhysicalSale {
   isRedeemed?: boolean | null
   status?: string | null
   redeemedAt?: string | null
+  cancelledAt?: string | null
+  sellerName?: string | null
+  invoice?: string | null
   createdAt: string
   partnerSupplier?: {
     id: string
@@ -290,6 +293,17 @@ export class SuppliersService {
 
   static async getPhysicalSales(): Promise<PhysicalSale[]> {
     return ApiService.get<PhysicalSale[]>("/physical-sales")
+  }
+
+  static async updatePhysicalSale(
+    id: string,
+    data: { customerName?: string; value?: number; sellerName?: string; invoice?: string },
+  ) {
+    return ApiService.patch<{ message: string; points: number; pointsDiff: number }>(`/physical-sales/${id}`, data)
+  }
+
+  static async cancelPhysicalSale(id: string) {
+    return ApiService.patch<{ message: string; points: number; pointsDiff: number }>(`/physical-sales/${id}/cancel`)
   }
 }
 
