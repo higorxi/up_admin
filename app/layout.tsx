@@ -5,6 +5,7 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/hooks/use-auth"
 import { Suspense } from "react"
+import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default function RootLayout({
         <Suspense fallback={<div className="min-h-screen bg-background" />}>
           <AuthProvider>{children}</AuthProvider>
         </Suspense>
+        <Toaster />
         <Analytics />
       </body>
     </html>
